@@ -630,22 +630,45 @@ ws4.column_dimensions["L"].width = 4
 MULT_S = [10.0, 11.0, 12.0, 13.5, 14.0, 15.0, 16.0]
 UTIL_S = [0.55, 0.60, 0.65, 0.70, 0.77, 0.80, 0.85, 0.90, 0.95]
 
-def base_fcff_s(util):
-    gr  = [GPU_N * GPU_P * HOURS * util] * 6
-    tp  = [-v * TECH_SH for v in gr]
-    pwr = [-(GPU_N * 1.8 * util * HOURS * PWR_RATE / PUE)] * 6
-    eb  = [gr[i]+tp[i]+pwr[i]+MAINT[i] for i in range(6)]
-    ei  = [eb[i]+DA[i] for i in range(6)]
-    np_ = [e*(1-TAX_R) if e>0 else e for e in ei]
-    ff  = [np_[i]+DA_ADD[i]+NWC[i]+CAPEX[i] for i in range(6)]
+def base_fcff_s(steady_util):
+    """
+    Year 1 is ALWAYS the 30% ramp year (matching the main model).
+    steady_util is applied to Years 2-6 only.
+    This ensures Year 1 FCFF is always negative (CapEx dominated) so
+    IRR has a valid sign change and does not blow up to infinity.
+    """
+    util_yr = [0.30,          # Year 1: ramp (fixed)
+               steady_util,   # Year 2
+               steady_util,   # Year 3
+               steady_util,   # Year 4
+               steady_util,   # Year 5
+               steady_util]   # Year 6
+
+    gr  = [GPU_N * GPU_P * HOURS * u          for u in util_yr]
+    tp  = [-v * TECH_SH                        for v in gr]
+    pwr = [-(GPU_N * 1.8 * u * HOURS * PWR_RATE / PUE) for u in util_yr]
+    eb  = [gr[i]+tp[i]+pwr[i]+MAINT[i]        for i in range(6)]
+    ei  = [eb[i]+DA[i]                         for i in range(6)]
+    np_ = [e*(1-TAX_R) if e>0 else e           for e in ei]
+    ff  = [np_[i]+DA_ADD[i]+NWC[i]+CAPEX[i]   for i in range(6)]
     return ff, eb
 
-def irr_unl_s(util, mult):
-    cf, eb = base_fcff_s(util)
-    return irr(cf[:-1] + [cf[5] + eb[5]*mult])
+def safe_irr(cf):
+    """IRR with sign-change guard. Returns None if stream has no valid IRR."""
+    pos = any(c > 0 for c in cf)
+    neg = any(c < 0 for c in cf)
+    if not (pos and neg):
+        return None   # all-positive or all-negative: IRR undefined
+    return irr(cf)
 
-def npv_s(util, mult):
-    cf, eb = base_fcff_s(util)
+def irr_unl_s(steady_util, mult):
+    cf, eb = base_fcff_s(steady_util)
+    stream = cf[:-1] + [cf[5] + eb[5] * mult]
+    result = safe_irr(stream)
+    return result if result is not None else float('nan')
+
+def npv_s(steady_util, mult):
+    cf, eb = base_fcff_s(steady_util)
     tv = eb[5] * mult
     return sum(cf[t]/(1.125)**(t+1) for t in range(6)) + tv/(1.125)**6
 
@@ -658,8 +681,8 @@ ws4.merge_cells(f"A{r4}:L{r4}"); r4 += 1
 
 ws4.row_dimensions[r4].height = 20
 c = ws4.cell(r4, 1,
-    "X-Axis: EV/EBITDA Exit Multiple  |  Y-Axis: Blended Utilisation  |  "
-    "Base Case: 77% × 13.5×  (thick blue border)  |  All USD")
+    "X-Axis: EV/EBITDA Exit Multiple  |  Y-Axis: Steady-State Utilisation Yr2–6  "
+    "(Year 1 fixed at 30% ramp)  |  Base Case: 77% × 13.5×  |  All USD")
 c.font = fnt(10, italic=True, color=DKG); c.fill = fl("EBF3FB")
 c.alignment = aln("center","center"); ws4.merge_cells(f"A{r4}:L{r4}"); r4 += 2
 
@@ -729,24 +752,34 @@ def sens_table(ws, row, title, fn, tfl_fn, fmt_str, scale=1.0):
         c.font = fnt(9, bold=True, color=NAVY); c.fill = fl(LTB)
         c.alignment = aln("center","center"); c.border = bdr("medium",NAVY)
         for j, mult in enumerate(MULT_S):
+            import math
             raw = fn(util, mult)
-            disp = raw * scale
-            cell = ws.cell(row, 3+j, disp)
-            cell.number_format = fmt_str
-            cell_fl, cell_fnt = tfl_fn(disp)
-            cell.fill = cell_fl; cell.font = cell_fnt
-            cell.alignment = aln("center","center")
             is_base = abs(mult-13.5)<0.01 and abs(util-0.77)<0.01
+            cell = ws.cell(row, 3+j)
+            # Guard: nan or None means IRR undefined (sign-change failure)
+            if raw is None or (isinstance(raw, float) and math.isnan(raw)):
+                cell.value = "n/a"
+                cell.font = fnt(9, italic=True, color=DKG)
+                cell.fill = fl(GRY)
+            else:
+                disp = raw * scale
+                cell.value = disp
+                cell.number_format = fmt_str
+                cell_fl, cell_fnt = tfl_fn(disp)
+                cell.fill = cell_fl; cell.font = cell_fnt
+            cell.alignment = aln("center","center")
             cell.border = bdr("medium",NAVY) if is_base else bdr()
         row += 1
     return row + 1
 
 r4 = sens_table(ws4, r4,
-    "TABLE A  |  UNLEVERED PROJECT IRR (%)  —  Blended Utilisation vs EV/EBITDA Exit Multiple  (USD)",
+    "TABLE A  |  UNLEVERED PROJECT IRR (%)  —  Steady-State Utilisation Yr2–6 "
+    "vs EV/EBITDA Exit Multiple  (Year 1 always 30% ramp  |  USD)",
     irr_unl_s, tfl_irr, FMT_P, scale=1.0)
 
 r4 = sens_table(ws4, r4,
-    "TABLE B  |  PROJECT NPV at WACC 12.5%  (USD Millions)  —  Blended Utilisation vs Exit Multiple",
+    "TABLE B  |  PROJECT NPV at WACC 12.5%  (USD Millions)  —  Steady-State Utilisation Yr2–6 "
+    "vs EV/EBITDA Exit Multiple  (Year 1 always 30% ramp  |  USD)",
     lambda u,m: npv_s(u,m)/1e6, tfl_npv, '$#,##0.0"M"', scale=1.0)
 
 # Interpretation notes
