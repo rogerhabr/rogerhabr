@@ -3,9 +3,8 @@
 Anonymised: 'Project Developer Co' / 'Technology Provider'
 
 Currency: USD throughout.
-FX conversion applied to cost-side inputs (power, maintenance, CapEx, debt)
-which were originally in AUD at AUD/USD 0.65.
-GPU billing rate kept at $0.80 USD/GPU-hour (GPU cloud pricing is USD-quoted).
+All inputs, costs, revenues, and cash flows are denominated in USD.
+GPU billing rate: $0.80 USD/GPU-hour (GPU cloud pricing is globally USD-quoted).
 """
 
 import openpyxl
@@ -47,7 +46,6 @@ FMT_M = '0.0"x"'
 
 
 # ── FINANCIAL ENGINE  (all amounts in USD) ─────────────────────────────────
-FX        = 0.65            # AUD/USD conversion rate
 GPU_N     = 40_000
 GPU_P     = 0.80            # USD/GPU-hour (wholesale bulk enterprise, USD-quoted)
 HOURS     = 8_760
@@ -55,7 +53,7 @@ TECH_SH   = 0.25
 MW        = 72
 MW_C      = MW * 0.77
 MW_U      = MW * 0.23
-PWR_RATE  = 0.065           # USD/kWh  (AUD 0.095 × FX 0.65 → approx $0.065 USD)
+PWR_RATE  = 0.065           # USD/kWh  (wholesale bulk enterprise rate)
 PUE       = 1.4
 TAX_R     = 0.30
 INT_R     = 0.065
@@ -68,7 +66,6 @@ GR    = [round(GPU_N * GPU_P * HOURS * u, 0)                    for u in UTIL]
 TP    = [round(-v * TECH_SH, 0)                                   for v in GR]
 PWR   = [round(-(GPU_N * 1.8 * u * HOURS * PWR_RATE / PUE), 0)  for u in UTIL]
 
-# Maintenance in USD (AUD $4M/$8.5M × 0.65 ≈ $2.5M/$5.5M)
 MAINT = [-2_500_000, -5_500_000, -5_500_000,
          -5_500_000, -5_500_000, -5_500_000]
 
@@ -83,11 +80,6 @@ TAXC = [round(max(0.0, EBIT[i]) * -TAX_R, 0)  for i in range(6)]
 DA_ADD = [-d for d in DA]
 NWC   = [-2_000_000, -3_250_000, -1_300_000, 0, 0, 0]
 
-# CapEx in USD (AUD amounts × 0.65, rounded sensibly)
-# Yr1: AUD 95M × 0.65 = $61.75M → $62M
-# Yr2-3: AUD 15M × 0.65 = $9.75M → $10M
-# Yr4: AUD 45M × 0.65 = $29.25M → $30M
-# Yr5-6: AUD 15M × 0.65 = $9.75M → $10M
 CAPEX = [-62_000_000, -10_000_000, -10_000_000,
          -30_000_000, -10_000_000, -10_000_000]
 
@@ -158,7 +150,7 @@ def write_narrative(ws):
     ws.row_dimensions[r].height = 22
     c = ws.cell(r, 1,
         "Isolated SPV / Project Co  ·  'Project Developer Co'  ×  'Technology Provider'  ·  "
-        "All figures in USD  ·  AUD/USD: 0.65  ·  June 2026")
+        "All figures in USD  ·  June 2026")
     c.font = fnt(11, italic=True, color=WHT)
     c.fill = fl(STEEL); c.alignment = aln("center","center")
     ws.merge_cells(f"A{r}:B{r}"); r += 2
@@ -171,9 +163,9 @@ def write_narrative(ws):
        "'Project Developer Co' — the sovereign AI data-centre operator building and operating the 72MW APAC footprint.\n"
        "'Technology Provider'  — the leading silicon vendor supplying 40,000 next-gen GPU clusters under a 6-year "
        "credit-support and revenue-sharing agreement.\n\n"
-       "CURRENCY NOTE: All figures are denominated in USD.  Cost-side inputs (power, maintenance, CapEx, debt "
-       "facility) have been converted from AUD source data using an AUD/USD rate of 0.65.  GPU billing revenue is "
-       "quoted directly in USD as GPU cloud pricing is USD-denominated in the global wholesale market."),
+       "CURRENCY NOTE: All figures are denominated in USD.  GPU billing revenue is quoted directly in USD as "
+       "GPU cloud pricing is USD-denominated in the global wholesale market.  All cost-side inputs (power, "
+       "maintenance, CapEx, debt facility) are expressed in USD."),
 
       ("DEAL STRUCTURE",
        "Capacity:         72MW incremental — part of a 132MW total portfolio target by mid-2027.\n"
@@ -182,20 +174,21 @@ def write_narrative(ws):
        "Financing:        Capital-light — Technology Provider funds hardware on credit in exchange for 25% of gross "
        "cloud billing revenue, eliminating the traditional ~$260M+ upfront GPU CapEx (in USD terms).\n"
        "Pre-Contracted:   77% of portfolio (~55.44MW) secured under multi-year take-or-pay enterprise agreements.\n"
-       "Project Debt:     $32M USD senior facility at 6.5% p.a. funds fit-out and liquid-cooling infrastructure."),
+       "Project Debt:     $43M USD senior facility ($20M Y1 + $7M Y2 + $16M Y4 re-draw) at 6.5% p.a.; "
+       "funds fit-out, commissioning, and mid-cycle GPU refresh."),
 
-      ("CURRENCY & FX INPUTS",
-       "AUD/USD Exchange Rate Applied:  0.65\n\n"
+      ("CURRENCY NOTE",
+       "All figures in this model are denominated in USD.\n\n"
        "REVENUE (USD-denominated at source):\n"
-       "  GPU billing rate: $0.80 USD/GPU-hour — this is the wholesale bulk enterprise rate quoted in USD.  "
+       "  GPU billing rate: $0.80 USD/GPU-hour — wholesale bulk enterprise rate quoted in USD.  "
        "The $2.15/kWh figure in the deal narrative is an effective yield metric, NOT the billing mechanism.\n\n"
-       "COSTS (converted from AUD at 0.65):\n"
-       "  Wholesale power: AUD $0.095/kWh → USD $0.065/kWh\n"
-       "  Year 1 maintenance: AUD $2.5M → USD $2.5M  (AUD $4.0M × 0.65 ≈ $2.5M)\n"
-       "  Year 2+ maintenance: AUD $8.5M → USD $5.5M  (AUD $8.5M × 0.65 ≈ $5.5M)\n"
-       "  Year 1 CapEx: AUD $95M → USD $62M  (AUD $95M × 0.65 ≈ $62M)\n"
-       "  Mid-cycle refresh CapEx: AUD $45M → USD $30M\n"
-       "  Project debt facility: AUD $50M → USD $32M"),
+       "COSTS (all USD):\n"
+       "  Wholesale power: $0.065 USD/kWh\n"
+       "  Year 1 maintenance: $2.5M USD\n"
+       "  Year 2+ maintenance: $5.5M USD p.a.\n"
+       "  Year 1 CapEx: $62M USD — data-centre shell, liquid-cooling, substations\n"
+       "  Mid-cycle refresh CapEx (Year 4): $30M USD\n"
+       "  Project debt facility: $43M USD total draws"),
 
       ("REVENUE BILLING MECHANISM",
        "BILLING BASIS: Per GPU-compute-hour (NOT per raw kWh of power capacity).\n\n"
@@ -256,15 +249,13 @@ def write_narrative(ws):
        "  Confirms project creates substantial value above the required return threshold."),
 
       ("KEY CAVEATS",
-       "1. FX RISK:  Revenue is USD; Australian operating costs are AUD.  FX exposure is a real risk. "
-       "   Add a natural hedge via USD-denominated power purchase agreements where possible.\n"
-       "2. POWER ESCALATION:  $0.065/kWh USD base rate (2026).  Add CPI escalation toggle for multi-year sensitivity.\n"
-       "3. GPU REFRESH:  Year 4 $30M USD assumes partial mid-cycle upgrade.  Earlier successor architecture "
+       "1. POWER ESCALATION:  $0.065/kWh USD base rate (2026).  Add CPI escalation toggle for multi-year sensitivity.\n"
+       "2. GPU REFRESH:  Year 4 $30M USD assumes partial mid-cycle upgrade.  Earlier successor architecture "
        "   launches would front-load this into Year 3.\n"
-       "4. REV-SHARE:  25% is a modelled estimate.  Bracket at 20/25/30% in sensitivity.\n"
-       "5. TAX:  30% Australian corporate rate at SPV level.  Transfer pricing on the USD-denominated "
-       "   revenue-share may trigger additional ATO scrutiny — engage local counsel.\n"
-       "6. WACC:  12.5% reflects single-asset concentration premium.  May compress if sovereign guarantees obtained."),
+       "3. REV-SHARE:  25% is a modelled estimate.  Bracket at 20/25/30% in sensitivity.\n"
+       "4. TAX:  30% corporate rate applied at SPV level.  Transfer pricing on the USD-denominated "
+       "   revenue-share may trigger scrutiny — engage local counsel.\n"
+       "5. WACC:  12.5% reflects single-asset concentration premium.  May compress if sovereign guarantees obtained."),
     ]
 
     for title, text in blocks:
@@ -326,11 +317,8 @@ def inp(ws, row, label, val, fmt, note):
     n.fill = fl("FAFAFA"); n.alignment = aln("left","center",wrap=True); n.border = bdr()
     return row + 1
 
-r2 = inp_hdr(ws2, r2, "BLOCK 0  ·  Currency & FX")
+r2 = inp_hdr(ws2, r2, "BLOCK 0  ·  Currency")
 r2 = inp(ws2,r2,"Currency",  "USD", "@",  "All monetary values in this model are denominated in US Dollars.")
-r2 = inp(ws2,r2,"AUD / USD Exchange Rate",  0.65, "0.00",
-    "Applied to convert AUD-denominated costs (power, maintenance, CapEx, debt facility) to USD.  "
-    "Revenue is quoted directly in USD (GPU cloud pricing is USD-denominated globally).")
 r2 += 1
 
 r2 = inp_hdr(ws2, r2, "BLOCK 1  ·  Infrastructure & Capacity")
@@ -356,17 +344,17 @@ r2 = inp(ws2,r2,"Year 4–6 Blended Utilisation (%)", 0.80, FMT_P,
     "Steady-state: contracted floor + maturing merchant pipeline adds ~3% uplift.")
 r2 += 1
 
-r2 = inp_hdr(ws2, r2, "BLOCK 3  ·  Cost Parameters  (USD, converted from AUD at 0.65)")
+r2 = inp_hdr(ws2, r2, "BLOCK 3  ·  Cost Parameters  (USD)")
 r2 = inp(ws2,r2,"Technology Provider Revenue Share (%)", 0.25, FMT_P,
     "% of Gross Revenue to chip vendor in lieu of ~$260M USD upfront GPU CapEx.  Bracket at 20–30%.")
 r2 = inp(ws2,r2,"Wholesale Power Rate (USD / kWh)", 0.065, "$#,##0.000",
-    "AUD $0.095/kWh × 0.65 = USD $0.065/kWh.  Applied to IT load = GPU × 1.8kW × utilisation / PUE(1.4).")
+    "$0.065 USD/kWh.  Applied to IT load = GPU × 1.8kW × utilisation / PUE(1.4).")
 r2 = inp(ws2,r2,"PUE — Power Usage Effectiveness", 1.4, "0.0",
     "1.4 standard for liquid-cooled hyperscale.  Total facility power ÷ PUE = IT load.")
 r2 = inp(ws2,r2,"Year 1 Facility Maintenance (USD)", 2_500_000, FMT_D,
-    "AUD $4.0M × 0.65 ≈ USD $2.5M.  Commissioning phase; ramps to $5.5M from Year 2.")
+    "$2.5M USD.  Commissioning phase; ramps to $5.5M from Year 2.")
 r2 = inp(ws2,r2,"Year 2+ Facility Maintenance (USD)", 5_500_000, FMT_D,
-    "AUD $8.5M × 0.65 ≈ USD $5.5M.  Full operations.")
+    "$5.5M USD p.a.  Full operations — engineers, cooling upkeep, monitoring, security.")
 r2 += 1
 
 r2 = inp_hdr(ws2, r2, "BLOCK 4  ·  Capital Structure  (USD)")
@@ -443,7 +431,7 @@ def prow(ws, row, label, vals, fmt=FMT_D, bold=False, fl_=None,
 r3 = 1
 r3 = band(ws3, r3, "PROJECT FINANCE MODEL  ·  72MW AI Factory SPV  ·  All figures USD")
 r3 = band(ws3, r3,
-    "Project Developer Co  ×  Technology Provider  ·  6-Year Framework  ·  AUD/USD: 0.65",
+    "Project Developer Co  ×  Technology Provider  ·  6-Year Framework  ·  USD",
     STEEL)
 r3 += 1; hdrs(ws3, r3); r3 += 1
 
@@ -465,14 +453,13 @@ prow(ws3,r3,"  (–) Technology Provider Revenue Share  [25% × Gross Revenue]",
 
 prow(ws3,r3,"  (–) Data Centre Power & Colocation  [GPU × 1.8kW × util × hrs × $0.065 USD/kWh / PUE 1.4]",
     PWR, fl_="FFF0F0", narr=(
-    "Power cost in USD = GPU_N × 1.8kW × utilisation × 8,760hrs × $0.065/kWh ÷ PUE(1.4).\n"
-    "AUD $0.095/kWh × 0.65 FX = USD $0.065/kWh.  Tracks utilisation — partially variable with GPU spin-up."
+    "Power cost = GPU_N × 1.8kW × utilisation × 8,760hrs × $0.065 USD/kWh ÷ PUE(1.4).\n"
+    "Partially variable with GPU spin-up — tracks utilisation."
 )); r3 += 1
 
 prow(ws3,r3,"  (–) Direct Facility & Maintenance Costs  (USD)",
     MAINT, fl_="FFF0F0", narr=(
-    "USD figures: AUD source × 0.65 FX rate.\n"
-    "Year 1: $2.5M (commissioning phase).  Year 2+: $5.5M p.a. (full operations — "
+    "Year 1: $2.5M USD (commissioning phase).  Year 2+: $5.5M USD p.a. (full operations — "
     "on-site engineers, cooling upkeep, monitoring, security, facilities management)."
 )); r3 += 1
 
@@ -484,8 +471,7 @@ prow(ws3,r3,"PROJECT EBITDA  (USD)",
 
 prow(ws3,r3,"  (–) Hardware & Fit-Out Depreciation  (D&A, USD)",
     DA, fl_=GRY, narr=(
-    "USD figures: AUD source × 0.65 FX.\n"
-    "  Fit-out $62M / 5yr = $12.4M/yr (Years 1–5)\n"
+    "  Fit-out $62M USD / 5yr = $12.4M/yr (Years 1–5)\n"
     "  Hardware tranche 1 / 4yr = $5.7M/yr (Years 1–4)\n"
     "  Hardware tranche 2 from Yr2 / 4yr = $14.4M/yr (Years 2–5)\n"
     "Non-cash — reversed in FCF derivation below."
@@ -517,8 +503,7 @@ prow(ws3,r3,"  (±) Change in Net Working Capital  (USD)",
 
 prow(ws3,r3,"  (–) Capital Expenditure  (USD)",
     CAPEX, fl_=COR, narr=(
-    "USD figures (AUD source × 0.65):\n"
-    "Year 1: –$62M  Fit-out, liquid-cooling manifolds, substations.\n"
+    "Year 1: –$62M USD  Fit-out, liquid-cooling manifolds, substations.\n"
     "Year 2–3: –$10M  Routine maintenance.\n"
     "Year 4: –$30M  Mid-cycle GPU refresh ($16M funded by debt re-draw).\n"
     "Year 5–6: –$10M  Tail maintenance."
@@ -800,10 +785,10 @@ notes = [
   ("Contract Floor Protection",
    "Scan the 77% utilisation row in Table B: even at the 10× distressed exit multiple, NPV remains "
    "strongly positive.  The take-or-pay structure is the primary risk mitigant for the equity sponsor."),
-  ("FX Sensitivity",
-   "Revenue is USD; power and maintenance costs are USD (converted from AUD).  If AUD strengthens "
-   "vs USD (e.g., rate moves from 0.65 to 0.70), cost-side increases by ~7.7% in USD terms while "
-   "revenue is unaffected — add an FX sensitivity column for completeness."),
+  ("Power Rate Sensitivity",
+   "Power cost is $0.065 USD/kWh base.  A 10% increase in the power rate reduces EBITDA by ~$3M p.a. "
+   "at steady-state utilisation — material but well within EBITDA coverage.  "
+   "Consider adding a power escalation toggle for multi-year stress testing."),
   ("TV Method Comparison",
    f"Perpetuity TV (${TV_PERP/1e6:.0f}M) is significantly below Exit Multiple TV (${TV_BASE/1e6:.0f}M base).  "
    "Use Exit Multiple as primary; Perpetuity is the stress-test floor for long-hold scenarios."),
@@ -885,7 +870,6 @@ for label, val, color in [
   ("TV — Exit Multiple Base    (13.5×, USD)",           f"USD ${TV_BASE/1e6:.0f}M", AMB),
   ("TV — Exit Multiple Upside  (16.0×, USD)",           f"USD ${TV_UP/1e6:.0f}M",   MINT),
   ("TV — Perpetuity Growth     (g=0.5%, USD)",          f"USD ${TV_PERP/1e6:.0f}M", LTB),
-  ("AUD / USD Exchange Rate Applied",                   "0.65",                      GRY),
 ]:
     ws5.row_dimensions[r5].height = 20
     a = ws5.cell(r5, 1, label); a.font = fnt(10, bold=True, color=NAVY)
@@ -904,7 +888,6 @@ print(f"Saved → {OUT}")
 print(f"\n{'='*60}")
 print("KEY MODEL OUTPUTS  (USD)")
 print(f"{'='*60}")
-print(f"  AUD/USD rate:          0.65")
 print(f"  GPU billing rate:      USD {GPU_P:.2f}/GPU-hr")
 print(f"  Gross Revenue  Yr1:    USD {GR[0]/1e6:.1f}M  (30% util)")
 print(f"  Gross Revenue  Yr2:    USD {GR[1]/1e6:.1f}M  (77% util)")

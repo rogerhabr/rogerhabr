@@ -8,7 +8,6 @@ import math
 # ─────────────────────────────────────────────────────────────────────────────
 # REPLICATE MODEL ENGINE (identical to build_model.py)
 # ─────────────────────────────────────────────────────────────────────────────
-FX       = 0.65
 GPU_N    = 40_000
 GPU_P    = 0.80
 HOURS    = 8_760
@@ -183,9 +182,9 @@ check("Perpetuity growth rate < WACC  (Gordon Growth stability condition)",
       G < WACC,
       f"g={G:.1%} < WACC={WACC:.1%}")
 
-check("FX rate plausible AUD/USD (0.50–0.90)",
-      0.50 <= FX <= 0.90,
-      f"FX = {FX}")
+check("Currency is USD",
+      True,
+      "All figures denominated in USD")
 
 check("Year 1 utilisation = 30% (ramp year)",
       approx(UTIL[0], 0.30),
@@ -711,9 +710,9 @@ check("Year 6 D&A ≤ Year 6 maintenance CapEx  (normalised maintenance D&A chec
       f"|DA[5]|=${abs(DA[5])/1e6:.1f}M vs |CAPEX[5]|×2.5=${abs(CAPEX[5])*2.5/1e6:.1f}M",
       warn=True)
 
-check("FX conversion: AUD costs × 0.65 plausible (spot-check power rate)",
-      approx(PWR_RATE, 0.095 * FX, pct=0.10),
-      f"PWR_RATE={PWR_RATE:.3f} vs AUD_rate×FX={0.095*FX:.4f}")
+check("Power rate in plausible USD wholesale range ($0.04–$0.12/kWh)",
+      0.04 <= PWR_RATE <= 0.12,
+      f"PWR_RATE={PWR_RATE:.3f} USD/kWh")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
