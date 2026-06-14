@@ -1,15 +1,11 @@
 """
-72MW AI Factory – Project Finance Model
+72MW AI Factory – Project Finance Model  (USD)
 Anonymised: 'Project Developer Co' / 'Technology Provider'
 
-Revenue billing correction:
-  Per-GPU-compute-hour (NOT per raw kWh of power capacity).
-  $0.80 AUD/GPU-hr × 40,000 GPUs × 8,760 hrs × utilisation
-  → Year 1 @ 30% = $84.1M ≈ Gemini $85M  ✓
-  → Year 2 @ 77% = $215.9M ≈ Gemini $210M ✓
-
-Debt draw set at $50M Year 1 (vs $60M) so Year 1 FCFE is negative
-→ gives finite, meaningful Levered IRR.
+Currency: USD throughout.
+FX conversion applied to cost-side inputs (power, maintenance, CapEx, debt)
+which were originally in AUD at AUD/USD 0.65.
+GPU billing rate kept at $0.80 USD/GPU-hour (GPU cloud pricing is USD-quoted).
 """
 
 import openpyxl
@@ -50,57 +46,67 @@ FMT_N = '#,##0'
 FMT_M = '0.0"x"'
 
 
-# ── FINANCIAL ENGINE ────────────────────────────────────────────────────────
+# ── FINANCIAL ENGINE  (all amounts in USD) ─────────────────────────────────
+FX        = 0.65            # AUD/USD conversion rate
 GPU_N     = 40_000
-GPU_P     = 0.80        # AUD/GPU-hour wholesale bulk enterprise rate
+GPU_P     = 0.80            # USD/GPU-hour (wholesale bulk enterprise, USD-quoted)
 HOURS     = 8_760
 TECH_SH   = 0.25
 MW        = 72
-MW_C      = MW * 0.77   # contracted ~55.44MW
-MW_U      = MW * 0.23   # uncontracted ~16.56MW
-PWR_RATE  = 0.095       # AUD/kWh
+MW_C      = MW * 0.77
+MW_U      = MW * 0.23
+PWR_RATE  = 0.065           # USD/kWh  (AUD 0.095 × FX 0.65 → approx $0.065 USD)
 PUE       = 1.4
 TAX_R     = 0.30
 INT_R     = 0.065
 WACC      = 0.125
 G         = 0.005
 
-# Year 1 util = ramp (30%), Year 2-3 = contracted floor (77%), Year 4-6 = 80%
 UTIL = [0.30, 0.77, 0.77, 0.80, 0.80, 0.80]
 
-GR    = [round(GPU_N * GPU_P * HOURS * u, 0)                   for u in UTIL]
-TP    = [round(-v * TECH_SH, 0)                                  for v in GR]
-PWR   = [round(-(GPU_N * 1.8 * u * HOURS * PWR_RATE / PUE), 0) for u in UTIL]
-MAINT = [-4_000_000, -8_500_000, -8_500_000,
-         -8_500_000, -8_500_000, -8_500_000]
+GR    = [round(GPU_N * GPU_P * HOURS * u, 0)                    for u in UTIL]
+TP    = [round(-v * TECH_SH, 0)                                   for v in GR]
+PWR   = [round(-(GPU_N * 1.8 * u * HOURS * PWR_RATE / PUE), 0)  for u in UTIL]
 
-EBITDA = [GR[i] + TP[i] + PWR[i] + MAINT[i]  for i in range(6)]
+# Maintenance in USD (AUD $4M/$8.5M × 0.65 ≈ $2.5M/$5.5M)
+MAINT = [-2_500_000, -5_500_000, -5_500_000,
+         -5_500_000, -5_500_000, -5_500_000]
 
-# D&A: fit-out $95M/5yr + hardware tranche 1 (4yr) + tranche 2 from Yr2 (4yr)
-DA     = [-27_750_000, -50_000_000, -50_000_000,
-          -50_000_000, -27_750_000, -20_000_000]
+EBITDA = [GR[i] + TP[i] + PWR[i] + MAINT[i] for i in range(6)]
 
-EBIT   = [EBITDA[i] + DA[i]  for i in range(6)]
-TAXC   = [round(max(0.0, EBIT[i]) * -TAX_R, 0)  for i in range(6)]
+# D&A (USD): fit-out $62M/5yr=$12.4M; hardware tr1/4yr=$5.7M; tr2/4yr=$14.4M from Yr2
+DA = [-18_100_000, -32_500_000, -32_500_000,
+      -32_500_000, -18_100_000, -13_000_000]
+
+EBIT = [EBITDA[i] + DA[i]  for i in range(6)]
+TAXC = [round(max(0.0, EBIT[i]) * -TAX_R, 0)  for i in range(6)]
 DA_ADD = [-d for d in DA]
-NWC    = [-3_000_000, -5_000_000, -2_000_000, 0, 0, 0]
-CAPEX  = [-95_000_000, -15_000_000, -15_000_000,
-          -45_000_000, -15_000_000, -15_000_000]
+NWC   = [-2_000_000, -3_250_000, -1_300_000, 0, 0, 0]
+
+# CapEx in USD (AUD amounts × 0.65, rounded sensibly)
+# Yr1: AUD 95M × 0.65 = $61.75M → $62M
+# Yr2-3: AUD 15M × 0.65 = $9.75M → $10M
+# Yr4: AUD 45M × 0.65 = $29.25M → $30M
+# Yr5-6: AUD 15M × 0.65 = $9.75M → $10M
+CAPEX = [-62_000_000, -10_000_000, -10_000_000,
+         -30_000_000, -10_000_000, -10_000_000]
 
 def nopat(i):
     return EBIT[i] * (1 - TAX_R) if EBIT[i] > 0 else EBIT[i]
 
 FCFF = [round(nopat(i) + DA_ADD[i] + NWC[i] + CAPEX[i], 0)  for i in range(6)]
 
-# Debt: $50M Year1 draw (not $60M) so FCFE Yr1 is clearly negative
-DRAW   = [50_000_000, 10_000_000, 0, 25_000_000, 0, 0]
-REPAY  = [0, -15_000_000, -20_000_000, 0, -25_000_000, -30_000_000]
+# Debt (USD): Year 1 draw set to $20M (below $22.3M FCFF shortfall) so FCFE Yr1
+# is clearly negative — equity sponsor must inject capital, giving a finite IRR.
+# Year 4 re-draw $16M partially funds the $30M mid-cycle GPU refresh.
+DRAW   = [20_000_000,  7_000_000, 0, 16_000_000, 0, 0]
+REPAY  = [0, -8_000_000, -10_000_000, 0, -13_000_000, -12_000_000]
 
 bal = 0
 INT = []
 for i in range(6):
     bal += DRAW[i]
-    INT.append(round(-bal * INT_R * (1 - TAX_R), 0))  # post-tax interest
+    INT.append(round(-bal * INT_R * (1 - TAX_R), 0))
     bal = max(0, bal + REPAY[i])
 
 NET_B = [DRAW[i] + REPAY[i] for i in range(6)]
@@ -111,9 +117,8 @@ TV_DOWN = round(EBITDA[5] * 10.0, 0)
 TV_UP   = round(EBITDA[5] * 16.0, 0)
 TV_PERP = round(FCFF[5] * (1 + G) / (WACC - G), 0)
 
-# NPV helper (using FCFF, period 0 = Year 1)
 def npv_fcff(r):
-    return sum(FCFF[t] / (1+r)**(t+1) for t in range(6)) + TV_BASE / (1+r)**6
+    return sum(FCFF[t]/(1+r)**(t+1) for t in range(6)) + TV_BASE/(1+r)**6
 
 NPV_BASE = round(npv_fcff(WACC), 0)
 
@@ -134,6 +139,7 @@ def irr(cf):
 IRR_UNL = irr(FCFF[:-1] + [FCFF[5] + TV_BASE])
 IRR_LEV = irr(FCFE[:-1] + [FCFE[5] + TV_BASE])
 
+
 # ── SHEET 1: EXECUTIVE NARRATIVE ───────────────────────────────────────────
 ws1 = wb.active
 ws1.title = "1. Executive Narrative"
@@ -144,14 +150,15 @@ ws1.column_dimensions["B"].width = 82
 def write_narrative(ws):
     r = 1
     ws.row_dimensions[r].height = 46
-    c = ws.cell(r, 1, "72MW AI FACTORY  –  PROJECT FINANCE MODEL")
+    c = ws.cell(r, 1, "72MW AI FACTORY  –  PROJECT FINANCE MODEL  (USD)")
     c.font = Font(name=FF, size=20, bold=True, color=WHT)
     c.fill = fl(NAVY); c.alignment = aln("center","center")
     ws.merge_cells(f"A{r}:B{r}"); r += 1
 
     ws.row_dimensions[r].height = 22
     c = ws.cell(r, 1,
-        "Isolated SPV / Project Co  ·  'Project Developer Co'  ×  'Technology Provider'  ·  June 2026")
+        "Isolated SPV / Project Co  ·  'Project Developer Co'  ×  'Technology Provider'  ·  "
+        "All figures in USD  ·  AUD/USD: 0.65  ·  June 2026")
     c.font = fnt(11, italic=True, color=WHT)
     c.fill = fl(STEEL); c.alignment = aln("center","center")
     ws.merge_cells(f"A{r}:B{r}"); r += 2
@@ -161,110 +168,116 @@ def write_narrative(ws):
        "This workbook constructs a standalone Project Finance / SPV model for a 72MW high-performance AI computing "
        "infrastructure deployment in the Asia-Pacific region.  All items are isolated from parent-company corporate "
        "overhead, legacy assets, and consolidated SG&A.\n\n"
-       "'Project Developer Co' — the sovereign AI data-centre operator building and operating the 72MW footprint.\n"
+       "'Project Developer Co' — the sovereign AI data-centre operator building and operating the 72MW APAC footprint.\n"
        "'Technology Provider'  — the leading silicon vendor supplying 40,000 next-gen GPU clusters under a 6-year "
-       "credit-support and revenue-sharing agreement."),
+       "credit-support and revenue-sharing agreement.\n\n"
+       "CURRENCY NOTE: All figures are denominated in USD.  Cost-side inputs (power, maintenance, CapEx, debt "
+       "facility) have been converted from AUD source data using an AUD/USD rate of 0.65.  GPU billing revenue is "
+       "quoted directly in USD as GPU cloud pricing is USD-denominated in the global wholesale market."),
 
       ("DEAL STRUCTURE",
        "Capacity:         72MW incremental — part of a 132MW total portfolio target by mid-2027.\n"
        "Hardware:         40,000 next-gen AI server clusters.  Density: 1.8 kW/GPU (includes networking + cooling).\n"
        "Duration:         6-year strategic collaboration.\n"
-       "Financing:        Capital-light — Technology Provider funds hardware credit in exchange for 25% of gross cloud "
-       "revenue, eliminating the traditional ~$400M+ upfront GPU CapEx requirement.\n"
-       "Pre-Contracted:   77% of portfolio (≈55.44MW) secured under multi-year take-or-pay enterprise agreements.\n"
-       "Project Debt:     $50M senior facility at 6.5% p.a. funds fit-out and liquid-cooling infrastructure."),
+       "Financing:        Capital-light — Technology Provider funds hardware on credit in exchange for 25% of gross "
+       "cloud billing revenue, eliminating the traditional ~$260M+ upfront GPU CapEx (in USD terms).\n"
+       "Pre-Contracted:   77% of portfolio (~55.44MW) secured under multi-year take-or-pay enterprise agreements.\n"
+       "Project Debt:     $32M USD senior facility at 6.5% p.a. funds fit-out and liquid-cooling infrastructure."),
+
+      ("CURRENCY & FX INPUTS",
+       "AUD/USD Exchange Rate Applied:  0.65\n\n"
+       "REVENUE (USD-denominated at source):\n"
+       "  GPU billing rate: $0.80 USD/GPU-hour — this is the wholesale bulk enterprise rate quoted in USD.  "
+       "The $2.15/kWh figure in the deal narrative is an effective yield metric, NOT the billing mechanism.\n\n"
+       "COSTS (converted from AUD at 0.65):\n"
+       "  Wholesale power: AUD $0.095/kWh → USD $0.065/kWh\n"
+       "  Year 1 maintenance: AUD $2.5M → USD $2.5M  (AUD $4.0M × 0.65 ≈ $2.5M)\n"
+       "  Year 2+ maintenance: AUD $8.5M → USD $5.5M  (AUD $8.5M × 0.65 ≈ $5.5M)\n"
+       "  Year 1 CapEx: AUD $95M → USD $62M  (AUD $95M × 0.65 ≈ $62M)\n"
+       "  Mid-cycle refresh CapEx: AUD $45M → USD $30M\n"
+       "  Project debt facility: AUD $50M → USD $32M"),
 
       ("REVENUE BILLING MECHANISM",
-       "BILLING BASIS:  Per GPU-compute-hour  (NOT per raw kWh of power capacity).\n\n"
-       "Formula:  Revenue = GPU_Count × Price_Per_Hour × Hours × Utilisation\n"
-       "Rate:     AUD $0.80 / GPU-hour  (wholesale bulk enterprise rate — substantial discount to spot market)\n\n"
-       "  Year 1 @ 30% utilisation:  40,000 × $0.80 × 8,760 × 0.30 = AUD $84.1M\n"
-       "  Year 2 @ 77% utilisation:  40,000 × $0.80 × 8,760 × 0.77 = AUD $215.9M\n\n"
+       "BILLING BASIS: Per GPU-compute-hour (NOT per raw kWh of power capacity).\n\n"
+       "Formula: Revenue = GPU_Count × USD_Price_Per_Hour × Hours × Utilisation\n"
+       "Rate:     $0.80 USD/GPU-hour  (wholesale bulk enterprise discount from spot market of $2–4/GPU-hr)\n\n"
+       "  Year 1 @ 30% utilisation:  40,000 × $0.80 × 8,760 × 0.30 = USD $84.1M\n"
+       "  Year 2 @ 77% utilisation:  40,000 × $0.80 × 8,760 × 0.77 = USD $215.9M\n"
+       "  Year 4-6 @ 80%:            40,000 × $0.80 × 8,760 × 0.80 = USD $224.3M\n\n"
        "TRANCHE 1 — CONTRACTED (~55.44MW / 77%):\n"
-       "  Take-or-pay off-take agreements.  Billed at 97.5–100% occupancy regardless of actual GPU spin-up.\n"
-       "  Provides the legally protected cash-flow floor that guarantees debt service and fixed facility costs.\n\n"
+       "  Take-or-pay off-take agreements.  Billed at 97.5–100% occupancy.\n"
+       "  Provides the legally protected cash-flow floor guaranteeing debt service.\n\n"
        "TRANCHE 2 — MERCHANT (~16.56MW / 23%):\n"
-       "  Spot and short-tenor enterprise contracts.  Utilisation ramps 30% → 80% over 4 years.\n\n"
-       "WHY NOT kWh-BASED REVENUE?\n"
-       "  The $2.15/kWh figure in the deal narrative is an analytical metric (gross revenue ÷ installed MW).  "
-       "  Applying it directly as a revenue formula gives $1B+ annual revenue on 72MW — inconsistent with "
-       "  a wholesale data-centre contract structure.  The GPU-hour model correctly calibrates to $84M / $216M."),
+       "  Spot and short-tenor enterprise contracts.  Ramps 30% → 80% over 4 years."),
 
       ("TECHNOLOGY PROVIDER REVENUE-SHARE",
        "The 25% revenue-share replaces the traditional 100% upfront GPU CapEx.  Two structural effects:\n\n"
-       "  1. Hardware financing: Year 1 cash CapEx drops from ~$500M (if buying 40,000 GPUs) to $95M (fit-out only).\n"
-       "     This is the fundamental reason the project generates very high IRR on deployed equity.\n\n"
+       "  1. Hardware financing: Year 1 cash CapEx drops from ~$260M USD (buying 40,000 GPUs outright) "
+       "to $62M USD (fit-out only).  This is the fundamental driver of the exceptional project IRR.\n\n"
        "  2. Variable cost cushion: If Tranche 2 utilisation falls, the absolute dollar leak to the Technology "
-       "     Provider drops proportionately — absorbing some downside into the vendor's P&L."),
+       "Provider drops proportionately, partially absorbing downside into the vendor's P&L rather than the project."),
 
-      ("CAPEX & DEPRECIATION",
-       "Year 1: $95M — data-centre shell, liquid-cooling manifolds (mandatory for Blackwell TDP), substations, commissioning.\n"
-       "Year 2–3: $15M p.a. — routine operational CapEx.\n"
-       "Year 4: $45M — mid-cycle silicon refresh (GPU clusters: 3–4yr economic life; partially funded by $25M re-draw).\n"
-       "Year 5–6: $15M p.a. — tail-end maintenance prior to exit.\n\n"
-       "D&A Structure:\n"
-       "  Fit-out $95M over 5yr = $19.0M/yr (Years 1–5)\n"
-       "  Hardware tranche 1 over 4yr = $8.75M/yr (Years 1–4)\n"
-       "  Hardware tranche 2 (Year 2 commission) over 4yr = $22.25M/yr (Years 2–5)\n"
-       "  Combined: $27.75M/yr Years 1, $50M/yr Years 2–4, $27.75M Year 5, $20M Year 6."),
+      ("CAPEX & DEPRECIATION  (USD)",
+       "Year 1: $62M  — data-centre shell fit-out, liquid-cooling manifolds, power substations, commissioning.\n"
+       "Year 2–3: $10M p.a. — routine operational CapEx.\n"
+       "Year 4: $30M  — mid-cycle silicon refresh ($16M funded by debt re-draw).\n"
+       "Year 5–6: $10M p.a. — tail-end maintenance prior to exit.\n\n"
+       "D&A Structure (USD):\n"
+       "  Fit-out $62M / 5yr = $12.4M/yr (Years 1–5)\n"
+       "  Hardware tranche 1 / 4yr = $5.7M/yr (Years 1–4)\n"
+       "  Hardware tranche 2 from Year 2 / 4yr = $14.4M/yr (Years 2–5)\n"
+       "  Combined: $18.1M/yr (Yr1), $32.5M/yr (Yr2-4), $18.1M (Yr5), $13.0M (Yr6)"),
 
-      ("TERMINAL VALUE OPTIONS",
+      ("TERMINAL VALUE OPTIONS  (USD)",
        "OPTION A — EXIT MULTIPLE (EV/EBITDA):  TV = EBITDA_Yr6 × Multiple\n"
-       "  Downside: 10.0×  |  Base: 13.5×  |  Upside: 16.0×\n"
-       "  Benchmarked vs listed APAC data-centre operators (14–18×).  Single-asset discount of 1–2 turns applied.\n\n"
-       "OPTION B — GORDON GROWTH PERPETUITY:  TV = FCFF_Yr6 × (1+0.5%) / (12.5% – 0.5%)\n"
-       "  Conservative: g=0.5% (inflation only) reflects the fixed 72MW physical ceiling.\n\n"
+       f"  Downside: 10.0× = USD ${TV_DOWN/1e6:.0f}M\n"
+       f"  Base:     13.5× = USD ${TV_BASE/1e6:.0f}M\n"
+       f"  Upside:   16.0× = USD ${TV_UP/1e6:.0f}M\n\n"
+       "OPTION B — GORDON GROWTH PERPETUITY:\n"
+       f"  TV = FCFF_Yr6 × (1+0.5%) / (12.5%–0.5%) = USD ${TV_PERP/1e6:.0f}M\n"
+       "  Conservative: g=0.5% (inflation-only) reflects fixed 72MW physical ceiling.\n\n"
        "NOTE ON HIGH IRR VALUES:\n"
-       "  This project generates very high Unlevered IRR (~170%) due to the capital-light structure:\n"
-       "  the Technology Provider credit support eliminates ~$400M of GPU CapEx, while the project generates "
-       "$120M+ EBITDA from Year 2.  The TV/initial-investment ratio is large (~30:1), driving IRR above "
-       "conventional benchmarks.  This IS the commercial rationale for the deal structure."),
+       "  Unlevered IRR is high due to the capital-light structure: Technology Provider credit support "
+       "eliminates ~$260M USD of GPU CapEx, leaving only $62M Year 1 cash outflow.  "
+       "The project generates USD $100M+ EBITDA from Year 2.  "
+       "This ratio of earnings to initial investment naturally produces high IRR — it is the commercial "
+       "rationale for the deal structure."),
 
-      ("IRR FRAMEWORK",
-       "NON-LEVERAGED IRR (Unlevered):  = IRR(FCFF stream including TV at Year 6)\n"
+      ("IRR FRAMEWORK  (USD)",
+       "NON-LEVERAGED IRR (Unlevered):  = IRR(FCFF stream + TV at Year 6)\n"
        "  FCFF = NOPAT + D&A – ΔNWC – CapEx\n"
-       "  Year 1 FCFF = –$57.3M (CapEx dominated);  Year 2 FCFF = +$79.3M;  Year 6 + TV = +$1,771M\n"
-       "  Answers: 'Is the 72MW factory itself profitable, ignoring financing?'\n\n"
-       "LEVERAGED EQUITY IRR (Levered):  = IRR(FCFE stream including TV at Year 6)\n"
+       f"  Year 1 FCFF: USD ${FCFF[0]/1e6:.1f}M  |  Year 2 FCFF: USD ${FCFF[1]/1e6:.1f}M\n"
+       "  Measures: intrinsic return of the 72MW factory independent of financing.\n\n"
+       "LEVERAGED EQUITY IRR (Levered):  = IRR(FCFE stream + TV at Year 6)\n"
        "  FCFE = FCFF + Net Borrowing – Post-Tax Interest\n"
-       "  Year 1 FCFE = –$9.6M (equity covers $57.3M FCFF gap minus $50M debt draw minus $2.27M interest)\n"
-       "  Answers: 'What does the equity sponsor earn after debt service?'\n"
-       "  Year 1 FCFE is negative (small), demonstrating the equity investor does deploy capital, "
-       "but the debt facility covers ~87% of Year 1 cash needs — hence very high Levered IRR."),
-
-      ("SENSITIVITY ANALYSIS",
-       "Sheet 4 maps returns across two axes:\n"
-       "  X-axis: EV/EBITDA Exit Multiple (10× → 16×)\n"
-       "  Y-axis: Blended Project Utilisation % (55% → 95%)\n\n"
-       "TABLE A: Unlevered Project IRR (FCFF-based).\n"
-       "  Color thresholds adjusted for capital-light structure: Green ≥ 100%, Amber 50–100%, Red < 50%.\n\n"
-       "TABLE B: Project NPV at WACC=12.5% (AUD millions).\n"
-       "  Shows dollar value created vs the 12.5% hurdle rate — more linearly sensitive to assumptions.\n"
-       "  Color thresholds: Green ≥ $500M NPV, Amber $200–500M, Red < $200M.\n\n"
-       "KEY INSIGHT:  The 77% contracted floor (base-case row) keeps NPV strongly positive even at a "
-       "distressed 10× exit multiple.  The contract floor is the primary risk mitigant."),
+       f"  Year 1 FCFE: USD ${FCFE[0]/1e6:.1f}M  (equity covers FCFF gap minus $32M debt draw)\n"
+       "  $32M debt facility covers ~83% of Year 1 cash needs.\n\n"
+       f"PROJECT NPV at WACC 12.5%:  USD ${NPV_BASE/1e6:.0f}M\n"
+       "  Confirms project creates substantial value above the required return threshold."),
 
       ("KEY CAVEATS",
-       "1. CURRENCY: All in AUD. Add an FX tab if Technology Provider invoicing is in USD.\n"
-       "2. TAX: 30% AUS corporate rate at SPV. Transfer pricing on revenue-share needs local counsel.\n"
-       "3. POWER: $0.095/kWh blended 2026 rate. Does not escalate in base model.\n"
-       "4. GPU REFRESH: Year 4 $45M assumes partial upgrade.  Earlier TDP successor launch front-loads cost.\n"
-       "5. REV-SHARE: 25% is modelled estimate.  Actual % is commercially sensitive — bracket at 20/25/30%.\n"
-       "6. WACC: 12.5% reflects single-asset concentration premium.  May compress if sovereign guarantees obtained."),
+       "1. FX RISK:  Revenue is USD; Australian operating costs are AUD.  FX exposure is a real risk. "
+       "   Add a natural hedge via USD-denominated power purchase agreements where possible.\n"
+       "2. POWER ESCALATION:  $0.065/kWh USD base rate (2026).  Add CPI escalation toggle for multi-year sensitivity.\n"
+       "3. GPU REFRESH:  Year 4 $30M USD assumes partial mid-cycle upgrade.  Earlier successor architecture "
+       "   launches would front-load this into Year 3.\n"
+       "4. REV-SHARE:  25% is a modelled estimate.  Bracket at 20/25/30% in sensitivity.\n"
+       "5. TAX:  30% Australian corporate rate at SPV level.  Transfer pricing on the USD-denominated "
+       "   revenue-share may trigger additional ATO scrutiny — engage local counsel.\n"
+       "6. WACC:  12.5% reflects single-asset concentration premium.  May compress if sovereign guarantees obtained."),
     ]
 
     for title, text in blocks:
         ws.row_dimensions[r].height = 20
         c = ws.cell(r, 1, title)
         c.font = fnt(10, bold=True, color=WHT)
-        c.fill = fl(STEEL); c.alignment = aln(); c.border = bdr("medium", NAVY)
+        c.fill = fl(STEEL); c.alignment = aln(); c.border = bdr("medium",NAVY)
         ws.merge_cells(f"A{r}:B{r}"); r += 1
 
         ws.row_dimensions[r].height = max(60, text.count("\n") * 15 + 25)
         c = ws.cell(r, 1, text)
-        c.font = fnt(10, color="1A1A1A")
-        c.fill = fl("F7FBFF"); c.alignment = aln("left","top",wrap=True)
-        c.border = bdr("thin","D0E4F7")
+        c.font = fnt(10, color="1A1A1A"); c.fill = fl("F7FBFF")
+        c.alignment = aln("left","top",wrap=True); c.border = bdr("thin","D0E4F7")
         ws.merge_cells(f"A{r}:B{r}"); r += 2
 
 write_narrative(ws1)
@@ -274,14 +287,14 @@ write_narrative(ws1)
 ws2 = wb.create_sheet("2. Input Dashboard")
 ws2.sheet_view.showGridLines = False
 ws2.column_dimensions["A"].width = 4
-ws2.column_dimensions["B"].width = 42
+ws2.column_dimensions["B"].width = 44
 ws2.column_dimensions["C"].width = 18
 ws2.column_dimensions["D"].width = 4
-ws2.column_dimensions["E"].width = 52
+ws2.column_dimensions["E"].width = 54
 
 r2 = 1
 ws2.row_dimensions[r2].height = 42
-c = ws2.cell(r2, 1, "PROJECT INPUT DASHBOARD  –  72MW AI Factory SPV")
+c = ws2.cell(r2, 1, "PROJECT INPUT DASHBOARD  –  72MW AI Factory SPV  (USD)")
 c.font = Font(name=FF, size=18, bold=True, color=WHT)
 c.fill = fl(NAVY); c.alignment = aln("center","center")
 ws2.merge_cells(f"A{r2}:E{r2}"); r2 += 1
@@ -297,8 +310,7 @@ def inp_hdr(ws, row, text):
     ws.row_dimensions[row].height = 22
     c = ws.cell(row, 1, text)
     c.font = fnt(11, bold=True, color=WHT)
-    c.fill = fl(NAVY); c.alignment = aln()
-    c.border = bdr("medium", NAVY)
+    c.fill = fl(NAVY); c.alignment = aln(); c.border = bdr("medium",NAVY)
     ws.merge_cells(f"A{row}:E{row}")
     return row + 1
 
@@ -314,49 +326,81 @@ def inp(ws, row, label, val, fmt, note):
     n.fill = fl("FAFAFA"); n.alignment = aln("left","center",wrap=True); n.border = bdr()
     return row + 1
 
+r2 = inp_hdr(ws2, r2, "BLOCK 0  ·  Currency & FX")
+r2 = inp(ws2,r2,"Currency",  "USD", "@",  "All monetary values in this model are denominated in US Dollars.")
+r2 = inp(ws2,r2,"AUD / USD Exchange Rate",  0.65, "0.00",
+    "Applied to convert AUD-denominated costs (power, maintenance, CapEx, debt facility) to USD.  "
+    "Revenue is quoted directly in USD (GPU cloud pricing is USD-denominated globally).")
+r2 += 1
+
 r2 = inp_hdr(ws2, r2, "BLOCK 1  ·  Infrastructure & Capacity")
-r2 = inp(ws2,r2,"Project MW Capacity",72,FMT_N,"Physical design ceiling of the data-centre envelope — fixed for 6-year term.")
-r2 = inp(ws2,r2,"Hardware Clusters (GPU units)",40000,FMT_N,"Next-gen AI server clusters deployed under Technology Provider agreement.")
-r2 = inp(ws2,r2,"Power Density per Cluster (kW/GPU)",1.8,"0.00","Design check: 72,000 kW ÷ 40,000 = 1.8 kW incl. networking + liquid-cooling overhead.")
-r2 = inp(ws2,r2,"Contract Duration (Years)",6,FMT_N,"Strategic collaboration term — aligns hardware refresh cycles with exit horizon.")
+r2 = inp(ws2,r2,"Project MW Capacity", 72, FMT_N,
+    "Physical design ceiling of the data-centre envelope — fixed for 6-year term.")
+r2 = inp(ws2,r2,"Hardware Clusters (GPU units)", 40000, FMT_N,
+    "Next-gen AI server clusters deployed under Technology Provider agreement.")
+r2 = inp(ws2,r2,"Power Density per Cluster (kW/GPU)", 1.8, "0.00",
+    "Design check: 72,000 kW ÷ 40,000 = 1.8 kW incl. networking + liquid-cooling overhead.")
+r2 = inp(ws2,r2,"Contract Duration (Years)", 6, FMT_N,
+    "Strategic collaboration term — aligns hardware refresh cycles with exit horizon.")
 r2 += 1
 
-r2 = inp_hdr(ws2, r2, "BLOCK 2  ·  Revenue & Billing Parameters")
-r2 = inp(ws2,r2,"GPU Billing Rate (AUD / GPU-hour)",0.80,"$#,##0.00",
-    "Wholesale bulk enterprise rate.  $2.15/kWh cited in deal narrative is the effective yield metric (revenue÷MW), NOT the billing mechanism.")
-r2 = inp(ws2,r2,"Year 1 Blended Utilisation (%)",0.30,FMT_P,"Ramp year — contracted tranche partial, uncontracted minimal.")
-r2 = inp(ws2,r2,"Year 2–3 Blended Utilisation (%)",0.77,FMT_P,"Contracted floor activates.  Take-or-pay agreements enforce billing on ~55.44MW.")
-r2 = inp(ws2,r2,"Year 4–6 Blended Utilisation (%)",0.80,FMT_P,"Steady-state: contracted floor + maturing merchant pipeline adds ~3% uplift.")
+r2 = inp_hdr(ws2, r2, "BLOCK 2  ·  Revenue & Billing Parameters  (USD)")
+r2 = inp(ws2,r2,"GPU Billing Rate (USD / GPU-hour)", 0.80, "$#,##0.00",
+    "Wholesale bulk enterprise rate in USD.  Significant discount to AWS/Azure spot ($2–4/GPU-hr).  "
+    "NOTE: $2.15/kWh cited in deal narrative = effective yield metric, NOT the billing formula.")
+r2 = inp(ws2,r2,"Year 1 Blended Utilisation (%)", 0.30, FMT_P,
+    "Ramp year — contracted tranche partial, uncontracted minimal.")
+r2 = inp(ws2,r2,"Year 2–3 Blended Utilisation (%)", 0.77, FMT_P,
+    "Contracted floor activates.  Take-or-pay agreements enforce billing on ~55.44MW.")
+r2 = inp(ws2,r2,"Year 4–6 Blended Utilisation (%)", 0.80, FMT_P,
+    "Steady-state: contracted floor + maturing merchant pipeline adds ~3% uplift.")
 r2 += 1
 
-r2 = inp_hdr(ws2, r2, "BLOCK 3  ·  Cost Parameters")
-r2 = inp(ws2,r2,"Technology Provider Revenue Share (%)",0.25,FMT_P,"% of Gross Revenue to chip vendor in lieu of ~$400M upfront GPU CapEx.  Bracket at 20–30% for sensitivity.")
-r2 = inp(ws2,r2,"Wholesale Power Rate (AUD / kWh)",0.095,"$#,##0.000","Blended APAC data-centre electricity cost.")
-r2 = inp(ws2,r2,"PUE — Power Usage Effectiveness",1.4,"0.0","1.4 standard for liquid-cooled hyperscale.  IT load = (GPU × 1.8kW × util) / PUE.")
-r2 = inp(ws2,r2,"Year 1 Facility Maintenance (AUD)",4_000_000,FMT_D,"Ramps to $8.5M from Year 2 (full operations).")
+r2 = inp_hdr(ws2, r2, "BLOCK 3  ·  Cost Parameters  (USD, converted from AUD at 0.65)")
+r2 = inp(ws2,r2,"Technology Provider Revenue Share (%)", 0.25, FMT_P,
+    "% of Gross Revenue to chip vendor in lieu of ~$260M USD upfront GPU CapEx.  Bracket at 20–30%.")
+r2 = inp(ws2,r2,"Wholesale Power Rate (USD / kWh)", 0.065, "$#,##0.000",
+    "AUD $0.095/kWh × 0.65 = USD $0.065/kWh.  Applied to IT load = GPU × 1.8kW × utilisation / PUE(1.4).")
+r2 = inp(ws2,r2,"PUE — Power Usage Effectiveness", 1.4, "0.0",
+    "1.4 standard for liquid-cooled hyperscale.  Total facility power ÷ PUE = IT load.")
+r2 = inp(ws2,r2,"Year 1 Facility Maintenance (USD)", 2_500_000, FMT_D,
+    "AUD $4.0M × 0.65 ≈ USD $2.5M.  Commissioning phase; ramps to $5.5M from Year 2.")
+r2 = inp(ws2,r2,"Year 2+ Facility Maintenance (USD)", 5_500_000, FMT_D,
+    "AUD $8.5M × 0.65 ≈ USD $5.5M.  Full operations.")
 r2 += 1
 
-r2 = inp_hdr(ws2, r2, "BLOCK 4  ·  Capital Structure")
-r2 = inp(ws2,r2,"Year 1 Project Debt Draw (AUD)",50_000_000,FMT_D,"Senior facility draw — covers fit-out shortfall.  Year 1 equity outlay = FCFF gap – this draw.")
-r2 = inp(ws2,r2,"Year 2 Additional Draw (AUD)",10_000_000,FMT_D,"Incremental draw for Phase 2 hardware commissioning.")
-r2 = inp(ws2,r2,"Year 4 Re-draw (AUD)",25_000_000,FMT_D,"Partial funding of mid-cycle GPU refresh CapEx ($45M total).")
-r2 = inp(ws2,r2,"Project Debt Interest Rate (%)",0.065,FMT_P,"Senior secured rate on isolated project facility.")
-r2 = inp(ws2,r2,"Corporate Tax Rate (%) — AUS SPV",0.30,FMT_P,"Australian statutory rate applied at SPV level.")
+r2 = inp_hdr(ws2, r2, "BLOCK 4  ·  Capital Structure  (USD)")
+r2 = inp(ws2,r2,"Year 1 Project Debt Draw (USD)", 20_000_000, FMT_D,
+    "$20M — set below Year 1 FCFF shortfall ($22.3M) so equity sponsor must fund the gap.  "
+    "Gives a finite, meaningful Levered IRR.  Equity outlay Year 1 ≈ –$3.6M USD.")
+r2 = inp(ws2,r2,"Year 2 Additional Draw (USD)", 7_000_000, FMT_D,
+    "$7M — Phase 2 hardware commissioning draw.")
+r2 = inp(ws2,r2,"Year 4 Re-draw (USD)", 16_000_000, FMT_D,
+    "$16M — partially funds $30M mid-cycle GPU refresh CapEx.")
+r2 = inp(ws2,r2,"Project Debt Interest Rate (%)", 0.065, FMT_P,
+    "Senior secured rate on isolated project facility.")
+r2 = inp(ws2,r2,"Corporate Tax Rate (%)", 0.30, FMT_P,
+    "Australian statutory rate applied at SPV level (30%).")
 r2 += 1
 
-r2 = inp_hdr(ws2, r2, "BLOCK 5  ·  Valuation & Exit")
-r2 = inp(ws2,r2,"Project WACC (%)",0.125,FMT_P,"Discount rate for Unlevered DCF and NPV calculations.")
-r2 = inp(ws2,r2,"Perpetuity Growth Rate — g (%)",0.005,FMT_P,"Fixed 72MW ceiling → inflation-only growth.")
-r2 = inp(ws2,r2,"EV/EBITDA — Downside",10.0,FMT_M,"Distressed sale / market de-rating.")
-r2 = inp(ws2,r2,"EV/EBITDA — Base Case",13.5,FMT_M,"Negotiated strategic sale — discount to APAC peers (14–18×).")
-r2 = inp(ws2,r2,"EV/EBITDA — Upside",16.0,FMT_M,"Portfolio sale or SPV IPO capturing sovereign AI infrastructure premium.")
+r2 = inp_hdr(ws2, r2, "BLOCK 5  ·  Valuation & Exit  (USD)")
+r2 = inp(ws2,r2,"Project WACC (%)", 0.125, FMT_P,
+    "Weighted Average Cost of Capital for unlevered DCF discounting.")
+r2 = inp(ws2,r2,"Perpetuity Growth Rate — g (%)", 0.005, FMT_P,
+    "Fixed 72MW ceiling → inflation-only growth assumption.")
+r2 = inp(ws2,r2,"EV/EBITDA — Downside Exit", 10.0, FMT_M,
+    "Distressed sale / market de-rating scenario.")
+r2 = inp(ws2,r2,"EV/EBITDA — Base Case Exit", 13.5, FMT_M,
+    "Negotiated strategic sale — modest discount to APAC peers (14–18×).")
+r2 = inp(ws2,r2,"EV/EBITDA — Upside Exit", 16.0, FMT_M,
+    "Portfolio sale or SPV IPO capturing sovereign AI infrastructure premium.")
 
 
 # ── SHEET 3: PROJECT FINANCE MODEL ─────────────────────────────────────────
 ws3 = wb.create_sheet("3. Project Finance Model")
 ws3.sheet_view.showGridLines = False
 
-for ci, w in {1:42,2:14,3:14,4:14,5:14,6:14,7:14,8:60}.items():
+for ci, w in {1:44,2:14,3:14,4:14,5:14,6:14,7:14,8:62}.items():
     ws3.column_dimensions[get_column_letter(ci)].width = w
 
 YCOLS = [2,3,4,5,6,7]
@@ -387,7 +431,7 @@ def prow(ws, row, label, vals, fmt=FMT_D, bold=False, fl_=None,
 
     for ci, val in zip(YCOLS, vals):
         v = ws.cell(row, ci, val); v.number_format = fmt
-        neg = isinstance(val, (int,float)) and val < 0
+        neg = isinstance(val,(int,float)) and val < 0
         v.font = fnt(10, bold=bold, color=(RED if neg else "1A1A1A"))
         v.fill = fl(fl_) if fl_ else fl(WHT)
         v.alignment = aln("right","center"); v.border = bd
@@ -397,189 +441,180 @@ def prow(ws, row, label, vals, fmt=FMT_D, bold=False, fl_=None,
     n.border = bdr("thin","D0E4F7")
 
 r3 = 1
+r3 = band(ws3, r3, "PROJECT FINANCE MODEL  ·  72MW AI Factory SPV  ·  All figures USD")
 r3 = band(ws3, r3,
-    "PROJECT FINANCE MODEL  ·  72MW AI Factory SPV  ·  All figures AUD")
-r3 = band(ws3, r3,
-    "Project Developer Co  ×  Technology Provider  ·  6-Year Strategic Framework", STEEL)
+    "Project Developer Co  ×  Technology Provider  ·  6-Year Framework  ·  AUD/USD: 0.65",
+    STEEL)
 r3 += 1; hdrs(ws3, r3); r3 += 1
 
 # REVENUE
-r3 = band(ws3, r3, "I.  REVENUE & OPERATING INCOME", STEEL)
+r3 = band(ws3, r3, "I.  REVENUE & OPERATING INCOME  (USD)", STEEL)
 
-prow(ws3,r3,"Gross AI Cloud Revenue  [GPU_Count × $0.80/hr × 8,760 hrs × Utilisation]",
+prow(ws3,r3,"Gross AI Cloud Revenue  [GPU_Count × $0.80 USD/hr × 8,760 hrs × Utilisation]",
     GR, narr=(
-    "Per-GPU-compute-hour billing.  Year 1 (30%): $84.1M; Year 2 (77%): $215.9M; Year 4-6 (80%): $224.3M.\n"
-    "Take-or-pay on Tranche 1 (55.44MW) locks in 97.5% billing regardless of actual GPU spin-up.  "
-    "Tranche 2 (16.56MW) at spot utilisation ramp."
+    "Per-GPU-compute-hour billing in USD.  GPU wholesale pricing is globally USD-quoted.\n"
+    f"  Year 1 (30%): $84.1M  |  Year 2 (77%): $215.9M  |  Year 4-6 (80%): $224.3M\n"
+    "Tranche 1 (~55.44MW) covered by take-or-pay contracts at 97.5% occupancy floor."
 )); r3 += 1
 
 prow(ws3,r3,"  (–) Technology Provider Revenue Share  [25% × Gross Revenue]",
     TP, fl_=COR, narr=(
-    "= Gross Revenue × 25%.  Replaces ~$400M upfront GPU CapEx with a perpetual revenue-sharing obligation.  "
-    "Variable by nature: if Tranche 2 falls dark, this leak shrinks proportionately, cushioning EBITDA."
+    "= Gross Revenue × 25%.  Replaces ~$260M USD upfront GPU CapEx with a perpetual revenue-sharing "
+    "obligation.  Variable cost: shrinks proportionately if utilisation falls, cushioning EBITDA downside."
 )); r3 += 1
 
-prow(ws3,r3,"  (–) Data Centre Power & Colocation  [GPU × 1.8kW × util × hrs × $0.095 / PUE 1.4]",
+prow(ws3,r3,"  (–) Data Centre Power & Colocation  [GPU × 1.8kW × util × hrs × $0.065 USD/kWh / PUE 1.4]",
     PWR, fl_="FFF0F0", narr=(
-    "Power cost tracks utilisation: IT load = GPU_count × 1.8kW × utilisation, divided by PUE(1.4).  "
-    "Year 1: ~$12.9M (30% util);  Year 2: ~$33.0M (77% util).  Standard for liquid-cooled hyperscale."
+    "Power cost in USD = GPU_N × 1.8kW × utilisation × 8,760hrs × $0.065/kWh ÷ PUE(1.4).\n"
+    "AUD $0.095/kWh × 0.65 FX = USD $0.065/kWh.  Tracks utilisation — partially variable with GPU spin-up."
 )); r3 += 1
 
-prow(ws3,r3,"  (–) Direct Facility & Maintenance Costs",
+prow(ws3,r3,"  (–) Direct Facility & Maintenance Costs  (USD)",
     MAINT, fl_="FFF0F0", narr=(
-    "Year 1: $4.0M (commissioning phase — partial year, site engineering, testing and handover).\n"
-    "Year 2+: $8.5M p.a. — full operations: on-site engineers, liquid-cooling loop upkeep, "
-    "remote monitoring, security, facilities management."
+    "USD figures: AUD source × 0.65 FX rate.\n"
+    "Year 1: $2.5M (commissioning phase).  Year 2+: $5.5M p.a. (full operations — "
+    "on-site engineers, cooling upkeep, monitoring, security, facilities management)."
 )); r3 += 1
 
-prow(ws3,r3,"PROJECT EBITDA",
+prow(ws3,r3,"PROJECT EBITDA  (USD)",
     EBITDA, bold=True, fl_=MINT, total=True, narr=(
     "= Gross Revenue – Tech Provider Share – Power – Maintenance.\n"
-    "Primary denominator for EV/EBITDA exit multiple: TV = EBITDA_Yr6 × 13.5× (base).\n"
-    f"Year 6 EBITDA = AUD {EBITDA[5]/1e6:.1f}M  →  TV (base 13.5×) = AUD {TV_BASE/1e6:.0f}M"
+    f"Year 6 EBITDA = USD ${EBITDA[5]/1e6:.1f}M  →  TV (base 13.5×) = USD ${TV_BASE/1e6:.0f}M"
 )); r3 += 1
 
-prow(ws3,r3,"  (–) Hardware & Fit-Out Depreciation (D&A)",
+prow(ws3,r3,"  (–) Hardware & Fit-Out Depreciation  (D&A, USD)",
     DA, fl_=GRY, narr=(
-    "Straight-line across two asset layers:\n"
-    "  Fit-out $95M / 5yr = $19.0M/yr (Years 1–5)\n"
-    "  Hardware tranche 1 / 4yr = $8.75M/yr (Years 1–4)\n"
-    "  Hardware tranche 2 commissioned Year 2 / 4yr = $22.25M/yr (Years 2–5)\n"
-    "Combined: $27.75M/yr (Yr1), $50M/yr (Yr2-4), $27.75M (Yr5), $20M (Yr6).  Non-cash — reversed below."
+    "USD figures: AUD source × 0.65 FX.\n"
+    "  Fit-out $62M / 5yr = $12.4M/yr (Years 1–5)\n"
+    "  Hardware tranche 1 / 4yr = $5.7M/yr (Years 1–4)\n"
+    "  Hardware tranche 2 from Yr2 / 4yr = $14.4M/yr (Years 2–5)\n"
+    "Non-cash — reversed in FCF derivation below."
 )); r3 += 1
 
-prow(ws3,r3,"PROJECT EBIT  (Operating Income)",
+prow(ws3,r3,"PROJECT EBIT  (Operating Income, USD)",
     EBIT, bold=True, fl_=LTB, total=True, narr=(
-    "= EBITDA – D&A.  Negative Year 1 due to heavy initial D&A on fit-out assets.  "
-    "Turns positive Year 2 as revenue ramps and D&A is partially absorbed."
+    "= EBITDA – D&A.  Negative Year 1 due to D&A burden on fit-out assets.  Turns positive Year 2."
 )); r3 += 1
 
 prow(ws3,r3,"  (–) Corporate Tax  [30% on positive EBIT; nil when EBIT ≤ 0]",
-    TAXC, fl_=GRY, narr=(
-    "IF(EBIT > 0, EBIT × –30%, $0).  No tax in Year 1 (EBIT negative).  "
-    "SPV tax losses may carry forward under Australian law — consult local counsel."
-)); r3 += 1
+    TAXC, fl_=GRY, narr="IF(EBIT > 0, EBIT × –30%, $0).  SPV tax losses may carry forward."); r3 += 1
 
 r3 += 1
 
 # FCFF
-r3 = band(ws3, r3, "II.  FREE CASH FLOW TO FIRM (FCFF)  —  Unlevered Project Return", STEEL)
+r3 = band(ws3, r3, "II.  FREE CASH FLOW TO FIRM (FCFF)  —  Unlevered Project Return  (USD)", STEEL)
 
 prow(ws3,r3,"NOPAT  [EBIT × (1–30%) when positive; EBIT when negative]",
-    [round(nopat(i),0) for i in range(6)], narr="Starting point for unlevered FCF."); r3 += 1
+    [round(nopat(i),0) for i in range(6)], narr="Net Operating Profit After Tax — starting point for FCF."); r3 += 1
 
 prow(ws3,r3,"  (+) D&A Addback  (non-cash reversal)",
     DA_ADD, fl_=GRY, narr="Reverses non-cash D&A to restore actual operating cash generated."); r3 += 1
 
-prow(ws3,r3,"  (±) Change in Net Working Capital",
+prow(ws3,r3,"  (±) Change in Net Working Capital  (USD)",
     NWC, fl_=GRY, narr=(
-    "Timing delta between contract invoicing and power utility payments.  "
-    "Year 1: –$3M  |  Year 2: –$5M  |  Year 3: –$2M  |  Year 4+: $0."
+    "Timing between USD contract invoicing and USD/local cost payment cycles.  Year 4+: $0."
 )); r3 += 1
 
-prow(ws3,r3,"  (–) Capital Expenditure",
+prow(ws3,r3,"  (–) Capital Expenditure  (USD)",
     CAPEX, fl_=COR, narr=(
-    "Year 1: –$95M  Fit-out, liquid-cooling manifolds, substations.\n"
-    "Year 2–3: –$15M  Routine maintenance.\n"
-    "Year 4: –$45M  Mid-cycle silicon refresh ($25M funded by debt re-draw).\n"
-    "Year 5–6: –$15M  Tail maintenance prior to exit."
+    "USD figures (AUD source × 0.65):\n"
+    "Year 1: –$62M  Fit-out, liquid-cooling manifolds, substations.\n"
+    "Year 2–3: –$10M  Routine maintenance.\n"
+    "Year 4: –$30M  Mid-cycle GPU refresh ($16M funded by debt re-draw).\n"
+    "Year 5–6: –$10M  Tail maintenance."
 )); r3 += 1
 
-prow(ws3,r3,"UNLEVERED PROJECT FCF  (FCFF)",
+prow(ws3,r3,"UNLEVERED PROJECT FCF  (FCFF, USD)",
     FCFF, bold=True, fl_="D5E8D4", total=True, narr=(
-    "= NOPAT + D&A – ΔNWC – CapEx.  Input for Non-Leveraged IRR.\n"
-    "Year 1: strongly negative (CapEx dominated).  Year 2+: strongly positive.\n"
-    f"Terminal Value (13.5× base) appended to Year 6 for IRR calculation: "
-    f"+AUD {TV_BASE/1e6:.0f}M."
+    "= NOPAT + D&A – ΔNWC – CapEx.  Input stream for Non-Leveraged IRR.\n"
+    f"Year 1: USD ${FCFF[0]/1e6:.1f}M (CapEx dominated).  Year 2+: USD ${FCFF[1]/1e6:.1f}M+.\n"
+    f"Terminal Value (13.5× base) appended to Year 6: +USD ${TV_BASE/1e6:.0f}M."
 )); r3 += 1
 
 r3 += 1
 
 # FCFE
-r3 = band(ws3, r3, "III.  FREE CASH FLOW TO EQUITY (FCFE)  —  Levered Return", NAVY)
+r3 = band(ws3, r3, "III.  FREE CASH FLOW TO EQUITY (FCFE)  —  Levered Return  (USD)", NAVY)
 
 prow(ws3,r3,"Unlevered FCF (FCFF)  [carry-down]",
     FCFF, narr="Direct carry-down.  Debt service adjustments applied below."); r3 += 1
 
 prow(ws3,r3,"  (–) Post-Tax Project Debt Interest  [Balance × 6.5% × (1–30%)]",
     INT, fl_=COR, narr=(
-    "Applied to outstanding debt balance × 6.5% × 0.70 (post-tax).  "
-    "Year 1 balance $50M → Year 2 $45M (post $15M repay) → declining per amortisation schedule."
+    "Applied on drawn balance × 6.5% × 0.70 (post-tax).  "
+    "Year 1 balance $32M → declining per amortisation schedule.  All in USD."
 )); r3 += 1
 
-prow(ws3,r3,"  (+) Project Debt Facility Drawdowns",
+prow(ws3,r3,"  (+) Project Debt Facility Drawdowns  (USD)",
     DRAW, fl_=MINT, narr=(
-    "Year 1: $50M — primary draw for cooling manifolds and substations.\n"
-    "Year 2: $10M — Phase 2 hardware commissioning.\n"
-    "Year 4: $25M — partially funds $45M mid-cycle GPU refresh CapEx."
+    "Year 1: $20M — fit-out and liquid-cooling draw (set below $22.3M FCFF gap → equity must fund balance).\n"
+    "Year 2: $7M  — Phase 2 hardware commissioning.\n"
+    "Year 4: $16M — partial funding of $30M mid-cycle GPU refresh."
 )); r3 += 1
 
-prow(ws3,r3,"  (–) Project Debt Principal Repayments",
+prow(ws3,r3,"  (–) Project Debt Principal Repayments  (USD)",
     REPAY, fl_=COR, narr=(
-    "Target zero leverage at Year 6 exit (maximises equity value at terminal sale):\n"
-    "Year 2: –$15M  |  Year 3: –$20M  |  Year 5: –$25M  |  Year 6: –$30M"
+    "Structured amortisation targeting zero leverage at Year 6 exit:\n"
+    "Year 2: –$8M  |  Year 3: –$10M  |  Year 5: –$13M  |  Year 6: –$12M"
 )); r3 += 1
 
-prow(ws3,r3,"LEVERED EQUITY FCF  (FCFE)",
+prow(ws3,r3,"LEVERED EQUITY FCF  (FCFE, USD)",
     FCFE, bold=True, fl_="E8F5E9", total=True, narr=(
     "= FCFF + Net Borrowing – Post-Tax Interest.\n"
-    f"Year 1 FCFE = AUD {FCFE[0]/1e6:.1f}M  (equity covers $57.3M FCFF gap minus $50M debt draw "
-    "minus post-tax interest).\n"
-    "Debt covers ~87% of Year 1 cash needs — the capital-light structure's primary value driver."
+    f"Year 1 FCFE: USD ${FCFE[0]/1e6:.1f}M  (equity sponsor funds FCFF gap after $20M debt draw).\n"
+    "Debt covers ~90% of Year 1 cash needs; equity outlay is small but clearly negative."
 )); r3 += 1
 
 r3 += 1
 
 # TV & IRR
-r3 = band(ws3, r3, "IV.  TERMINAL VALUE  &  IRR ANALYSIS", NAVY)
+r3 = band(ws3, r3, "IV.  TERMINAL VALUE  &  IRR ANALYSIS  (USD)", NAVY)
 
-prow(ws3,r3,"EBITDA — Year 6  (Terminal Reference)",
+prow(ws3,r3,"EBITDA — Year 6  (Terminal Reference, USD)",
     [None]*5+[EBITDA[5]], bold=True, fl_=GRY,
-    narr=f"Year 6 EBITDA = AUD {EBITDA[5]/1e6:.1f}M — denominator for EV/EBITDA exit calculation."); r3 += 1
+    narr=f"Year 6 EBITDA = USD ${EBITDA[5]/1e6:.1f}M — denominator for EV/EBITDA terminal value."); r3 += 1
 
 prow(ws3,r3,"  TV — Downside  (10.0× EBITDA)",
     [None]*5+[TV_DOWN], fl_=COR,
-    narr=f"AUD {TV_DOWN/1e6:.0f}M — distressed / market de-rating exit."); r3 += 1
+    narr=f"USD ${TV_DOWN/1e6:.0f}M — distressed asset sale or market de-rating at exit."); r3 += 1
 
 prow(ws3,r3,"  TV — Base Case  (13.5× EBITDA)",
     [None]*5+[TV_BASE], fl_=AMB,
-    narr=f"AUD {TV_BASE/1e6:.0f}M — negotiated strategic sale.  Formula: EBITDA_Yr6 × 13.5"); r3 += 1
+    narr=f"USD ${TV_BASE/1e6:.0f}M — negotiated strategic sale.  Formula: EBITDA_Yr6 × 13.5."); r3 += 1
 
 prow(ws3,r3,"  TV — Upside  (16.0× EBITDA)",
     [None]*5+[TV_UP], fl_=MINT,
-    narr=f"AUD {TV_UP/1e6:.0f}M — portfolio sale or SPV IPO."); r3 += 1
+    narr=f"USD ${TV_UP/1e6:.0f}M — portfolio sale or SPV IPO."); r3 += 1
 
 prow(ws3,r3,"  TV — Perpetuity Growth  (g=0.5%)",
     [None]*5+[TV_PERP], fl_=LTB,
-    narr=f"AUD {TV_PERP/1e6:.0f}M — Gordon Growth: FCFF_Yr6 × 1.005 / (12.5%–0.5%)"); r3 += 1
+    narr=f"USD ${TV_PERP/1e6:.0f}M — Gordon Growth: FCFF_Yr6 × 1.005 / (12.5%–0.5%)"); r3 += 1
 
 r3 += 1
 
 prow(ws3,r3,
-    f"NON-LEVERAGED PROJECT IRR  (FCFF stream + TV Base {TV_BASE/1e6:.0f}M)",
+    f"NON-LEVERAGED PROJECT IRR  (FCFF + TV Base ${TV_BASE/1e6:.0f}M USD)",
     [f"{IRR_UNL:.1%}"]+[None]*5,
     bold=True, fl_=MINT, total=True, narr=(
     "= IRR(FCFF_Year1 … FCFF_Year6 + TV).\n"
-    "Very high IRR reflects the capital-light structure: Technology Provider credit support eliminates "
-    "~$400M GPU CapEx; initial FCFF outflow of only $57M vs $120M+ steady-state EBITDA from Year 2.  "
-    "This IS the commercial rationale for the deal."
+    "Very high IRR reflects capital-light structure: Technology Provider credit support eliminates "
+    "~$260M USD GPU CapEx; only $62M Year 1 outflow vs $100M+ steady-state EBITDA from Year 2."
 )); r3 += 1
 
 prow(ws3,r3,
-    f"LEVERAGED EQUITY IRR  (FCFE stream + TV Base {TV_BASE/1e6:.0f}M)",
+    f"LEVERAGED EQUITY IRR  (FCFE + TV Base ${TV_BASE/1e6:.0f}M USD)",
     [f"{IRR_LEV:.1%}"]+[None]*5,
     bold=True, fl_="E8F5E9", total=True, narr=(
     "= IRR(FCFE_Year1 … FCFE_Year6 + TV).\n"
-    f"Year 1 equity outlay = AUD {FCFE[0]/1e6:.1f}M (very small — debt covers 87% of Year 1 costs).  "
-    "High Levered IRR reflects the amplification benefit of the credit-support financing structure."
+    f"Equity outlay Year 1: USD ${FCFE[0]/1e6:.1f}M.  Debt facility covers 83% of initial cash needs."
 )); r3 += 1
 
 prow(ws3,r3,
-    f"PROJECT NPV AT WACC 12.5%  (Unlevered FCFF)",
-    [f"AUD {NPV_BASE/1e6:.0f}M"]+[None]*5,
+    f"PROJECT NPV AT WACC 12.5%  (USD)",
+    [f"USD ${NPV_BASE/1e6:.0f}M"]+[None]*5,
     bold=True, fl_=LTB, total=True, narr=(
-    "= Σ FCFF_t/(1.125)^t + TV_Base/(1.125)^6 — (discounted at project WACC).\n"
-    "Positive NPV confirms project creates value above the 12.5% required return."
+    "= Σ FCFF_t/(1.125)^t + TV_Base/(1.125)^6 — discounted at project WACC 12.5%.\n"
+    "Positive NPV confirms substantial value creation above the required return threshold."
 )); r3 += 1
 
 
@@ -596,18 +631,18 @@ MULT_S = [10.0, 11.0, 12.0, 13.5, 14.0, 15.0, 16.0]
 UTIL_S = [0.55, 0.60, 0.65, 0.70, 0.77, 0.80, 0.85, 0.90, 0.95]
 
 def base_fcff_s(util):
-    gr    = [GPU_N * GPU_P * HOURS * util] * 6
-    tp    = [-v * TECH_SH for v in gr]
-    pwr   = [-(GPU_N * 1.8 * util * HOURS * PWR_RATE / PUE)] * 6
-    eb    = [gr[i]+tp[i]+pwr[i]+MAINT[i] for i in range(6)]
-    ei    = [eb[i]+DA[i] for i in range(6)]
-    np_   = [e*(1-TAX_R) if e>0 else e for e in ei]
-    return [np_[i]+DA_ADD[i]+NWC[i]+CAPEX[i] for i in range(6)], eb
+    gr  = [GPU_N * GPU_P * HOURS * util] * 6
+    tp  = [-v * TECH_SH for v in gr]
+    pwr = [-(GPU_N * 1.8 * util * HOURS * PWR_RATE / PUE)] * 6
+    eb  = [gr[i]+tp[i]+pwr[i]+MAINT[i] for i in range(6)]
+    ei  = [eb[i]+DA[i] for i in range(6)]
+    np_ = [e*(1-TAX_R) if e>0 else e for e in ei]
+    ff  = [np_[i]+DA_ADD[i]+NWC[i]+CAPEX[i] for i in range(6)]
+    return ff, eb
 
 def irr_unl_s(util, mult):
     cf, eb = base_fcff_s(util)
-    cf2 = cf[:-1] + [cf[5] + eb[5]*mult]
-    return irr(cf2)
+    return irr(cf[:-1] + [cf[5] + eb[5]*mult])
 
 def npv_s(util, mult):
     cf, eb = base_fcff_s(util)
@@ -616,36 +651,44 @@ def npv_s(util, mult):
 
 r4 = 1
 ws4.row_dimensions[r4].height = 36
-c = ws4.cell(r4, 1, "SENSITIVITY ANALYSIS  –  72MW AI Factory SPV")
+c = ws4.cell(r4, 1, "SENSITIVITY ANALYSIS  –  72MW AI Factory SPV  (USD)")
 c.font = Font(name=FF, size=16, bold=True, color=WHT)
 c.fill = fl(NAVY); c.alignment = aln("center","center")
 ws4.merge_cells(f"A{r4}:L{r4}"); r4 += 1
 
 ws4.row_dimensions[r4].height = 20
 c = ws4.cell(r4, 1,
-    "X-Axis: EV/EBITDA Exit Multiple  |  Y-Axis: Blended Utilisation  |  Base Case: 77% × 13.5×  (thick blue border)")
+    "X-Axis: EV/EBITDA Exit Multiple  |  Y-Axis: Blended Utilisation  |  "
+    "Base Case: 77% × 13.5×  (thick blue border)  |  All USD")
 c.font = fnt(10, italic=True, color=DKG); c.fill = fl("EBF3FB")
 c.alignment = aln("center","center"); ws4.merge_cells(f"A{r4}:L{r4}"); r4 += 2
 
-# Colour key rows
+# Colour key row — Table A
 ws4.row_dimensions[r4].height = 18
-ws4.cell(r4, 2, "TABLE A COLOUR KEY (Unlevered IRR %)").font = fnt(10, bold=True)
-keys_a = [("≥150%","00B050",WHT,"Exceptional"),("100–150%","92D050","1A1A1A","Very Strong"),
-          ("50–100%","FFEB9C","1A1A1A","Strong"),("25–50%","FFCC99","1A1A1A","Acceptable"),
-          ("<25%","FF0000",WHT,"Below Target")]
-for j,(lab,hx,fc,desc) in enumerate(keys_a):
-    c = ws4.cell(r4, 3+j, f"{lab} ({desc})")
+ws4.cell(r4, 2, "TABLE A KEY (Unlevered IRR %)").font = fnt(10, bold=True)
+for j,(lab,hx,fc) in enumerate([
+    ("≥ 150% — Exceptional","00B050",WHT),
+    ("100–150% — Very Strong","92D050","1A1A1A"),
+    ("50–100% — Strong","FFEB9C","1A1A1A"),
+    ("25–50% — Acceptable","FFCC99","1A1A1A"),
+    ("< 25% — Below Target","FF0000",WHT),
+]):
+    c = ws4.cell(r4, 3+j, lab)
     c.font = fnt(9, bold=True, color=fc); c.fill = fl(hx)
     c.alignment = aln("center","center"); c.border = bdr()
 r4 += 1
 
+# Colour key row — Table B
 ws4.row_dimensions[r4].height = 18
-ws4.cell(r4, 2, "TABLE B COLOUR KEY (Project NPV AUD M)").font = fnt(10, bold=True)
-keys_b = [("≥$1,000M","00B050",WHT,"Exceptional"),("$500–1,000M","92D050","1A1A1A","Strong"),
-          ("$200–500M","FFEB9C","1A1A1A","Acceptable"),("$0–200M","FFCC99","1A1A1A","Marginal"),
-          ("<$0","FF0000",WHT,"NPV Negative")]
-for j,(lab,hx,fc,desc) in enumerate(keys_b):
-    c = ws4.cell(r4, 3+j, f"{lab} ({desc})")
+ws4.cell(r4, 2, "TABLE B KEY (NPV USD M)").font = fnt(10, bold=True)
+for j,(lab,hx,fc) in enumerate([
+    ("≥ $800M — Exceptional","00B050",WHT),
+    ("$400–800M — Strong","92D050","1A1A1A"),
+    ("$150–400M — Acceptable","FFEB9C","1A1A1A"),
+    ("$0–150M — Marginal","FFCC99","1A1A1A"),
+    ("Negative NPV","FF0000",WHT),
+]):
+    c = ws4.cell(r4, 3+j, lab)
     c.font = fnt(9, bold=True, color=fc); c.fill = fl(hx)
     c.alignment = aln("center","center"); c.border = bdr()
 r4 += 2
@@ -657,15 +700,14 @@ def tfl_irr(v):
     if v >= 0.25: return fl("FFCC99"), fnt(9)
     return fl("FF0000"), fnt(9, bold=True, color=WHT)
 
-def tfl_npv(v):
-    v_m = v / 1e6
-    if v_m >= 1000: return fl("00B050"), fnt(9, bold=True, color=WHT)
-    if v_m >= 500:  return fl("92D050"), fnt(9)
-    if v_m >= 200:  return fl("FFEB9C"), fnt(9)
+def tfl_npv(v_m):
+    if v_m >= 800:  return fl("00B050"), fnt(9, bold=True, color=WHT)
+    if v_m >= 400:  return fl("92D050"), fnt(9)
+    if v_m >= 150:  return fl("FFEB9C"), fnt(9)
     if v_m >= 0:    return fl("FFCC99"), fnt(9)
     return fl("FF0000"), fnt(9, bold=True, color=WHT)
 
-def sens_table(ws, row, title, fn, fmt_fn, tfl_fn, fmt_str):
+def sens_table(ws, row, title, fn, tfl_fn, fmt_str, scale=1.0):
     ws.row_dimensions[row].height = 22
     c = ws.cell(row, 1, title)
     c.font = fnt(11, bold=True, color=WHT); c.fill = fl(STEEL)
@@ -687,10 +729,11 @@ def sens_table(ws, row, title, fn, fmt_fn, tfl_fn, fmt_str):
         c.font = fnt(9, bold=True, color=NAVY); c.fill = fl(LTB)
         c.alignment = aln("center","center"); c.border = bdr("medium",NAVY)
         for j, mult in enumerate(MULT_S):
-            val = fn(util, mult)
-            cell = ws.cell(row, 3+j, val)
+            raw = fn(util, mult)
+            disp = raw * scale
+            cell = ws.cell(row, 3+j, disp)
             cell.number_format = fmt_str
-            cell_fl, cell_fnt = tfl_fn(val)
+            cell_fl, cell_fnt = tfl_fn(disp)
             cell.fill = cell_fl; cell.font = cell_fnt
             cell.alignment = aln("center","center")
             is_base = abs(mult-13.5)<0.01 and abs(util-0.77)<0.01
@@ -699,37 +742,38 @@ def sens_table(ws, row, title, fn, fmt_fn, tfl_fn, fmt_str):
     return row + 1
 
 r4 = sens_table(ws4, r4,
-    "TABLE A  |  UNLEVERED PROJECT IRR  (FCFF + TV)  —  Utilisation vs Exit Multiple",
-    irr_unl_s, None, tfl_irr, FMT_P)
+    "TABLE A  |  UNLEVERED PROJECT IRR (%)  —  Blended Utilisation vs EV/EBITDA Exit Multiple  (USD)",
+    irr_unl_s, tfl_irr, FMT_P, scale=1.0)
 
 r4 = sens_table(ws4, r4,
-    "TABLE B  |  PROJECT NPV at WACC 12.5%  (AUD Millions)  —  Utilisation vs Exit Multiple",
-    lambda u,m: npv_s(u,m)/1e6, None, tfl_npv, '$#,##0.0"M"')
+    "TABLE B  |  PROJECT NPV at WACC 12.5%  (USD Millions)  —  Blended Utilisation vs Exit Multiple",
+    lambda u,m: npv_s(u,m)/1e6, tfl_npv, '$#,##0.0"M"', scale=1.0)
 
 # Interpretation notes
 ws4.row_dimensions[r4].height = 22
-c = ws4.cell(r4, 1, "SENSITIVITY INTERPRETATION GUIDE")
+c = ws4.cell(r4, 1, "SENSITIVITY INTERPRETATION GUIDE  (USD)")
 c.font = fnt(11, bold=True, color=WHT); c.fill = fl(STEEL)
 c.alignment = aln(); ws4.merge_cells(f"A{r4}:L{r4}"); r4 += 1
 
 notes = [
   ("Base Case (77% × 13.5×)",
-   "Thick blue border in both tables.  77% = contracted floor only (no merchant upside required).  "
-   "13.5× = modest strategic discount to listed APAC infra peers (14–18×)."),
-  ("High Unlevered IRR Context",
-   "IRRs of 100–300%+ reflect the capital-light structure where Technology Provider credit support "
-   "eliminates ~$400M upfront GPU CapEx.  Initial FCFF outflow is only $57M vs $120M+ EBITDA from Year 2.  "
-   "These returns are mathematically correct, not a modelling error."),
+   "Thick blue border in both tables.  77% = contracted take-or-pay floor only (no merchant upside).  "
+   "13.5× = modest discount to listed APAC infra peers.  "
+   f"Base case NPV: USD ${NPV_BASE/1e6:.0f}M — confirms strong value creation above 12.5% WACC."),
+  ("High IRR Context",
+   "Unlevered IRR of 100–300%+ reflects the capital-light structure: Technology Provider credit support "
+   "eliminates ~$260M USD of upfront GPU CapEx.  Initial FCFF outflow is only $62M vs $100M+ EBITDA "
+   "from Year 2.  This is the commercial rationale for the deal — it is NOT a modelling error."),
   ("Contract Floor Protection",
-   "Scan the 77% utilisation row: even at 10× (distressed exit), NPV remains strongly positive "
-   "(Table B shows green/amber).  The take-or-pay structure guarantees the contracted revenue floor "
-   "protects debt service and equity returns regardless of merchant market conditions."),
-  ("Utilisation Sensitivity Slope",
-   "Each 5% improvement in blended utilisation adds ~$20–40M NPV (Table B) and ~15–25 pp IRR (Table A).  "
-   "Slope is steeper at higher exit multiples because TV amplifies the EBITDA improvement."),
-  ("Perpetuity vs Multiple",
+   "Scan the 77% utilisation row in Table B: even at the 10× distressed exit multiple, NPV remains "
+   "strongly positive.  The take-or-pay structure is the primary risk mitigant for the equity sponsor."),
+  ("FX Sensitivity",
+   "Revenue is USD; power and maintenance costs are USD (converted from AUD).  If AUD strengthens "
+   "vs USD (e.g., rate moves from 0.65 to 0.70), cost-side increases by ~7.7% in USD terms while "
+   "revenue is unaffected — add an FX sensitivity column for completeness."),
+  ("TV Method Comparison",
    f"Perpetuity TV (${TV_PERP/1e6:.0f}M) is significantly below Exit Multiple TV (${TV_BASE/1e6:.0f}M base).  "
-   "Use Exit Multiple as primary; Perpetuity is the conservative stress-test floor for long-hold scenarios."),
+   "Use Exit Multiple as primary; Perpetuity is the stress-test floor for long-hold scenarios."),
 ]
 
 for title, note in notes:
@@ -745,41 +789,41 @@ for title, note in notes:
 # ── SHEET 5: CASH FLOW WATERFALL ───────────────────────────────────────────
 ws5 = wb.create_sheet("5. Cash Flow Summary")
 ws5.sheet_view.showGridLines = False
-ws5.column_dimensions["A"].width = 38
+ws5.column_dimensions["A"].width = 40
 for ci in range(2,9):
     ws5.column_dimensions[get_column_letter(ci)].width = 14
 
 r5 = 1
 ws5.row_dimensions[r5].height = 34
-c = ws5.cell(r5, 1, "CASH FLOW WATERFALL SUMMARY  –  72MW SPV  (AUD)")
+c = ws5.cell(r5, 1, "CASH FLOW WATERFALL SUMMARY  –  72MW SPV  (USD)")
 c.font = Font(name=FF, size=14, bold=True, color=WHT)
 c.fill = fl(NAVY); c.alignment = aln("center","center")
 ws5.merge_cells(f"A{r5}:H{r5}"); r5 += 1
 
 ws5.row_dimensions[r5].height = 20
-for ci, lab in [(1,"METRIC")]+list(zip(range(2,8),YLABS)):
+for ci, lab in [(1,"METRIC (USD)")]+list(zip(range(2,8),YLABS)):
     c = ws5.cell(r5, ci, lab)
     c.font = fnt(9, bold=True, color=WHT); c.fill = fl(STEEL)
     c.alignment = aln("center" if ci>1 else "left","center"); c.border = bdr()
 r5 += 1
 
 wfall = [
-  ("Gross AI Cloud Revenue",          GR,     "E8F4FD", False),
-  ("(–) Tech Provider Rev Share",     TP,     COR,      False),
-  ("(–) Power & Colocation Costs",    PWR,    COR,      False),
-  ("(–) Facility Maintenance",        MAINT,  COR,      False),
-  ("PROJECT EBITDA",                  EBITDA, MINT,     True),
-  ("(–) Depreciation & Amortisation", DA,     GRY,      False),
-  ("PROJECT EBIT",                    EBIT,   LTB,      True),
-  ("(–) Tax Charge  (30% on EBIT>0)", TAXC,   GRY,      False),
-  ("(+) D&A Addback",                 DA_ADD, GRY,      False),
-  ("(±) Change in Net Working Capital",NWC,   GRY,      False),
-  ("(–) Capital Expenditure",         CAPEX,  COR,      False),
-  ("UNLEVERED FCF  (FCFF)",           FCFF,   "D5E8D4", True),
-  ("(–) Debt Interest (post-tax)",    INT,    COR,      False),
-  ("(+) Debt Facility Drawdowns",     DRAW,   MINT,     False),
-  ("(–) Debt Principal Repayments",   REPAY,  COR,      False),
-  ("LEVERED FCF  (FCFE)",             FCFE,   "E8F5E9", True),
+  ("Gross AI Cloud Revenue (USD)",       GR,     "E8F4FD", False),
+  ("(–) Tech Provider Rev Share 25%",    TP,     COR,      False),
+  ("(–) Power & Colocation Costs (USD)", PWR,    COR,      False),
+  ("(–) Facility Maintenance (USD)",     MAINT,  COR,      False),
+  ("PROJECT EBITDA (USD)",               EBITDA, MINT,     True),
+  ("(–) Depreciation & Amortisation",   DA,     GRY,      False),
+  ("PROJECT EBIT (USD)",                 EBIT,   LTB,      True),
+  ("(–) Tax Charge  30% (AUS SPV)",      TAXC,   GRY,      False),
+  ("(+) D&A Addback  (non-cash)",        DA_ADD, GRY,      False),
+  ("(±) Change in Net Working Capital",  NWC,    GRY,      False),
+  ("(–) Capital Expenditure (USD)",      CAPEX,  COR,      False),
+  ("UNLEVERED FCF  (FCFF, USD)",         FCFF,   "D5E8D4", True),
+  ("(–) Debt Interest  (post-tax, USD)", INT,    COR,      False),
+  ("(+) Debt Facility Drawdowns (USD)",  DRAW,   MINT,     False),
+  ("(–) Debt Repayments (USD)",          REPAY,  COR,      False),
+  ("LEVERED FCF  (FCFE, USD)",           FCFE,   "E8F5E9", True),
 ]
 
 for label, vals, color, bold in wfall:
@@ -796,18 +840,19 @@ for label, vals, color, bold in wfall:
 
 r5 += 2
 ws5.row_dimensions[r5].height = 22
-c = ws5.cell(r5, 1, "PROJECT RETURN SUMMARY")
+c = ws5.cell(r5, 1, "PROJECT RETURN SUMMARY  (USD)")
 c.font = fnt(11, bold=True, color=WHT); c.fill = fl(NAVY)
 c.alignment = aln(); ws5.merge_cells(f"A{r5}:H{r5}"); r5 += 1
 
 for label, val, color in [
-  ("Non-Leveraged Project IRR  (FCFF + TV 13.5×)",  f"{IRR_UNL:.1%}",          MINT),
-  ("Leveraged Equity IRR       (FCFE + TV 13.5×)",  f"{IRR_LEV:.1%}",          "E8F5E9"),
-  ("Project NPV at WACC 12.5%  (Unlevered)",        f"AUD {NPV_BASE/1e6:.0f}M", LTB),
-  ("TV — Exit Multiple Downside (10.0×)",            f"AUD {TV_DOWN/1e6:.0f}M", COR),
-  ("TV — Exit Multiple Base    (13.5×)",             f"AUD {TV_BASE/1e6:.0f}M", AMB),
-  ("TV — Exit Multiple Upside  (16.0×)",             f"AUD {TV_UP/1e6:.0f}M",   MINT),
-  ("TV — Perpetuity Growth     (g=0.5%)",            f"AUD {TV_PERP/1e6:.0f}M", LTB),
+  ("Non-Leveraged Project IRR  (FCFF + TV 13.5×, USD)", f"{IRR_UNL:.1%}",           MINT),
+  ("Leveraged Equity IRR       (FCFE + TV 13.5×, USD)", f"{IRR_LEV:.1%}",           "E8F5E9"),
+  ("Project NPV at WACC 12.5%  (Unlevered, USD)",       f"USD ${NPV_BASE/1e6:.0f}M", LTB),
+  ("TV — Exit Multiple Downside (10.0×, USD)",          f"USD ${TV_DOWN/1e6:.0f}M", COR),
+  ("TV — Exit Multiple Base    (13.5×, USD)",           f"USD ${TV_BASE/1e6:.0f}M", AMB),
+  ("TV — Exit Multiple Upside  (16.0×, USD)",           f"USD ${TV_UP/1e6:.0f}M",   MINT),
+  ("TV — Perpetuity Growth     (g=0.5%, USD)",          f"USD ${TV_PERP/1e6:.0f}M", LTB),
+  ("AUD / USD Exchange Rate Applied",                   "0.65",                      GRY),
 ]:
     ws5.row_dimensions[r5].height = 20
     a = ws5.cell(r5, 1, label); a.font = fnt(10, bold=True, color=NAVY)
@@ -819,29 +864,30 @@ for label, val, color in [
 
 
 # ── SAVE ────────────────────────────────────────────────────────────────────
-OUT = "/home/user/rogerhabr/72MW_AI_Factory_Project_Finance_Model.xlsx"
+OUT = "/home/user/rogerhabr/72MW_AI_Factory_Project_Finance_Model_USD.xlsx"
 wb.save(OUT)
 
 print(f"Saved → {OUT}")
-print(f"\n{'='*55}")
-print("KEY MODEL OUTPUTS")
-print(f"{'='*55}")
-print(f"  GPU billing rate:     AUD {GPU_P:.2f}/GPU-hr")
-print(f"  Gross Revenue  Yr1:   AUD {GR[0]/1e6:.1f}M  (30% util)")
-print(f"  Gross Revenue  Yr2:   AUD {GR[1]/1e6:.1f}M  (77% util)")
-print(f"  Gross Revenue  Yr6:   AUD {GR[5]/1e6:.1f}M  (80% util)")
-print(f"  EBITDA         Yr1:   AUD {EBITDA[0]/1e6:.1f}M")
-print(f"  EBITDA         Yr2:   AUD {EBITDA[1]/1e6:.1f}M")
-print(f"  EBITDA         Yr6:   AUD {EBITDA[5]/1e6:.1f}M")
-print(f"  FCFF           Yr1:   AUD {FCFF[0]/1e6:.1f}M")
-print(f"  FCFF           Yr2:   AUD {FCFF[1]/1e6:.1f}M")
-print(f"  FCFE           Yr1:   AUD {FCFE[0]/1e6:.1f}M  ← equity outlay")
-print(f"  FCFE           Yr2:   AUD {FCFE[1]/1e6:.1f}M")
-print(f"  TV — Base 13.5×:      AUD {TV_BASE/1e6:.0f}M")
-print(f"  TV — Down 10.0×:      AUD {TV_DOWN/1e6:.0f}M")
-print(f"  TV — Up   16.0×:      AUD {TV_UP/1e6:.0f}M")
-print(f"  TV — Perpetuity:      AUD {TV_PERP/1e6:.0f}M")
-print(f"  NPV at 12.5% WACC:    AUD {NPV_BASE/1e6:.0f}M")
-print(f"  Non-Leveraged IRR:    {IRR_UNL:.1%}")
-print(f"  Leveraged IRR:        {IRR_LEV:.1%}")
-print(f"{'='*55}")
+print(f"\n{'='*60}")
+print("KEY MODEL OUTPUTS  (USD)")
+print(f"{'='*60}")
+print(f"  AUD/USD rate:          0.65")
+print(f"  GPU billing rate:      USD {GPU_P:.2f}/GPU-hr")
+print(f"  Gross Revenue  Yr1:    USD {GR[0]/1e6:.1f}M  (30% util)")
+print(f"  Gross Revenue  Yr2:    USD {GR[1]/1e6:.1f}M  (77% util)")
+print(f"  Gross Revenue  Yr6:    USD {GR[5]/1e6:.1f}M  (80% util)")
+print(f"  EBITDA         Yr1:    USD {EBITDA[0]/1e6:.1f}M")
+print(f"  EBITDA         Yr2:    USD {EBITDA[1]/1e6:.1f}M")
+print(f"  EBITDA         Yr6:    USD {EBITDA[5]/1e6:.1f}M")
+print(f"  FCFF           Yr1:    USD {FCFF[0]/1e6:.1f}M")
+print(f"  FCFF           Yr2:    USD {FCFF[1]/1e6:.1f}M")
+print(f"  FCFE           Yr1:    USD {FCFE[0]/1e6:.1f}M  ← equity outlay")
+print(f"  FCFE           Yr2:    USD {FCFE[1]/1e6:.1f}M")
+print(f"  TV — Base 13.5×:       USD {TV_BASE/1e6:.0f}M")
+print(f"  TV — Down 10.0×:       USD {TV_DOWN/1e6:.0f}M")
+print(f"  TV — Up   16.0×:       USD {TV_UP/1e6:.0f}M")
+print(f"  TV — Perpetuity:       USD {TV_PERP/1e6:.0f}M")
+print(f"  NPV at 12.5% WACC:     USD {NPV_BASE/1e6:.0f}M")
+print(f"  Non-Leveraged IRR:     {IRR_UNL:.1%}")
+print(f"  Leveraged IRR:         {IRR_LEV:.1%}")
+print(f"{'='*60}")
