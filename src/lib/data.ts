@@ -421,3 +421,118 @@ export const CHART_COLORS = [
   '#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#f59e0b',
   '#06b6d4', '#ec4899', '#84cc16', '#6366f1', '#14b8a6',
 ];
+
+// ─── Token Pricing Trends ─────────────────────────────────────────────────────
+
+export interface ModelPricing {
+  date: string;
+  quarter: string;
+  model: string;
+  provider: string;
+  inputPerM: number;
+  outputPerM: number;
+  contextK: number;
+  color: string;
+}
+
+export const modelPricing: ModelPricing[] = [
+  { date: '2023-03', quarter: 'Q1 2023', model: 'GPT-4 (8K)',       provider: 'OpenAI',    inputPerM: 30.00, outputPerM: 60.00, contextK: 8,   color: '#10b981' },
+  { date: '2023-06', quarter: 'Q2 2023', model: 'Claude 2',          provider: 'Anthropic', inputPerM: 8.00,  outputPerM: 24.00, contextK: 100, color: '#f97316' },
+  { date: '2023-11', quarter: 'Q4 2023', model: 'GPT-4 Turbo',       provider: 'OpenAI',    inputPerM: 10.00, outputPerM: 30.00, contextK: 128, color: '#10b981' },
+  { date: '2024-03', quarter: 'Q1 2024', model: 'Claude 3 Opus',     provider: 'Anthropic', inputPerM: 15.00, outputPerM: 75.00, contextK: 200, color: '#f97316' },
+  { date: '2024-03', quarter: 'Q1 2024', model: 'Claude 3 Sonnet',   provider: 'Anthropic', inputPerM: 3.00,  outputPerM: 15.00, contextK: 200, color: '#fb923c' },
+  { date: '2024-03', quarter: 'Q1 2024', model: 'Claude 3 Haiku',    provider: 'Anthropic', inputPerM: 0.25,  outputPerM: 1.25,  contextK: 200, color: '#fdba74' },
+  { date: '2024-05', quarter: 'Q2 2024', model: 'GPT-4o',            provider: 'OpenAI',    inputPerM: 5.00,  outputPerM: 15.00, contextK: 128, color: '#34d399' },
+  { date: '2024-06', quarter: 'Q2 2024', model: 'Claude 3.5 Sonnet', provider: 'Anthropic', inputPerM: 3.00,  outputPerM: 15.00, contextK: 200, color: '#f97316' },
+  { date: '2024-07', quarter: 'Q3 2024', model: 'GPT-4o mini',       provider: 'OpenAI',    inputPerM: 0.15,  outputPerM: 0.60,  contextK: 128, color: '#6ee7b7' },
+  { date: '2024-08', quarter: 'Q3 2024', model: 'Gemini 1.5 Flash',  provider: 'Google',    inputPerM: 0.075, outputPerM: 0.30,  contextK: 1000,color: '#4285f4' },
+  { date: '2024-10', quarter: 'Q4 2024', model: 'Gemini 1.5 Pro',    provider: 'Google',    inputPerM: 1.25,  outputPerM: 5.00,  contextK: 1000,color: '#60a5fa' },
+  { date: '2024-12', quarter: 'Q4 2024', model: 'DeepSeek V3',       provider: 'DeepSeek',  inputPerM: 0.27,  outputPerM: 1.10,  contextK: 128, color: '#3b82f6' },
+  { date: '2025-01', quarter: 'Q1 2025', model: 'DeepSeek R1',       provider: 'DeepSeek',  inputPerM: 0.55,  outputPerM: 2.19,  contextK: 128, color: '#2563eb' },
+  { date: '2025-02', quarter: 'Q1 2025', model: 'Claude Sonnet 4',   provider: 'Anthropic', inputPerM: 3.00,  outputPerM: 15.00, contextK: 200, color: '#f97316' },
+  { date: '2025-02', quarter: 'Q1 2025', model: 'GPT-5',             provider: 'OpenAI',    inputPerM: 10.00, outputPerM: 40.00, contextK: 200, color: '#10b981' },
+  { date: '2025-03', quarter: 'Q1 2025', model: 'Gemini 2.5 Pro',    provider: 'Google',    inputPerM: 1.25,  outputPerM: 10.00, contextK: 1000,color: '#4285f4' },
+  { date: '2025-03', quarter: 'Q1 2025', model: 'Gemini 2.5 Flash',  provider: 'Google',    inputPerM: 0.075, outputPerM: 0.30,  contextK: 1000,color: '#93c5fd' },
+  { date: '2025-04', quarter: 'Q2 2025', model: 'Llama 4 Maverick',  provider: 'Meta',      inputPerM: 0.19,  outputPerM: 0.49,  contextK: 256, color: '#0668e1' },
+  { date: '2025-06', quarter: 'Q2 2025', model: 'Claude Opus 4.8',   provider: 'Anthropic', inputPerM: 15.00, outputPerM: 75.00, contextK: 200, color: '#ea580c' },
+  { date: '2025-06', quarter: 'Q2 2025', model: 'Claude Haiku 4.5',  provider: 'Anthropic', inputPerM: 0.80,  outputPerM: 4.00,  contextK: 200, color: '#fbbf24' },
+  { date: '2025-07', quarter: 'Q3 2025', model: 'Kimi K2',           provider: 'Moonshot',  inputPerM: 0.15,  outputPerM: 0.60,  contextK: 128, color: '#8b5cf6' },
+  { date: '2025-07', quarter: 'Q3 2025', model: 'DeepSeek R2',       provider: 'DeepSeek',  inputPerM: 0.80,  outputPerM: 3.20,  contextK: 128, color: '#1d4ed8' },
+];
+
+// Price compression over time (median + frontier prices)
+export const priceCompression = [
+  { quarter: 'Q1 2023', medianInput: 19.0, frontierInput: 30.0, cheapestInput: 8.0,   tokensPerDollar: 12000   },
+  { quarter: 'Q2 2023', medianInput: 11.0, frontierInput: 30.0, cheapestInput: 4.0,   tokensPerDollar: 25000   },
+  { quarter: 'Q4 2023', medianInput: 9.0,  frontierInput: 10.0, cheapestInput: 1.0,   tokensPerDollar: 100000  },
+  { quarter: 'Q1 2024', medianInput: 5.5,  frontierInput: 15.0, cheapestInput: 0.25,  tokensPerDollar: 400000  },
+  { quarter: 'Q2 2024', medianInput: 3.0,  frontierInput: 5.0,  cheapestInput: 0.075, tokensPerDollar: 1500000 },
+  { quarter: 'Q3 2024', medianInput: 1.5,  frontierInput: 5.0,  cheapestInput: 0.075, tokensPerDollar: 2000000 },
+  { quarter: 'Q4 2024', medianInput: 0.8,  frontierInput: 3.0,  cheapestInput: 0.05,  tokensPerDollar: 5000000 },
+  { quarter: 'Q1 2025', medianInput: 1.2,  frontierInput: 15.0, cheapestInput: 0.075, tokensPerDollar: 3000000 },
+  { quarter: 'Q2 2025', medianInput: 0.9,  frontierInput: 15.0, cheapestInput: 0.075, tokensPerDollar: 4000000 },
+  { quarter: 'Q3 2025', medianInput: 0.5,  frontierInput: 10.0, cheapestInput: 0.05,  tokensPerDollar: 6000000 },
+  { quarter: 'Q4 2025E',medianInput: 0.35, frontierInput: 8.0,  cheapestInput: 0.03,  tokensPerDollar: 10000000 },
+  { quarter: 'Q2 2026E',medianInput: 0.20, frontierInput: 5.0,  cheapestInput: 0.02,  tokensPerDollar: 18000000 },
+];
+
+// ─── Foundation Lab Financials ────────────────────────────────────────────────
+
+export const labRevenue = [
+  { year: '2022', OpenAI: 0.4,  Anthropic: 0.05, xAI: 0,    DeepSeek: 0.01 },
+  { year: '2023', OpenAI: 1.6,  Anthropic: 0.15, xAI: 0.04, DeepSeek: 0.03 },
+  { year: '2024', OpenAI: 3.7,  Anthropic: 1.0,  xAI: 0.30, DeepSeek: 0.10 },
+  { year: '2025E',OpenAI: 11.6, Anthropic: 3.0,  xAI: 1.00, DeepSeek: 0.30 },
+  { year: '2026E',OpenAI: 28.0, Anthropic: 8.0,  xAI: 3.00, DeepSeek: 1.00 },
+  { year: '2027E',OpenAI: 58.0, Anthropic: 18.0, xAI: 7.00, DeepSeek: 3.00 },
+];
+
+export const labOperatingIncome = [
+  { year: '2022', OpenAI: -0.50, Anthropic: -0.30, xAI:  0.00, DeepSeek: -0.05 },
+  { year: '2023', OpenAI: -0.54, Anthropic: -0.40, xAI: -0.20, DeepSeek: -0.10 },
+  { year: '2024', OpenAI: -1.50, Anthropic: -0.60, xAI: -0.50, DeepSeek: -0.30 },
+  { year: '2025E',OpenAI: -2.00, Anthropic: -0.50, xAI: -0.80, DeepSeek: -0.40 },
+  { year: '2026E',OpenAI:  2.00, Anthropic:  0.50, xAI: -0.50, DeepSeek: -0.20 },
+  { year: '2027E',OpenAI: 12.00, Anthropic:  3.50, xAI:  0.50, DeepSeek:  0.20 },
+];
+
+export interface FundingRound {
+  company: string;
+  date: string;
+  amountB: number;
+  valuationB: number;
+  type: string;
+  leadInvestors: string;
+  color: string;
+}
+
+export const fundingRounds: FundingRound[] = [
+  { company: 'OpenAI',    date: '2023-01', amountB: 10.0, valuationB:  29, type: 'Strategic',  leadInvestors: 'Microsoft',              color: '#10b981' },
+  { company: 'Anthropic', date: '2023-05', amountB:  1.3, valuationB:   5, type: 'Series C',   leadInvestors: 'Google',                 color: '#f97316' },
+  { company: 'Anthropic', date: '2023-09', amountB:  1.3, valuationB:   5, type: 'Strategic',  leadInvestors: 'Amazon',                 color: '#f97316' },
+  { company: 'xAI',       date: '2023-11', amountB:  0.5, valuationB:  20, type: 'Series A',   leadInvestors: 'Sequoia, a16z',          color: '#8b5cf6' },
+  { company: 'Anthropic', date: '2024-03', amountB:  2.8, valuationB:  18, type: 'Series D',   leadInvestors: 'Amazon (primary)',        color: '#f97316' },
+  { company: 'xAI',       date: '2024-05', amountB:  6.0, valuationB:  24, type: 'Series B',   leadInvestors: 'Fidelity, Prince Alwaleed',color: '#8b5cf6' },
+  { company: 'OpenAI',    date: '2024-10', amountB:  6.6, valuationB: 157, type: 'Series X',   leadInvestors: 'Thrive, SoftBank, Tiger', color: '#10b981' },
+  { company: 'Anthropic', date: '2025-03', amountB:  3.5, valuationB:  61, type: 'Series E',   leadInvestors: 'Amazon, Google',          color: '#f97316' },
+  { company: 'xAI',       date: '2025-02', amountB: 20.0, valuationB: 120, type: 'Series C',   leadInvestors: 'Andreessen, Sequoia',     color: '#8b5cf6' },
+  { company: 'OpenAI',    date: '2025-03', amountB: 40.0, valuationB: 340, type: 'Strategic',  leadInvestors: 'SoftBank (lead)',         color: '#10b981' },
+];
+
+export const labValuations = [
+  { year: '2022', OpenAI: 29,  Anthropic: 4.5, xAI: 0,   DeepSeek: 0   },
+  { year: '2023', OpenAI: 90,  Anthropic: 5,   xAI: 20,  DeepSeek: 0   },
+  { year: '2024', OpenAI: 157, Anthropic: 18,  xAI: 24,  DeepSeek: 0   },
+  { year: '2025E',OpenAI: 340, Anthropic: 62,  xAI: 120, DeepSeek: 30  },
+  { year: '2026E',OpenAI: 600, Anthropic: 140, xAI: 200, DeepSeek: 80  },
+  { year: '2027E',OpenAI: 1100,Anthropic: 300, xAI: 380, DeepSeek: 200 },
+];
+
+export const labHeadcount = [
+  { year: '2022', OpenAI: 375,  Anthropic: 150,  xAI: 0,    DeepSeek: 50   },
+  { year: '2023', OpenAI: 770,  Anthropic: 380,  xAI: 200,  DeepSeek: 150  },
+  { year: '2024', OpenAI: 1800, Anthropic: 900,  xAI: 800,  DeepSeek: 300  },
+  { year: '2025E',OpenAI: 3500, Anthropic: 1600, xAI: 2000, DeepSeek: 500  },
+  { year: '2026E',OpenAI: 6000, Anthropic: 2800, xAI: 3500, DeepSeek: 900  },
+];
+
