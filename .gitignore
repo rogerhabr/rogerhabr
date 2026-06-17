@@ -3,6 +3,9 @@
 out/
 node_modules/
 
+# Claude Code
+.claude/
+
 # Misc
 .DS_Store
 *.pem
