@@ -212,7 +212,7 @@ export default function SaasDisruption() {
           </div>
           <div className="px-4 py-3 border-t border-sa-border">
             <p className="text-xs text-sa-muted">
-              <span className="text-white font-medium">ClusterMAX Rating:</span> SemiAnalysis proprietary rating system measuring quality of AI compute procurement, cluster architecture, and model efficiency for token-consuming companies. A+ = best-in-class infrastructure.
+              <span className="text-white font-medium">ClusterMAX Rating:</span> Proprietary rating measuring quality of AI compute procurement, cluster architecture, and model efficiency for token-consuming companies. A+ = best-in-class infrastructure.
             </p>
           </div>
         </div>

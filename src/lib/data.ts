@@ -1,5 +1,5 @@
 // All data is illustrative and based on publicly available estimates and analyst forecasts.
-// Sources: Company filings, earnings calls, SemiAnalysis research, Omdia, IDC, analyst reports.
+// Sources: Company filings, earnings calls, Omdia, IDC, and public analyst reports.
 
 export const YEARS = ['2022', '2023', '2024', '2025E', '2026E', '2027E', '2028E'];
 export const FORECAST_YEARS = ['2025E', '2026E', '2027E', '2028E'];

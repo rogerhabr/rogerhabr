@@ -21,11 +21,11 @@ export default function Sidebar({ sections, active, onSelect }: SidebarProps) {
       <div className="p-5 border-b border-sa-border">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded bg-sa-accent flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-            SA
+            AI
           </div>
           <div>
-            <div className="text-white font-bold text-sm leading-tight">SemiAnalysis</div>
-            <div className="text-sa-muted text-xs leading-tight">AI Tokenomics Model</div>
+            <div className="text-white font-bold text-sm leading-tight">Tokenomics</div>
+            <div className="text-sa-muted text-xs leading-tight">AI Value Chain Model</div>
           </div>
         </div>
       </div>
@@ -65,8 +65,8 @@ export default function Sidebar({ sections, active, onSelect }: SidebarProps) {
 
       <div className="p-4 border-t border-sa-border">
         <div className="text-xs text-sa-muted text-center leading-relaxed">
-          © 2026 SemiAnalysis LLC<br />
-          <span className="text-sa-accent">semianalysis.com</span>
+          © 2026 AI Tokenomics Model<br />
+          <span className="text-sa-accent">All figures illustrative</span>
         </div>
       </div>
     </aside>

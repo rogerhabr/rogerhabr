@@ -16,7 +16,7 @@ export default function Header({ activeSection, sections }: HeaderProps) {
             {current?.label}
           </h2>
           <p className="text-xs text-sa-muted mt-0.5">
-            SemiAnalysis AI Tokenomics Model • All figures illustrative
+            AI Tokenomics Model • All figures illustrative
           </p>
         </div>
       </div>

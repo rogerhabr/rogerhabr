@@ -147,7 +147,7 @@ export default function RevenueProfit() {
 
       <div className="mt-4 p-4 rounded-xl bg-sa-surface border border-sa-border">
         <p className="text-xs text-sa-muted leading-relaxed">
-          <span className="text-white font-semibold">Revenue definitions:</span> Rental revenue = GPU/compute cloud revenue from hyperscalers (Azure AI, GCP, AWS Bedrock) and neoclouds. Model/API revenue = inference API revenue charged per token by foundation labs (OpenAI, Anthropic, Google, DeepSeek). Software revenue = subscription + usage-based revenue from token-consuming applications (Cursor, Harvey, Perplexity, enterprise AI tools). Margins exclude CapEx amortization for rental; include training CapEx amortization for model revenue. All figures SemiAnalysis estimates; subject to revision.
+          <span className="text-white font-semibold">Revenue definitions:</span> Rental revenue = GPU/compute cloud revenue from hyperscalers (Azure AI, GCP, AWS Bedrock) and neoclouds. Model/API revenue = inference API revenue charged per token by foundation labs (OpenAI, Anthropic, Google, DeepSeek). Software revenue = subscription + usage-based revenue from token-consuming applications (Cursor, Harvey, Perplexity, enterprise AI tools). Margins exclude CapEx amortization for rental; include training CapEx amortization for model revenue. All figures are estimates; subject to revision.
         </p>
       </div>
     </div>
