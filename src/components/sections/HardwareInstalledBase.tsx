@@ -8,6 +8,7 @@ import {
 import SectionHeader from '../SectionHeader';
 import MetricCard from '../MetricCard';
 import DataTable from '../DataTable';
+import ParamControl from '../ParamControl';
 import {
   hyperscalerGPUs, hyperscalerColors, foundationLabGPUs, foundationLabColors,
   neocloudGPUs, neocloudColors, hyperscalerCapex,
@@ -37,8 +38,16 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 
 type View = 'hyperscalers' | 'foundationLabs' | 'neoclouds' | 'capex';
 
+const TIME_RANGE_YEARS: Record<string, string[]> = {
+  '2022-2025': ['2022', '2023', '2024', '2025E'],
+  '2022-2026': ['2022', '2023', '2024', '2025E', '2026E'],
+  '2022-2028': ['2022', '2023', '2024', '2025E', '2026E', '2027E', '2028E'],
+};
+
 export default function HardwareInstalledBase() {
   const [view, setView] = useState<View>('hyperscalers');
+  const [timeRange, setTimeRange] = useState('2022-2028');
+  const [gpuMetric, setGpuMetric] = useState('units');
 
   const tabs: { id: View; label: string }[] = [
     { id: 'hyperscalers', label: 'Hyperscalers' },
@@ -54,7 +63,10 @@ export default function HardwareInstalledBase() {
     capex: { data: hyperscalerCapex, colors: hyperscalerColors, keys: ['Microsoft', 'Google', 'Amazon', 'Meta', 'Oracle'], unit: '$B CapEx' },
   };
 
-  const { data, colors, keys, unit } = dataMap[view];
+  const { data: rawData, colors, keys, unit } = dataMap[view];
+
+  const allowedYears = TIME_RANGE_YEARS[timeRange] || TIME_RANGE_YEARS['2022-2028'];
+  const data = rawData.filter(row => allowedYears.includes(row.year));
 
   // Build table data
   const tableData = data.map(row => {
@@ -86,7 +98,7 @@ export default function HardwareInstalledBase() {
         <MetricCard label="Total AI CapEx 2025E" value="$355B" change="+64% YoY" changePositive subtext="Big 5 hyperscalers combined" icon="💵" />
       </div>
 
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4 flex-wrap">
         {tabs.map(tab => (
           <button
             key={tab.id}
@@ -100,6 +112,29 @@ export default function HardwareInstalledBase() {
             {tab.label}
           </button>
         ))}
+      </div>
+
+      <div className="flex items-center gap-4 mb-4 flex-wrap">
+        <ParamControl
+          label="Time Range"
+          value={timeRange}
+          options={[
+            { value: '2022-2025', label: '2022–2025' },
+            { value: '2022-2026', label: '2022–2026E' },
+            { value: '2022-2028', label: '2022–2028E (full)' },
+          ]}
+          onChange={setTimeRange}
+        />
+        <ParamControl
+          label="GPU Metric"
+          value={gpuMetric}
+          options={[
+            { value: 'units', label: 'H100-eq Units' },
+            { value: 'tflops', label: 'Raw TFLOPS' },
+            { value: 'dollar-year', label: '$/Unit-Year' },
+          ]}
+          onChange={setGpuMetric}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">

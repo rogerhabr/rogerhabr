@@ -7,6 +7,7 @@ import {
 import MetricCard from '../MetricCard';
 import SectionHeader from '../SectionHeader';
 import { tokenEconomyTAM, revenueByModel, roicByEntity } from '@/lib/data';
+import { useGlobalParams } from '@/contexts/ParamsContext';
 
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number; color: string }[]; label?: string }) => {
   if (!active || !payload?.length) return null;
@@ -25,13 +26,41 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 };
 
 export default function Overview() {
-  const tamTotal = tokenEconomyTAM.map(d => ({
-    year: d.year,
-    'Consumer Apps': d.consumerApps,
-    'API Inference': d.apiInference,
-    'Token Software': d.tokenSoftware,
-    total: d.consumerApps + d.apiInference + d.tokenSoftware,
-  }));
+  const { mult, params } = useGlobalParams();
+
+  const tamTotal = tokenEconomyTAM.map(d => {
+    const isForecast = d.year !== '2024';
+    const factor = isForecast ? mult.tam : 1;
+    return {
+      year: d.year,
+      'Consumer Apps': +(d.consumerApps * factor).toFixed(1),
+      'API Inference': +(d.apiInference * factor).toFixed(1),
+      'Token Software': +(d.tokenSoftware * factor).toFixed(1),
+      total: +((d.consumerApps + d.apiInference + d.tokenSoftware) * factor).toFixed(1),
+    };
+  });
+
+  const adjustedRevenue = revenueByModel.map(d => {
+    const isForecast = d.year !== '2024';
+    const factor = isForecast ? mult.revenue : 1;
+    return {
+      year: d.year,
+      rental: +(d.rental * factor).toFixed(1),
+      model: +(d.model * factor).toFixed(1),
+      software: +(d.software * factor).toFixed(1),
+    };
+  });
+
+  const adjustedROIC = roicByEntity.map(d => {
+    const isForecast = d.year !== '2024';
+    const offset = isForecast ? mult.roicOffset : 0;
+    return {
+      year: d.year,
+      hyperscalers: Math.max(-50, d.hyperscalers + offset),
+      foundationLabs: Math.max(-50, d.foundationLabs + offset),
+      neoclouds: Math.max(-50, d.neoclouds + offset),
+    };
+  });
 
   const latest2025 = tamTotal.find(d => d.year === '2025E')!;
   const latest2027 = tamTotal.find(d => d.year === '2027E')!;
@@ -45,10 +74,20 @@ export default function Overview() {
         badge="2026 Edition"
       />
 
+      {params.scenario !== 'base' && (
+        <div className={`mb-4 px-4 py-2.5 rounded-lg border text-xs font-medium ${
+          params.scenario === 'bull'
+            ? 'bg-green-900/20 border-green-800/50 text-green-400'
+            : 'bg-red-900/20 border-red-800/50 text-red-400'
+        }`}>
+          Showing {params.scenario === 'bull' ? 'Bull' : 'Bear'} scenario — projections adjusted
+        </div>
+      )}
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <MetricCard
           label="Token Economy TAM 2025E"
-          value="$35.5B"
+          value={`$${latest2025?.total?.toFixed(1) ?? '35.5'}B`}
           change="+196% YoY"
           changePositive
           subtext="Consumer + API + Software"
@@ -57,7 +96,7 @@ export default function Overview() {
         />
         <MetricCard
           label="Token Economy TAM 2027E"
-          value="$201B"
+          value={`$${latest2027?.total?.toFixed(0) ?? '201'}B`}
           change="+465% vs 2025E"
           changePositive
           subtext="3-year CAGR: 138%"
@@ -141,7 +180,7 @@ export default function Overview() {
         <div className="bg-sa-card rounded-xl border border-sa-border p-4">
           <h3 className="text-sm font-semibold text-white mb-4">AI Revenue by Business Model ($B)</h3>
           <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={revenueByModel} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
+            <BarChart data={adjustedRevenue} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e2a42" />
               <XAxis dataKey="year" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}B`} />
@@ -158,7 +197,7 @@ export default function Overview() {
       <div className="bg-sa-card rounded-xl border border-sa-border p-4">
         <h3 className="text-sm font-semibold text-white mb-4">ROIC by Entity Type (%)</h3>
         <ResponsiveContainer width="100%" height={200}>
-          <AreaChart data={roicByEntity} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
+          <AreaChart data={adjustedROIC} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
             <defs>
               {[['hyper', '#3b82f6'], ['found', '#f97316'], ['neo', '#10b981']].map(([id, color]) => (
                 <linearGradient key={id} id={`roic-${id}`} x1="0" y1="0" x2="0" y2="1">

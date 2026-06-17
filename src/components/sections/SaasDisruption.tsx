@@ -7,6 +7,7 @@ import {
 } from 'recharts';
 import SectionHeader from '../SectionHeader';
 import MetricCard from '../MetricCard';
+import ParamControl from '../ParamControl';
 import { saasDisruptions, tokenConsumers } from '@/lib/data';
 
 const THREAT_COLORS = {
@@ -18,20 +19,40 @@ const THREAT_COLORS = {
 
 const threatOrder = { 'Critical': 3, 'High': 2, 'Medium': 1, 'Adapting': 0 };
 
+type ThreatFilter = 'all' | 'critical' | 'high-plus' | 'adapting';
+
+const THREAT_FILTER_OPTIONS = [
+  { value: 'all', label: 'All' },
+  { value: 'critical', label: 'Critical Only' },
+  { value: 'high-plus', label: 'High+' },
+  { value: 'adapting', label: 'Adapting' },
+];
+
+function matchesThreatFilter(threatLevel: string, filter: ThreatFilter): boolean {
+  if (filter === 'all') return true;
+  if (filter === 'critical') return threatLevel === 'Critical';
+  if (filter === 'high-plus') return threatLevel === 'Critical' || threatLevel === 'High';
+  if (filter === 'adapting') return threatLevel === 'Adapting';
+  return true;
+}
+
 export default function SaasDisruption() {
   const [tab, setTab] = useState<'traditional' | 'emerging'>('traditional');
+  const [threatFilter, setThreatFilter] = useState<ThreatFilter>('all');
 
-  const scatterData = saasDisruptions.map(d => ({
+  const filteredDisruptions = saasDisruptions.filter(d => matchesThreatFilter(d.threatLevel, threatFilter));
+
+  const scatterData = filteredDisruptions.map(d => ({
     ...d,
     revenueAtRiskB: (d.revenue2024B * d.revenueAtRiskPct) / 100,
     fill: THREAT_COLORS[d.threatLevel],
   }));
 
-  const sortedByThreat = [...saasDisruptions].sort(
+  const sortedByThreat = [...filteredDisruptions].sort(
     (a, b) => threatOrder[b.threatLevel] - threatOrder[a.threatLevel]
   );
 
-  const totalAtRisk = saasDisruptions.reduce(
+  const totalAtRisk = filteredDisruptions.reduce(
     (s, d) => s + (d.revenue2024B * d.revenueAtRiskPct) / 100, 0
   );
 
@@ -50,7 +71,7 @@ export default function SaasDisruption() {
         <MetricCard label="Emerging Token Co. ARR" value="$1.3B+" change="+320% YoY avg growth" changePositive subtext="8 tracked companies" icon="🚀" />
       </div>
 
-      <div className="flex gap-2 mb-5">
+      <div className="flex gap-2 mb-4 flex-wrap">
         {[{ id: 'traditional', label: 'Traditional SAAS Disruption' }, { id: 'emerging', label: 'Emerging Token Consumers' }].map(t => (
           <button
             key={t.id}
@@ -63,6 +84,20 @@ export default function SaasDisruption() {
           </button>
         ))}
       </div>
+
+      {tab === 'traditional' && (
+        <div className="flex items-center gap-4 mb-4">
+          <ParamControl
+            label="Threat Filter"
+            value={threatFilter}
+            options={THREAT_FILTER_OPTIONS}
+            onChange={v => setThreatFilter(v as ThreatFilter)}
+          />
+          {filteredDisruptions.length < saasDisruptions.length && (
+            <span className="text-xs text-sa-muted">Showing {filteredDisruptions.length} of {saasDisruptions.length} companies</span>
+          )}
+        </div>
+      )}
 
       {tab === 'traditional' ? (
         <>

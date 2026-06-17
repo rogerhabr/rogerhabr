@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, AreaChart, Area,
@@ -7,7 +8,9 @@ import {
 import SectionHeader from '../SectionHeader';
 import MetricCard from '../MetricCard';
 import DataTable from '../DataTable';
+import ParamControl from '../ParamControl';
 import { supplyDemand, supplyByType } from '@/lib/data';
+import { useGlobalParams } from '@/contexts/ParamsContext';
 
 const supplyDemandForChart = supplyDemand.map(d => ({
   ...d,
@@ -17,6 +20,24 @@ const supplyDemandForChart = supplyDemand.map(d => ({
 }));
 
 export default function ComputeSupplyDemand() {
+  const { params } = useGlobalParams();
+  const [utilizationLevel, setUtilizationLevel] = useState('base');
+  const [demandView, setDemandView] = useState('all');
+
+  const utilizationMap: Record<string, number> = {
+    low: 65,
+    base: params.gpuUtilizationPct,
+    high: 90,
+  };
+  const displayUtilization = utilizationMap[utilizationLevel];
+
+  const filteredSupplyByType = supplyByType.map(d => {
+    if (demandView === 'hyperscalers') return { year: d.year, hyperscalers: d.hyperscalers, foundationLabs: 0, neoclouds: 0 };
+    if (demandView === 'neoclouds') return { year: d.year, hyperscalers: 0, foundationLabs: 0, neoclouds: d.neoclouds };
+    if (demandView === 'foundationLabs') return { year: d.year, hyperscalers: 0, foundationLabs: d.foundationLabs, neoclouds: 0 };
+    return d;
+  });
+
   const tableData = supplyDemandForChart.map(d => ({
     Year: d.year,
     'Inference Supply': d.inferenceSupply.toFixed(1),
@@ -39,8 +60,32 @@ export default function ComputeSupplyDemand() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <MetricCard label="Total Supply 2025E" value="24M EFLOPS" change="+144% YoY" changePositive subtext="H100-eq annualized" accent icon="⚡" />
         <MetricCard label="Total Demand 2025E" value="24M EFLOPS" change="+128% YoY" changePositive subtext="Inference + Training" icon="📊" />
-        <MetricCard label="Supply Utilization" value="88%" change="+5pp YoY" changePositive subtext="Near tight markets" icon="📈" />
+        <MetricCard label="Supply Utilization" value={`${displayUtilization}%`} change="+5pp YoY" changePositive subtext="Near tight markets" icon="📈" />
         <MetricCard label="Demand CAGR 2024-27" value="~115%" subtext="Inference growing faster than training" icon="🚀" />
+      </div>
+
+      <div className="flex items-center gap-4 mb-4 flex-wrap">
+        <ParamControl
+          label="Utilization"
+          value={utilizationLevel}
+          options={[
+            { value: 'low', label: 'Low (65%)' },
+            { value: 'base', label: `Base (${params.gpuUtilizationPct}%)` },
+            { value: 'high', label: 'High (90%)' },
+          ]}
+          onChange={setUtilizationLevel}
+        />
+        <ParamControl
+          label="Demand View"
+          value={demandView}
+          options={[
+            { value: 'all', label: 'All Providers' },
+            { value: 'hyperscalers', label: 'Hyperscalers' },
+            { value: 'neoclouds', label: 'Neoclouds' },
+            { value: 'foundationLabs', label: 'Foundation Labs' },
+          ]}
+          onChange={setDemandView}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
@@ -63,7 +108,7 @@ export default function ComputeSupplyDemand() {
         <div className="bg-sa-card rounded-xl border border-sa-border p-4">
           <h3 className="text-sm font-semibold text-white mb-4">Supply by Provider Type</h3>
           <ResponsiveContainer width="100%" height={260}>
-            <AreaChart data={supplyByType} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
+            <AreaChart data={filteredSupplyByType} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
               <defs>
                 {[['hyp', '#3b82f6'], ['found', '#f97316'], ['neo', '#10b981']].map(([id, c]) => (
                   <linearGradient key={id} id={`sg-${id}`} x1="0" y1="0" x2="0" y2="1">

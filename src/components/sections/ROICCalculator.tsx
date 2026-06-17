@@ -8,8 +8,15 @@ import {
 import SectionHeader from '../SectionHeader';
 import MetricCard from '../MetricCard';
 import { defaultROICInputs, hardwareDefaults, calcROIC, roicByEntity } from '@/lib/data';
+import { useGlobalParams } from '@/contexts/ParamsContext';
 
 const HARDWARE_OPTIONS = Object.keys(hardwareDefaults);
+
+const ROIC_SCENARIO_PRESETS = {
+  bear: { utilizationPct: 65, revenuePerMTokens: 0.50, powerCostPerKWh: 0.055 },
+  base: { utilizationPct: 82, revenuePerMTokens: 1.50, powerCostPerKWh: 0.040 },
+  bull: { utilizationPct: 92, revenuePerMTokens: 3.00, powerCostPerKWh: 0.033 },
+};
 
 function SliderInput({ label, value, min, max, step, onChange, format }: {
   label: string; value: number; min: number; max: number; step: number;
@@ -34,16 +41,27 @@ function SliderInput({ label, value, min, max, step, onChange, format }: {
 }
 
 export default function ROICCalculator() {
+  const { params } = useGlobalParams();
   const [inputs, setInputs] = useState(defaultROICInputs);
+  const [activePreset, setActivePreset] = useState<'bear' | 'base' | 'bull' | null>('base');
+
   const results = calcROIC(inputs);
 
   const update = (key: keyof typeof inputs) => (v: number | string) => {
     setInputs(prev => ({ ...prev, [key]: v }));
+    setActivePreset(null);
   };
 
   const handleHardwareChange = (hw: string) => {
     const defaults = hardwareDefaults[hw] || {};
     setInputs(prev => ({ ...prev, hardware: hw, ...defaults }));
+    setActivePreset(null);
+  };
+
+  const applyPreset = (preset: 'bear' | 'base' | 'bull') => {
+    const p = ROIC_SCENARIO_PRESETS[preset];
+    setInputs(prev => ({ ...prev, ...p }));
+    setActivePreset(preset);
   };
 
   // Build sensitivity data - vary utilization
@@ -60,6 +78,21 @@ export default function ROICCalculator() {
 
   const roicColor = results.roic > 25 ? '#10b981' : results.roic > 10 ? '#f97316' : results.roic > 0 ? '#f59e0b' : '#ef4444';
 
+  const presetStyles: Record<string, { active: string; inactive: string }> = {
+    bear: {
+      active: 'bg-red-900/40 text-red-400 border-red-700',
+      inactive: 'bg-sa-card text-slate-400 border-sa-border hover:border-red-800/60 hover:text-red-400',
+    },
+    base: {
+      active: 'bg-sa-accent/20 text-sa-accent border-sa-accent/60',
+      inactive: 'bg-sa-card text-slate-400 border-sa-border hover:border-sa-accent/40',
+    },
+    bull: {
+      active: 'bg-green-900/40 text-green-400 border-green-700',
+      inactive: 'bg-sa-card text-slate-400 border-sa-border hover:border-green-800/60 hover:text-green-400',
+    },
+  };
+
   return (
     <div>
       <SectionHeader
@@ -71,7 +104,25 @@ export default function ROICCalculator() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
         {/* Inputs Panel */}
         <div className="lg:col-span-1 bg-sa-card rounded-xl border border-sa-border p-4">
-          <h3 className="text-sm font-semibold text-white mb-4">Model Inputs</h3>
+          <h3 className="text-sm font-semibold text-white mb-3">Model Inputs</h3>
+
+          {/* Scenario Preset */}
+          <div className="mb-4 pb-4 border-b border-sa-border">
+            <p className="text-xs text-slate-400 mb-2">Scenario Preset</p>
+            <div className="flex gap-2">
+              {(['bear', 'base', 'bull'] as const).map(p => (
+                <button
+                  key={p}
+                  onClick={() => applyPreset(p)}
+                  className={`flex-1 py-1.5 rounded border text-xs font-semibold transition-colors ${
+                    activePreset === p ? presetStyles[p].active : presetStyles[p].inactive
+                  }`}
+                >
+                  {p.charAt(0).toUpperCase() + p.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <div className="mb-4">
             <label className="text-xs text-slate-400 mb-1.5 block">Hardware Platform</label>
@@ -181,10 +232,6 @@ export default function ROICCalculator() {
                 <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}M`} />
                 <Tooltip formatter={(v: number) => [`$${v.toFixed(2)}M`]} contentStyle={{ background: '#141b2d', border: '1px solid #1e2a42', borderRadius: 8, fontSize: 12 }} />
                 <Bar dataKey="value" name="Amount ($M)" radius={[4, 4, 4, 4]}>
-                  {[0, 1, 2, 3, 4].map((_, i) => {
-                    const fills = ['#10b981', '#ef4444', '#f97316', '#8b5cf6', roicColor];
-                    return <></>; // recharts Cell workaround - handled by fill prop above
-                  })}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>

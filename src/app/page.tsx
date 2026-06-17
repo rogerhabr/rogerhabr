@@ -4,6 +4,7 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import { ParamsProvider } from '@/contexts/ParamsContext';
 
 const Overview               = dynamic(() => import('@/components/sections/Overview'),                { ssr: false });
 const HardwareInstalledBase  = dynamic(() => import('@/components/sections/HardwareInstalledBase'),   { ssr: false });
@@ -16,6 +17,7 @@ const FoundationLabFinancials= dynamic(() => import('@/components/sections/Found
 const ROICCalculator         = dynamic(() => import('@/components/sections/ROICCalculator'),           { ssr: false });
 const HardwareDemandForecast = dynamic(() => import('@/components/sections/HardwareDemandForecast'),  { ssr: false });
 const RevenueProfit          = dynamic(() => import('@/components/sections/RevenueProfit'),            { ssr: false });
+const ScenarioBar            = dynamic(() => import('@/components/ScenarioBar'),                       { ssr: false });
 
 const SECTIONS = [
   { id: 'overview',            label: 'Overview',                icon: '🏠', group: 'Dashboard' },
@@ -52,16 +54,19 @@ export default function Home() {
   const [active, setActive] = useState('overview');
 
   return (
-    <div className="flex min-h-screen bg-sa-bg">
-      <Sidebar sections={SECTIONS} active={active} onSelect={setActive} />
-      <div className="flex-1 ml-64">
-        <Header activeSection={active} sections={SECTIONS} />
-        <main className="pt-14 min-h-screen">
-          <div className="p-6 max-w-7xl">
-            <SectionContent key={active} id={active} />
-          </div>
-        </main>
+    <ParamsProvider>
+      <div className="flex min-h-screen bg-sa-bg">
+        <Sidebar sections={SECTIONS} active={active} onSelect={setActive} />
+        <div className="flex-1 ml-64">
+          <Header activeSection={active} sections={SECTIONS} />
+          <ScenarioBar />
+          <main className="pt-24 min-h-screen">
+            <div className="p-6 max-w-7xl">
+              <SectionContent key={active} id={active} />
+            </div>
+          </main>
+        </div>
       </div>
-    </div>
+    </ParamsProvider>
   );
 }

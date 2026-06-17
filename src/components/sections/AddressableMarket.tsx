@@ -7,7 +7,9 @@ import {
 } from 'recharts';
 import SectionHeader from '../SectionHeader';
 import MetricCard from '../MetricCard';
+import ParamControl from '../ParamControl';
 import { tokenEconomyTAM, tokenApps } from '@/lib/data';
+import { useGlobalParams } from '@/contexts/ParamsContext';
 
 const RADIAN = Math.PI / 180;
 const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, name }: { cx: number; cy: number; midAngle: number; innerRadius: number; outerRadius: number; percent: number; name: string }) => {
@@ -22,17 +24,43 @@ const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent
   );
 };
 
-export default function AddressableMarket() {
-  const [selectedYear, setSelectedYear] = useState('2025E');
+type SegmentFilter = 'all' | 'consumer' | 'api' | 'software';
 
-  const yearData = tokenEconomyTAM.find(d => d.year === selectedYear)!;
+export default function AddressableMarket() {
+  const { mult, params } = useGlobalParams();
+  const [selectedYear, setSelectedYear] = useState('2025E');
+  const [segmentFilter, setSegmentFilter] = useState<SegmentFilter>('all');
+
+  const adjustedTAM = tokenEconomyTAM.map(d => {
+    const isForecast = d.year !== '2024';
+    const factor = (isForecast && params.scenario !== 'base') ? mult.tam : 1;
+    return {
+      year: d.year,
+      consumerApps: +(d.consumerApps * factor).toFixed(1),
+      apiInference: +(d.apiInference * factor).toFixed(1),
+      tokenSoftware: +(d.tokenSoftware * factor).toFixed(1),
+    };
+  });
+
+  const chartTAM = adjustedTAM.map(d => ({
+    year: d.year,
+    consumerApps: segmentFilter === 'all' || segmentFilter === 'consumer' ? d.consumerApps : 0,
+    apiInference: segmentFilter === 'all' || segmentFilter === 'api' ? d.apiInference : 0,
+    tokenSoftware: segmentFilter === 'all' || segmentFilter === 'software' ? d.tokenSoftware : 0,
+  }));
+
+  const yearData = adjustedTAM.find(d => d.year === selectedYear) ?? adjustedTAM[adjustedTAM.length - 1];
   const total = yearData.consumerApps + yearData.apiInference + yearData.tokenSoftware;
 
   const pieData = [
     { name: 'Consumer Apps', value: yearData.consumerApps, color: '#f97316' },
     { name: 'API Inference', value: yearData.apiInference, color: '#3b82f6' },
     { name: 'Token Software', value: yearData.tokenSoftware, color: '#10b981' },
-  ];
+  ].filter(p => segmentFilter === 'all'
+    || (segmentFilter === 'consumer' && p.name === 'Consumer Apps')
+    || (segmentFilter === 'api' && p.name === 'API Inference')
+    || (segmentFilter === 'software' && p.name === 'Token Software')
+  );
 
   const appData = tokenApps.map(a => ({
     name: a.name,
@@ -56,6 +84,10 @@ export default function AddressableMarket() {
   const TYPE_LABELS: Record<string, string> = { consumer: 'Consumer', api: 'API', software: 'Software' };
   const TYPE_COLORS: Record<string, string> = { consumer: '#f97316', api: '#3b82f6', software: '#10b981' };
 
+  const latest2025 = adjustedTAM.find(d => d.year === '2025E')!;
+  const latest2027 = adjustedTAM.find(d => d.year === '2027E')!;
+  const latest2028 = adjustedTAM.find(d => d.year === '2028E')!;
+
   return (
     <div>
       <SectionHeader
@@ -65,17 +97,31 @@ export default function AddressableMarket() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="Token Economy TAM 2025E" value="$35.5B" change="+196% YoY" changePositive accent icon="💰" />
-        <MetricCard label="Token Economy TAM 2027E" value="$201B" change="3yr CAGR: 138%" changePositive icon="📈" />
-        <MetricCard label="Token Economy TAM 2028E" value="$403B" change="+100% vs 2027E" changePositive icon="🚀" />
-        <MetricCard label="Largest Segment 2025E" value="Consumer" subtext="$14.5B (41% share)" icon="👤" />
+        <MetricCard label="Token Economy TAM 2025E" value={`$${(latest2025.consumerApps + latest2025.apiInference + latest2025.tokenSoftware).toFixed(1)}B`} change="+196% YoY" changePositive accent icon="💰" />
+        <MetricCard label="Token Economy TAM 2027E" value={`$${(latest2027.consumerApps + latest2027.apiInference + latest2027.tokenSoftware).toFixed(0)}B`} change="3yr CAGR: 138%" changePositive icon="📈" />
+        <MetricCard label="Token Economy TAM 2028E" value={`$${(latest2028.consumerApps + latest2028.apiInference + latest2028.tokenSoftware).toFixed(0)}B`} change="+100% vs 2027E" changePositive icon="🚀" />
+        <MetricCard label="Largest Segment 2025E" value="Consumer" subtext={`$${latest2025.consumerApps.toFixed(1)}B (${Math.round(latest2025.consumerApps / (latest2025.consumerApps + latest2025.apiInference + latest2025.tokenSoftware) * 100)}% share)`} icon="👤" />
+      </div>
+
+      <div className="flex items-center gap-4 mb-4">
+        <ParamControl
+          label="Segment Filter"
+          value={segmentFilter}
+          options={[
+            { value: 'all', label: 'All' },
+            { value: 'consumer', label: 'Consumer Apps' },
+            { value: 'api', label: 'API Inference' },
+            { value: 'software', label: 'Token Software' },
+          ]}
+          onChange={v => setSegmentFilter(v as SegmentFilter)}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
         <div className="bg-sa-card rounded-xl border border-sa-border p-4">
           <h3 className="text-sm font-semibold text-white mb-4">Token Economy Growth ($B)</h3>
           <ResponsiveContainer width="100%" height={240}>
-            <AreaChart data={tokenEconomyTAM} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
+            <AreaChart data={chartTAM} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
               <defs>
                 {[['cons', '#f97316'], ['api', '#3b82f6'], ['soft', '#10b981']].map(([id, c]) => (
                   <linearGradient key={id} id={`am-${id}`} x1="0" y1="0" x2="0" y2="1">
@@ -103,7 +149,7 @@ export default function AddressableMarket() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-white">Market Share by Segment</h3>
             <select value={selectedYear} onChange={e => setSelectedYear(e.target.value)} className="text-xs">
-              {tokenEconomyTAM.map(d => <option key={d.year} value={d.year}>{d.year}</option>)}
+              {adjustedTAM.map(d => <option key={d.year} value={d.year}>{d.year}</option>)}
             </select>
           </div>
           <div className="flex items-center">
@@ -133,7 +179,7 @@ export default function AddressableMarket() {
                     <span className="text-xs text-slate-400">{p.name}</span>
                   </div>
                   <p className="text-lg font-bold number-cell pl-5" style={{ color: p.color }}>${p.value.toFixed(1)}B</p>
-                  <p className="text-xs text-sa-muted pl-5">{((p.value / total) * 100).toFixed(0)}% of TAM</p>
+                  <p className="text-xs text-sa-muted pl-5">{total > 0 ? ((p.value / total) * 100).toFixed(0) : 0}% of TAM</p>
                 </div>
               ))}
               <div className="border-t border-sa-border pt-2 pl-5">

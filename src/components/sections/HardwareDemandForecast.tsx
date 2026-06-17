@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Legend, LineChart, Line, AreaChart, Area,
@@ -7,31 +8,51 @@ import {
 import SectionHeader from '../SectionHeader';
 import MetricCard from '../MetricCard';
 import DataTable from '../DataTable';
+import ParamControl from '../ParamControl';
 import { hardwareDemandForecast, vendorMarketShare } from '@/lib/data';
-
-const totalShipments = hardwareDemandForecast.map(d => ({
-  ...d,
-  yoyGrowth: 0,
-}));
+import { useGlobalParams } from '@/contexts/ParamsContext';
 
 export default function HardwareDemandForecast() {
+  const { mult, params } = useGlobalParams();
+  const [demandType, setDemandType] = useState('total');
+  const [vendor, setVendor] = useState('all');
+
   const demand2024 = hardwareDemandForecast.find(d => d.year === '2024')!;
   const demand2025 = hardwareDemandForecast.find(d => d.year === '2025E')!;
   const demand2027 = hardwareDemandForecast.find(d => d.year === '2027E')!;
   const demand2028 = hardwareDemandForecast.find(d => d.year === '2028E')!;
 
+  const adjustedForecast = hardwareDemandForecast.map(d => {
+    const isHistorical = d.year === '2022' || d.year === '2023' || d.year === '2024';
+    const factor = (!isHistorical && params.scenario !== 'base') ? mult.gpuDemand : 1;
+    return {
+      ...d,
+      inferenceGPUs: Math.round(d.inferenceGPUs * factor),
+      trainingGPUs: Math.round(d.trainingGPUs * factor),
+      total: Math.round(d.total * factor),
+    };
+  });
+
+  const filteredVendorShare = vendorMarketShare.map(d => {
+    if (vendor === 'NVIDIA') return { year: d.year, NVIDIA: d.NVIDIA, AMD: 0, Google: 0, Amazon: 0, Other: 0 };
+    if (vendor === 'AMD') return { year: d.year, NVIDIA: 0, AMD: d.AMD, Google: 0, Amazon: 0, Other: 0 };
+    if (vendor === 'Google') return { year: d.year, NVIDIA: 0, AMD: 0, Google: d.Google, Amazon: 0, Other: 0 };
+    if (vendor === 'Amazon') return { year: d.year, NVIDIA: 0, AMD: 0, Google: 0, Amazon: d.Amazon, Other: 0 };
+    return d;
+  });
+
   const inferenceShare2025 = ((demand2025.inferenceGPUs / demand2025.total) * 100).toFixed(0);
 
-  const tableData = hardwareDemandForecast.map((d, i) => ({
+  const tableData = adjustedForecast.map((d, i) => ({
     Year: d.year,
     'Inference GPUs': `${d.inferenceGPUs.toLocaleString()}k`,
     'Training GPUs': `${d.trainingGPUs.toLocaleString()}k`,
     'Total GPUs': `${d.total.toLocaleString()}k`,
     'Inf. Share': `${((d.inferenceGPUs / d.total) * 100).toFixed(0)}%`,
-    'YoY Growth': i === 0 ? '—' : `+${(((d.total / hardwareDemandForecast[i - 1].total) - 1) * 100).toFixed(0)}%`,
+    'YoY Growth': i === 0 ? '—' : `+${(((d.total / adjustedForecast[i - 1].total) - 1) * 100).toFixed(0)}%`,
   }));
 
-  const vendorShareData = vendorMarketShare.map(d => ({
+  const vendorShareData = filteredVendorShare.map(d => ({
     year: d.year,
     NVIDIA: d.NVIDIA,
     AMD: d.AMD,
@@ -39,6 +60,12 @@ export default function HardwareDemandForecast() {
     Amazon: d.Amazon,
     Other: d.Other,
   }));
+
+  const chartData = demandType === 'inference'
+    ? adjustedForecast.map(d => ({ ...d, display: d.inferenceGPUs }))
+    : demandType === 'training'
+    ? adjustedForecast.map(d => ({ ...d, display: d.trainingGPUs }))
+    : adjustedForecast;
 
   return (
     <div>
@@ -55,11 +82,36 @@ export default function HardwareDemandForecast() {
         <MetricCard label="NVIDIA Market Share 2027E" value="70%" change="-15pp vs 2024" subtext="AMD/Google/Amazon gaining" changePositive={false} icon="🎯" />
       </div>
 
+      <div className="flex items-center gap-4 mb-4 flex-wrap">
+        <ParamControl
+          label="Demand Type"
+          value={demandType}
+          options={[
+            { value: 'total', label: 'Total' },
+            { value: 'inference', label: 'Inference Only' },
+            { value: 'training', label: 'Training Only' },
+          ]}
+          onChange={setDemandType}
+        />
+        <ParamControl
+          label="Vendor"
+          value={vendor}
+          options={[
+            { value: 'all', label: 'All Vendors' },
+            { value: 'NVIDIA', label: 'NVIDIA' },
+            { value: 'AMD', label: 'AMD' },
+            { value: 'Google', label: 'Google' },
+            { value: 'Amazon', label: 'Amazon' },
+          ]}
+          onChange={setVendor}
+        />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
         <div className="bg-sa-card rounded-xl border border-sa-border p-4">
           <h3 className="text-sm font-semibold text-white mb-4">GPU Demand: Inference vs Training (k H100-eq)</h3>
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={hardwareDemandForecast} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
+            <BarChart data={adjustedForecast} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e2a42" />
               <XAxis dataKey="year" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}M`} />
@@ -68,8 +120,12 @@ export default function HardwareDemandForecast() {
                 contentStyle={{ background: '#141b2d', border: '1px solid #1e2a42', borderRadius: 8, fontSize: 12 }}
               />
               <Legend wrapperStyle={{ fontSize: 11, color: '#94a3b8' }} />
-              <Bar dataKey="inferenceGPUs" name="Inference" stackId="a" fill="#3b82f6" />
-              <Bar dataKey="trainingGPUs" name="Training" stackId="a" fill="#1d4ed8" radius={[4, 4, 0, 0]} />
+              {(demandType === 'total' || demandType === 'inference') && (
+                <Bar dataKey="inferenceGPUs" name="Inference" stackId="a" fill="#3b82f6" />
+              )}
+              {(demandType === 'total' || demandType === 'training') && (
+                <Bar dataKey="trainingGPUs" name="Training" stackId="a" fill="#1d4ed8" radius={[4, 4, 0, 0]} />
+              )}
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -77,7 +133,7 @@ export default function HardwareDemandForecast() {
         <div className="bg-sa-card rounded-xl border border-sa-border p-4">
           <h3 className="text-sm font-semibold text-white mb-4">Total GPU Shipments Growth Trajectory</h3>
           <ResponsiveContainer width="100%" height={260}>
-            <AreaChart data={hardwareDemandForecast} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
+            <AreaChart data={adjustedForecast} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
               <defs>
                 <linearGradient id="demandGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#f97316" stopOpacity={0.4} />

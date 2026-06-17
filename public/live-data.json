@@ -1,0 +1,25 @@
+{
+  "lastUpdated": null,
+  "stocks": {
+    "NVDA": null,
+    "MSFT": null,
+    "GOOGL": null,
+    "AMZN": null,
+    "META": null,
+    "AMD": null,
+    "ORCL": null
+  },
+  "gpuCloud": {
+    "azureH100PerHour": null
+  },
+  "modelPricing": {
+    "GPT-4o": { "inputPerM": 2.50, "outputPerM": 10.00 },
+    "GPT-4o-mini": { "inputPerM": 0.15, "outputPerM": 0.60 },
+    "Claude Sonnet 4.6": { "inputPerM": 3.00, "outputPerM": 15.00 },
+    "Claude Haiku 4.5": { "inputPerM": 0.80, "outputPerM": 4.00 },
+    "Gemini 1.5 Pro": { "inputPerM": 1.25, "outputPerM": 5.00 },
+    "Gemini 2.0 Flash": { "inputPerM": 0.10, "outputPerM": 0.40 },
+    "DeepSeek V3": { "inputPerM": 0.07, "outputPerM": 0.28 },
+    "Llama 3.3 70B": { "inputPerM": 0.23, "outputPerM": 0.40 }
+  }
+}

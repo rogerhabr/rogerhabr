@@ -1,0 +1,26 @@
+name: Refresh Live Data
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Every Monday 6 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Fetch live data
+        run: node scripts/fetch-live-data.mjs
+      - name: Commit if changed
+        run: |
+          git config user.email "noreply@anthropic.com"
+          git config user.name "Claude"
+          git add public/live-data.json
+          git diff --staged --quiet || (git commit -m "Refresh live data [$(date -u +%Y-%m-%d)]" && git push origin master)
