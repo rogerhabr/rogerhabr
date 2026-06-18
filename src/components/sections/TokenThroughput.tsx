@@ -57,7 +57,7 @@ export default function TokenThroughput() {
     'HBM (TB)': h.hbmTB.toFixed(3),
     'BW (TB/s)': h.hbmBWTBs.toFixed(2),
     'Power (W)': h.powerW.toLocaleString(),
-    'H100 Equiv.': `${h.h100Equiv}x`,
+    'B200 Equiv.': `${h.b200Equiv}x`,
     'Year': h.releaseYear,
   }));
 

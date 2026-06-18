@@ -76,9 +76,9 @@ export default function HardwareDemandForecast() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="Total GPU Demand 2025E" value="4.5M" change="+125% YoY" changePositive subtext="H100-eq units shipped" accent icon="📦" />
+        <MetricCard label="Total GPU Demand 2025E" value="1.4M" change="+125% YoY" changePositive subtext="B200-eq units shipped" accent icon="📦" />
         <MetricCard label="Inference Share 2025E" value={`${inferenceShare2025}%`} change="vs 65% in 2023" changePositive subtext="Inference growing faster" icon="⚡" />
-        <MetricCard label="GPU Demand 2027E" value="15M" change="+233% vs 2025E" changePositive subtext="CAGR 2024-27: 96%" icon="📈" />
+        <MetricCard label="GPU Demand 2027E" value="4.7M" change="+233% vs 2025E" changePositive subtext="CAGR 2024-27: 96%" icon="📈" />
         <MetricCard label="NVIDIA Market Share 2027E" value="70%" change="-15pp vs 2024" subtext="AMD/Google/Amazon gaining" changePositive={false} icon="🎯" />
       </div>
 
@@ -109,7 +109,7 @@ export default function HardwareDemandForecast() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
         <div className="bg-sa-card rounded-xl border border-sa-border p-4">
-          <h3 className="text-sm font-semibold text-white mb-4">GPU Demand: Inference vs Training (k H100-eq)</h3>
+          <h3 className="text-sm font-semibold text-white mb-4">GPU Demand: Inference vs Training (k B200-eq)</h3>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={adjustedForecast} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e2a42" />
@@ -187,7 +187,7 @@ export default function HardwareDemandForecast() {
       </div>
 
       <DataTable
-        title="Hardware Demand Forecast (H100-equivalent GPU Units, Thousands)"
+        title="Hardware Demand Forecast (B200-equivalent GPU Units, Thousands)"
         columns={[
           { key: 'Year', label: 'Year', align: 'left' },
           { key: 'Inference GPUs', label: 'Inference', align: 'right' },

@@ -57,9 +57,9 @@ export default function HardwareInstalledBase() {
   ];
 
   const dataMap = {
-    hyperscalers: { data: hyperscalerGPUs, colors: hyperscalerColors, keys: ['Microsoft', 'Google', 'Amazon', 'Meta', 'Oracle'], unit: 'k H100-eq GPUs' },
-    foundationLabs: { data: foundationLabGPUs, colors: foundationLabColors, keys: ['OpenAI', 'Anthropic', 'xAI', 'DeepSeek', 'Thinking Machines'], unit: 'k H100-eq GPUs' },
-    neoclouds: { data: neocloudGPUs, colors: neocloudColors, keys: ['CoreWeave', 'Nebius', 'Crusoe', 'Lambda Labs'], unit: 'k H100-eq GPUs' },
+    hyperscalers: { data: hyperscalerGPUs, colors: hyperscalerColors, keys: ['Microsoft', 'Google', 'Amazon', 'Meta', 'Oracle'], unit: 'k B200-eq GPUs' },
+    foundationLabs: { data: foundationLabGPUs, colors: foundationLabColors, keys: ['OpenAI', 'Anthropic', 'xAI', 'DeepSeek', 'Thinking Machines'], unit: 'k B200-eq GPUs' },
+    neoclouds: { data: neocloudGPUs, colors: neocloudColors, keys: ['CoreWeave', 'Nebius', 'Crusoe', 'Lambda Labs'], unit: 'k B200-eq GPUs' },
     capex: { data: hyperscalerCapex, colors: hyperscalerColors, keys: ['Microsoft', 'Google', 'Amazon', 'Meta', 'Oracle'], unit: '$B CapEx' },
   };
 
@@ -87,14 +87,14 @@ export default function HardwareInstalledBase() {
     <div>
       <SectionHeader
         title="AI Hardware Installed Base"
-        subtitle="GPU compute inventory normalized to H100-equivalent units across hyperscalers, foundation labs, and neoclouds. Tracks cumulative installed base with FP8 performance normalization across NVIDIA, Google, and Amazon silicon."
+        subtitle="GPU compute inventory normalized to B200-equivalent units across hyperscalers, foundation labs, and neoclouds. Tracks cumulative installed base with FP8 performance normalization across NVIDIA (B200/B300), Google, and Amazon silicon."
         badge="Bottoms-Up"
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="Hyperscaler GPUs 2025E" value="4.49M" change="+86% YoY" changePositive subtext="H100-eq units (5 players)" accent icon="🖥️" />
-        <MetricCard label="Foundation Lab GPUs 2025E" value="550k" change="+121% YoY" changePositive subtext="OpenAI, Anthropic, xAI, DeepSeek" icon="🧠" />
-        <MetricCard label="Neocloud GPUs 2025E" value="688k" change="+145% YoY" changePositive subtext="CoreWeave leads at 480k" icon="☁️" />
+        <MetricCard label="Hyperscaler GPUs 2025E" value="1.40M" change="+86% YoY" changePositive subtext="B200-eq units (5 players)" accent icon="🖥️" />
+        <MetricCard label="Foundation Lab GPUs 2025E" value="172k" change="+121% YoY" changePositive subtext="OpenAI, Anthropic, xAI, DeepSeek" icon="🧠" />
+        <MetricCard label="Neocloud GPUs 2025E" value="215k" change="+145% YoY" changePositive subtext="CoreWeave leads at 150k" icon="☁️" />
         <MetricCard label="Total AI CapEx 2025E" value="$355B" change="+64% YoY" changePositive subtext="Big 5 hyperscalers combined" icon="💵" />
       </div>
 
@@ -129,7 +129,7 @@ export default function HardwareInstalledBase() {
           label="GPU Metric"
           value={gpuMetric}
           options={[
-            { value: 'units', label: 'H100-eq Units' },
+            { value: 'units', label: 'B200-eq Units' },
             { value: 'tflops', label: 'Raw TFLOPS' },
             { value: 'dollar-year', label: '$/Unit-Year' },
           ]}
@@ -184,7 +184,7 @@ export default function HardwareInstalledBase() {
 
       <div className="mt-4 p-3 rounded-lg bg-sa-surface border border-sa-border">
         <p className="text-xs text-sa-muted">
-          <span className="text-white font-medium">Normalization methodology:</span> All GPU counts normalized to H100 SXM5 FP8 throughput baseline (1,979 TFLOPS). H200 = 1.4x, GB200 = 3.2x per GPU, TPU v5p = 0.9x, TPU v7 = 4.5x, Trainium 2 = 1.5x, Trainium 3 = 3.0x. Hyperscaler AI-dedicated compute only (excludes general-purpose cloud infrastructure). Estimates based on public announcements, earnings calls, and supply chain analysis.
+          <span className="text-white font-medium">Normalization methodology:</span> All GPU counts normalized to B200 SXM FP8 throughput baseline (4,500 TFLOPS). H100 = 0.31×, H200 = 0.44×, B300 = 1.50×, GB200 NVL72 = 12.5× per rack, TPU v5p = 0.28×, TPU v7 Ironwood = 1.41×, Trainium 2 = 0.47×, Trainium 3 = 0.94×, MI300X = 0.56×, MI350X = 1.09×. Hyperscaler AI-dedicated compute only. Estimates based on public announcements, earnings calls, and supply chain analysis.
         </p>
       </div>
     </div>

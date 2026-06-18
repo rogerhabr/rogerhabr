@@ -5,16 +5,16 @@ export const YEARS = ['2022', '2023', '2024', '2025E', '2026E', '2027E', '2028E'
 export const FORECAST_YEARS = ['2025E', '2026E', '2027E', '2028E'];
 
 // ─── Hardware Installed Base ────────────────────────────────────────────────
-// H100-equivalent GPU units (thousands), normalized by FP8 throughput
+// B200-equivalent GPU units (thousands), normalized by FP8 throughput vs B200 SXM
 
 export const hyperscalerGPUs = [
-  { year: '2022', Microsoft: 50,  Google: 80,  Amazon: 40,  Meta: 50,  Oracle: 5  },
-  { year: '2023', Microsoft: 150, Google: 210, Amazon: 95,  Meta: 105, Oracle: 18 },
-  { year: '2024', Microsoft: 490, Google: 590, Amazon: 340, Meta: 360, Oracle: 75 },
-  { year: '2025E',Microsoft: 920, Google:1050, Amazon: 680, Meta: 650, Oracle:190 },
-  { year: '2026E',Microsoft:1380, Google:1640, Amazon:1090, Meta:1020, Oracle:340 },
-  { year: '2027E',Microsoft:1960, Google:2320, Amazon:1560, Meta:1450, Oracle:510 },
-  { year: '2028E',Microsoft:2650, Google:3100, Amazon:2080, Meta:1980, Oracle:720 },
+  { year: '2022', Microsoft: 16,  Google: 25,  Amazon: 13,  Meta: 16,  Oracle: 2  },
+  { year: '2023', Microsoft: 47,  Google: 66,  Amazon: 30,  Meta: 33,  Oracle: 6  },
+  { year: '2024', Microsoft: 153, Google: 184, Amazon: 106, Meta: 113, Oracle: 23 },
+  { year: '2025E',Microsoft: 288, Google: 328, Amazon: 213, Meta: 203, Oracle: 59 },
+  { year: '2026E',Microsoft: 431, Google: 513, Amazon: 341, Meta: 319, Oracle:106 },
+  { year: '2027E',Microsoft: 613, Google: 725, Amazon: 488, Meta: 453, Oracle:159 },
+  { year: '2028E',Microsoft: 828, Google: 969, Amazon: 650, Meta: 619, Oracle:225 },
 ];
 
 export const hyperscalerColors: Record<string, string> = {
@@ -26,12 +26,12 @@ export const hyperscalerColors: Record<string, string> = {
 };
 
 export const foundationLabGPUs = [
-  { year: '2022', OpenAI: 20, Anthropic: 5,  xAI: 0,  DeepSeek: 2,  'Thinking Machines': 0 },
-  { year: '2023', OpenAI: 30, Anthropic: 10, xAI: 8,  DeepSeek: 5,  'Thinking Machines': 2 },
-  { year: '2024', OpenAI: 95, Anthropic: 28, xAI: 40, DeepSeek: 48, 'Thinking Machines': 8 },
-  { year: '2025E',OpenAI:190, Anthropic: 65, xAI:130, DeepSeek:140, 'Thinking Machines':25 },
-  { year: '2026E',OpenAI:310, Anthropic:125, xAI:250, DeepSeek:230, 'Thinking Machines':55 },
-  { year: '2027E',OpenAI:440, Anthropic:195, xAI:400, DeepSeek:340, 'Thinking Machines':90 },
+  { year: '2022', OpenAI:  6, Anthropic:  2, xAI: 0,  DeepSeek:  1, 'Thinking Machines': 0 },
+  { year: '2023', OpenAI:  9, Anthropic:  3, xAI: 3,  DeepSeek:  2, 'Thinking Machines': 1 },
+  { year: '2024', OpenAI: 30, Anthropic:  9, xAI:13,  DeepSeek: 15, 'Thinking Machines': 3 },
+  { year: '2025E',OpenAI: 59, Anthropic: 20, xAI:41,  DeepSeek: 44, 'Thinking Machines': 8 },
+  { year: '2026E',OpenAI: 97, Anthropic: 39, xAI:78,  DeepSeek: 72, 'Thinking Machines':17 },
+  { year: '2027E',OpenAI:138, Anthropic: 61, xAI:125, DeepSeek:106, 'Thinking Machines':28 },
 ];
 
 export const foundationLabColors: Record<string, string> = {
@@ -43,12 +43,12 @@ export const foundationLabColors: Record<string, string> = {
 };
 
 export const neocloudGPUs = [
-  { year: '2022', CoreWeave: 15,  Nebius: 2,  Crusoe: 2,  'Lambda Labs': 5  },
-  { year: '2023', CoreWeave: 45,  Nebius: 5,  Crusoe: 5,  'Lambda Labs': 12 },
-  { year: '2024', CoreWeave: 195, Nebius: 18, Crusoe: 14, 'Lambda Labs': 35 },
-  { year: '2025E',CoreWeave: 480, Nebius: 75, Crusoe: 48, 'Lambda Labs': 85 },
-  { year: '2026E',CoreWeave: 780, Nebius:145, Crusoe: 98, 'Lambda Labs':160 },
-  { year: '2027E',CoreWeave:1080, Nebius:240, Crusoe:175, 'Lambda Labs':260 },
+  { year: '2022', CoreWeave:  5, Nebius: 1, Crusoe:  1, 'Lambda Labs':  2 },
+  { year: '2023', CoreWeave: 14, Nebius: 2, Crusoe:  2, 'Lambda Labs':  4 },
+  { year: '2024', CoreWeave: 61, Nebius: 6, Crusoe:  4, 'Lambda Labs': 11 },
+  { year: '2025E',CoreWeave:150, Nebius:23, Crusoe: 15, 'Lambda Labs': 27 },
+  { year: '2026E',CoreWeave:244, Nebius:45, Crusoe: 31, 'Lambda Labs': 50 },
+  { year: '2027E',CoreWeave:338, Nebius:75, Crusoe: 55, 'Lambda Labs': 81 },
 ];
 
 export const neocloudColors: Record<string, string> = {
@@ -79,21 +79,22 @@ export interface HardwareSpec {
   hbmTB: number;
   hbmBWTBs: number;
   powerW: number;
-  h100Equiv: number;
+  b200Equiv: number;
   releaseYear: number;
 }
 
 export const hardwareSpecs: HardwareSpec[] = [
-  { name: 'H100 SXM5',       vendor: 'NVIDIA', chip: 'H100',    fp8TFLOPS: 1979,  hbmTB: 0.080, hbmBWTBs: 3.35, powerW: 700,    h100Equiv: 1.0,  releaseYear: 2022 },
-  { name: 'H200 SXM5',       vendor: 'NVIDIA', chip: 'H200',    fp8TFLOPS: 1979,  hbmTB: 0.141, hbmBWTBs: 4.80, powerW: 700,    h100Equiv: 1.4,  releaseYear: 2024 },
-  { name: 'B200 SXM',        vendor: 'NVIDIA', chip: 'B200',    fp8TFLOPS: 4500,  hbmTB: 0.192, hbmBWTBs: 8.00, powerW: 1000,   h100Equiv: 3.2,  releaseYear: 2025 },
-  { name: 'GB200 NVL72',     vendor: 'NVIDIA', chip: 'GB200',   fp8TFLOPS:13900,  hbmTB: 8.064, hbmBWTBs:576.0, powerW: 120000, h100Equiv: 40.0, releaseYear: 2025 },
-  { name: 'TPU v5p',         vendor: 'Google', chip: 'TPUv5p',  fp8TFLOPS: 459,   hbmTB: 0.095, hbmBWTBs: 2.76, powerW: 175,    h100Equiv: 0.9,  releaseYear: 2023 },
-  { name: 'TPU v7 Ironwood', vendor: 'Google', chip: 'TPUv7',   fp8TFLOPS: 4614,  hbmTB: 0.192, hbmBWTBs: 7.37, powerW: 200,    h100Equiv: 4.5,  releaseYear: 2025 },
-  { name: 'Trainium 2',      vendor: 'Amazon', chip: 'Trn2',    fp8TFLOPS: 2832,  hbmTB: 0.096, hbmBWTBs: 5.12, powerW: 700,    h100Equiv: 1.5,  releaseYear: 2024 },
-  { name: 'Trainium 3',      vendor: 'Amazon', chip: 'Trn3',    fp8TFLOPS: 5664,  hbmTB: 0.192, hbmBWTBs: 9.60, powerW: 700,    h100Equiv: 3.0,  releaseYear: 2026 },
-  { name: 'MI300X',          vendor: 'AMD',    chip: 'MI300X',  fp8TFLOPS: 2610,  hbmTB: 0.192, hbmBWTBs: 5.30, powerW: 750,    h100Equiv: 1.8,  releaseYear: 2024 },
-  { name: 'MI350X',          vendor: 'AMD',    chip: 'MI350X',  fp8TFLOPS: 5220,  hbmTB: 0.288, hbmBWTBs: 9.60, powerW: 750,    h100Equiv: 3.5,  releaseYear: 2025 },
+  { name: 'H100 SXM5',       vendor: 'NVIDIA', chip: 'H100',    fp8TFLOPS: 1979,  hbmTB: 0.080, hbmBWTBs:  3.35, powerW:   700,  b200Equiv: 0.31, releaseYear: 2022 },
+  { name: 'H200 SXM5',       vendor: 'NVIDIA', chip: 'H200',    fp8TFLOPS: 1979,  hbmTB: 0.141, hbmBWTBs:  4.80, powerW:   700,  b200Equiv: 0.44, releaseYear: 2024 },
+  { name: 'B200 SXM',        vendor: 'NVIDIA', chip: 'B200',    fp8TFLOPS: 4500,  hbmTB: 0.192, hbmBWTBs:  8.00, powerW:  1000,  b200Equiv: 1.00, releaseYear: 2025 },
+  { name: 'B300 SXM',        vendor: 'NVIDIA', chip: 'B300',    fp8TFLOPS: 6750,  hbmTB: 0.288, hbmBWTBs: 10.00, powerW:  1200,  b200Equiv: 1.50, releaseYear: 2026 },
+  { name: 'GB200 NVL72',     vendor: 'NVIDIA', chip: 'GB200',   fp8TFLOPS:13900,  hbmTB: 8.064, hbmBWTBs:576.00, powerW: 120000, b200Equiv:12.50, releaseYear: 2025 },
+  { name: 'TPU v5p',         vendor: 'Google', chip: 'TPUv5p',  fp8TFLOPS:  459,  hbmTB: 0.095, hbmBWTBs:  2.76, powerW:   175,  b200Equiv: 0.28, releaseYear: 2023 },
+  { name: 'TPU v7 Ironwood', vendor: 'Google', chip: 'TPUv7',   fp8TFLOPS: 4614,  hbmTB: 0.192, hbmBWTBs:  7.37, powerW:   200,  b200Equiv: 1.41, releaseYear: 2025 },
+  { name: 'Trainium 2',      vendor: 'Amazon', chip: 'Trn2',    fp8TFLOPS: 2832,  hbmTB: 0.096, hbmBWTBs:  5.12, powerW:   700,  b200Equiv: 0.47, releaseYear: 2024 },
+  { name: 'Trainium 3',      vendor: 'Amazon', chip: 'Trn3',    fp8TFLOPS: 5664,  hbmTB: 0.192, hbmBWTBs:  9.60, powerW:   700,  b200Equiv: 0.94, releaseYear: 2026 },
+  { name: 'MI300X',          vendor: 'AMD',    chip: 'MI300X',  fp8TFLOPS: 2610,  hbmTB: 0.192, hbmBWTBs:  5.30, powerW:   750,  b200Equiv: 0.56, releaseYear: 2024 },
+  { name: 'MI350X',          vendor: 'AMD',    chip: 'MI350X',  fp8TFLOPS: 5220,  hbmTB: 0.288, hbmBWTBs:  9.60, powerW:   750,  b200Equiv: 1.09, releaseYear: 2025 },
 ];
 
 // ─── Model Architectures ─────────────────────────────────────────────────────
@@ -245,27 +246,27 @@ export const tokenConsumers: TokenConsumer[] = [
 ];
 
 // ─── Compute Supply vs Demand ─────────────────────────────────────────────────
-// H100-equivalent EFLOPS (millions), annualized
+// B200-equivalent EFLOPS (millions), annualized
 
 export const supplyDemand = [
-  { year: '2022', inferenceSupply: 0.8, trainingSupply: 0.4, inferenceDemand: 0.6, trainingDemand: 0.5 },
-  { year: '2023', inferenceSupply: 2.2, trainingSupply: 1.1, inferenceDemand: 1.8, trainingDemand: 1.4 },
-  { year: '2024', inferenceSupply: 6.8, trainingSupply: 3.2, inferenceDemand: 5.9, trainingDemand: 3.8 },
-  { year: '2025E',inferenceSupply:16.5, trainingSupply: 7.5, inferenceDemand:14.8, trainingDemand: 9.2 },
-  { year: '2026E',inferenceSupply:34.0, trainingSupply:15.0, inferenceDemand:32.5, trainingDemand:18.5 },
-  { year: '2027E',inferenceSupply:64.0, trainingSupply:27.0, inferenceDemand:61.0, trainingDemand:32.0 },
-  { year: '2028E',inferenceSupply:115.0,trainingSupply:48.0, inferenceDemand:112.0,trainingDemand:52.0 },
+  { year: '2022', inferenceSupply: 0.25, trainingSupply: 0.13, inferenceDemand: 0.19, trainingDemand: 0.16 },
+  { year: '2023', inferenceSupply: 0.69, trainingSupply: 0.34, inferenceDemand: 0.56, trainingDemand: 0.44 },
+  { year: '2024', inferenceSupply: 2.13, trainingSupply: 1.00, inferenceDemand: 1.84, trainingDemand: 1.19 },
+  { year: '2025E',inferenceSupply: 5.16, trainingSupply: 2.34, inferenceDemand: 4.63, trainingDemand: 2.88 },
+  { year: '2026E',inferenceSupply:10.63, trainingSupply: 4.69, inferenceDemand:10.16, trainingDemand: 5.78 },
+  { year: '2027E',inferenceSupply:20.00, trainingSupply: 8.44, inferenceDemand:19.06, trainingDemand:10.00 },
+  { year: '2028E',inferenceSupply:35.94, trainingSupply:15.00, inferenceDemand:35.00, trainingDemand:16.25 },
 ];
 
 // Supply breakdown by provider type
 export const supplyByType = [
-  { year: '2022', hyperscalers: 0.9, foundationLabs: 0.2, neoclouds: 0.1 },
-  { year: '2023', hyperscalers: 2.4, foundationLabs: 0.6, neoclouds: 0.3 },
-  { year: '2024', hyperscalers: 7.5, foundationLabs: 1.8, neoclouds: 0.7 },
-  { year: '2025E',hyperscalers:17.8, foundationLabs: 4.5, neoclouds: 1.7 },
-  { year: '2026E',hyperscalers:37.0, foundationLabs: 9.0, neoclouds: 3.0 },
-  { year: '2027E',hyperscalers:70.0, foundationLabs:15.0, neoclouds: 6.0 },
-  { year: '2028E',hyperscalers:126.0,foundationLabs:26.0, neoclouds:11.0 },
+  { year: '2022', hyperscalers: 0.28, foundationLabs: 0.06, neoclouds: 0.03 },
+  { year: '2023', hyperscalers: 0.75, foundationLabs: 0.19, neoclouds: 0.09 },
+  { year: '2024', hyperscalers: 2.34, foundationLabs: 0.56, neoclouds: 0.22 },
+  { year: '2025E',hyperscalers: 5.56, foundationLabs: 1.41, neoclouds: 0.53 },
+  { year: '2026E',hyperscalers:11.56, foundationLabs: 2.81, neoclouds: 0.94 },
+  { year: '2027E',hyperscalers:21.88, foundationLabs: 4.69, neoclouds: 1.88 },
+  { year: '2028E',hyperscalers:39.38, foundationLabs: 8.13, neoclouds: 3.44 },
 ];
 
 // ─── ROIC Data ───────────────────────────────────────────────────────────────
@@ -305,16 +306,16 @@ export const marginsByModel = [
 ];
 
 // ─── Hardware Demand Forecast ─────────────────────────────────────────────────
-// GPU units shipped (H100-eq, thousands) for inference vs training
+// GPU units shipped (B200-eq, thousands) for inference vs training
 
 export const hardwareDemandForecast = [
-  { year: '2022', inferenceGPUs: 180,  trainingGPUs: 120,  total: 300   },
-  { year: '2023', inferenceGPUs: 480,  trainingGPUs: 320,  total: 800   },
-  { year: '2024', inferenceGPUs: 1300, trainingGPUs: 700,  total: 2000  },
-  { year: '2025E',inferenceGPUs: 3100, trainingGPUs: 1400, total: 4500  },
-  { year: '2026E',inferenceGPUs: 6200, trainingGPUs: 2300, total: 8500  },
-  { year: '2027E',inferenceGPUs:11500, trainingGPUs: 3500, total:15000  },
-  { year: '2028E',inferenceGPUs:19500, trainingGPUs: 5000, total:24500  },
+  { year: '2022', inferenceGPUs:   56, trainingGPUs:   38, total:   94 },
+  { year: '2023', inferenceGPUs:  150, trainingGPUs:  100, total:  250 },
+  { year: '2024', inferenceGPUs:  406, trainingGPUs:  219, total:  625 },
+  { year: '2025E',inferenceGPUs:  969, trainingGPUs:  438, total: 1406 },
+  { year: '2026E',inferenceGPUs: 1938, trainingGPUs:  719, total: 2656 },
+  { year: '2027E',inferenceGPUs: 3594, trainingGPUs: 1094, total: 4688 },
+  { year: '2028E',inferenceGPUs: 6094, trainingGPUs: 1563, total: 7656 },
 ];
 
 // By accelerator vendor market share (%)

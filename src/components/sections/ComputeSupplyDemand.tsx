@@ -53,13 +53,13 @@ export default function ComputeSupplyDemand() {
     <div>
       <SectionHeader
         title="AI Compute Supply & Demand"
-        subtitle="Track AI compute supply (available GPU capacity) versus demand (workload requirements) by hyperscalers, foundation labs, and neoclouds. Measured in H100-equivalent EFLOPS (millions) annualized."
+        subtitle="Track AI compute supply (available GPU capacity) versus demand (workload requirements) by hyperscalers, foundation labs, and neoclouds. Measured in B200-equivalent EFLOPS (millions) annualized."
         badge="Supply Chain"
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="Total Supply 2025E" value="24M EFLOPS" change="+144% YoY" changePositive subtext="H100-eq annualized" accent icon="⚡" />
-        <MetricCard label="Total Demand 2025E" value="24M EFLOPS" change="+128% YoY" changePositive subtext="Inference + Training" icon="📊" />
+        <MetricCard label="Total Supply 2025E" value="7.5M EFLOPS" change="+144% YoY" changePositive subtext="B200-eq annualized" accent icon="⚡" />
+        <MetricCard label="Total Demand 2025E" value="7.5M EFLOPS" change="+128% YoY" changePositive subtext="Inference + Training" icon="📊" />
         <MetricCard label="Supply Utilization" value={`${displayUtilization}%`} change="+5pp YoY" changePositive subtext="Near tight markets" icon="📈" />
         <MetricCard label="Demand CAGR 2024-27" value="~115%" subtext="Inference growing faster than training" icon="🚀" />
       </div>
@@ -90,7 +90,7 @@ export default function ComputeSupplyDemand() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
         <div className="bg-sa-card rounded-xl border border-sa-border p-4">
-          <h3 className="text-sm font-semibold text-white mb-4">Supply vs Demand (H100-eq EFLOPS M)</h3>
+          <h3 className="text-sm font-semibold text-white mb-4">Supply vs Demand (B200-eq EFLOPS M)</h3>
           <ResponsiveContainer width="100%" height={260}>
             <ComposedChart data={supplyDemandForChart} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e2a42" />
@@ -152,7 +152,7 @@ export default function ComputeSupplyDemand() {
       </div>
 
       <DataTable
-        title="Supply & Demand Detailed Data (H100-eq EFLOPS, Millions)"
+        title="Supply & Demand Detailed Data (B200-eq EFLOPS, Millions)"
         columns={[
           { key: 'Year', label: 'Year', align: 'left' },
           { key: 'Inference Supply', label: 'Inf. Supply', align: 'right' },
