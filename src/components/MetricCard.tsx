@@ -8,22 +8,30 @@ interface MetricCardProps {
   subtext?: string;
   accent?: boolean;
   icon?: string;
+  onClick?: () => void;
+  linkTo?: string;
 }
 
 export default function MetricCard({
-  label, value, change, changePositive, subtext, accent, icon,
+  label, value, change, changePositive, subtext, accent, icon, onClick,
 }: MetricCardProps) {
   return (
-    <div className={`rounded-xl p-4 border ${
-      accent
-        ? 'bg-sa-accent/10 border-sa-accent/40'
-        : 'bg-sa-card border-sa-border'
-    }`}>
+    <div
+      onClick={onClick}
+      className={`rounded-xl p-4 border transition-all ${
+        accent
+          ? 'bg-sa-accent/10 border-sa-accent/40'
+          : 'bg-sa-card border-sa-border'
+      } ${onClick ? 'cursor-pointer hover:border-sa-accent/60 hover:bg-sa-surface group' : ''}`}
+    >
       <div className="flex items-start justify-between gap-2">
         <p className="text-xs text-sa-muted font-medium uppercase tracking-wider leading-tight">
           {label}
         </p>
-        {icon && <span className="text-lg">{icon}</span>}
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {icon && <span className="text-lg">{icon}</span>}
+          {onClick && <span className="text-sa-muted text-xs opacity-0 group-hover:opacity-100 transition-opacity">→</span>}
+        </div>
       </div>
       <p className={`text-2xl font-bold mt-2 number-cell ${accent ? 'text-sa-accent' : 'text-white'}`}>
         {value}
