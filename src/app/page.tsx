@@ -54,7 +54,7 @@ export default function Home() {
   const [active, setActive] = useState('overview');
 
   return (
-    <ParamsProvider>
+    <ParamsProvider activeSection={active} onNavigate={setActive}>
       <div className="flex min-h-screen bg-sa-bg">
         <Sidebar sections={SECTIONS} active={active} onSelect={setActive} />
         <div className="flex-1 ml-64">
