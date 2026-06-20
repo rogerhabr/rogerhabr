@@ -219,7 +219,7 @@ export default function TokenThroughput() {
           { key: 'HBM (TB)', label: 'HBM (TB)', align: 'right' },
           { key: 'BW (TB/s)', label: 'BW (TB/s)', align: 'right' },
           { key: 'Power (W)', label: 'Power (W)', align: 'right' },
-          { key: 'H100 Equiv.', label: 'H100 Equiv.', align: 'right' },
+          { key: 'B200 Equiv.', label: 'B200 Equiv.', align: 'right' },
           { key: 'Year', label: 'Year', align: 'right' },
         ]}
         data={hwSpecData}
