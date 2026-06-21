@@ -4,6 +4,7 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
+import AssumptionsPanel from '@/components/AssumptionsPanel';
 import { ParamsProvider } from '@/contexts/ParamsContext';
 
 const Overview               = dynamic(() => import('@/components/sections/Overview'),                { ssr: false });
@@ -67,6 +68,7 @@ export default function Home() {
           </main>
         </div>
       </div>
+      <AssumptionsPanel />
     </ParamsProvider>
   );
 }

@@ -17,7 +17,11 @@ export default function RevenueProfit() {
   const [segment, setSegment] = useState('all');
   const [view, setView] = useState('revenue');
 
-  // Combine revenue and margin data, applying scenario multiplier to non-2024 rows
+  // Base (2025E) values for each margin type — used to compute per-year deltas
+  const BASE_RENTAL_MARGIN = 38;
+  const BASE_SOFTWARE_MARGIN = 42;
+
+  // Combine revenue and margin data, applying scenario multiplier + user margin overrides
   const combinedData = revenueByModel.map((r, i) => {
     const m = marginsByModel[i];
     const isForecast = r.year !== '2024';
@@ -26,16 +30,28 @@ export default function RevenueProfit() {
     const model = +(r.model * factor).toFixed(1);
     const software = +(r.software * factor).toFixed(1);
     const total = +(rental + model + software).toFixed(1);
+
+    // Apply user margin adjustments as deltas from base presets (forecast years only)
+    const rentalMargin = isForecast
+      ? Math.max(0, Math.min(100, m.rental + (params.rentalMarginPct - BASE_RENTAL_MARGIN)))
+      : m.rental;
+    const modelMargin = isForecast
+      ? m.model + params.modelMarginOffset
+      : m.model;
+    const softwareMargin = isForecast
+      ? Math.max(0, Math.min(100, m.software + (params.softwareMarginPct - BASE_SOFTWARE_MARGIN)))
+      : m.software;
+
     return {
       year: r.year,
       rental,
       model,
       software,
       total,
-      rentalMargin: m.rental,
-      modelMargin: m.model,
-      softwareMargin: m.software,
-      blendedMargin: +((rental * m.rental + model * Math.max(m.model, 0) + software * m.software) /
+      rentalMargin,
+      modelMargin,
+      softwareMargin,
+      blendedMargin: +((rental * rentalMargin + model * Math.max(modelMargin, 0) + software * softwareMargin) /
         (rental + model + software)).toFixed(1),
     };
   });

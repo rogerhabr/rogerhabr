@@ -1,5 +1,11 @@
 {
   "lastUpdated": null,
+  "sources": {
+    "stocks": "Yahoo Finance API (query1.finance.yahoo.com)",
+    "capex": "SEC EDGAR XBRL API (data.sec.gov) — 10-K filings",
+    "gpuCloud": "Azure Retail Prices API + Lambda Labs API",
+    "modelPricing": "Public API documentation (manually curated, last reviewed 2026-06)"
+  },
   "stocks": {
     "NVDA": null,
     "MSFT": null,
@@ -10,16 +16,29 @@
     "ORCL": null
   },
   "gpuCloud": {
-    "azureH100PerHour": null
+    "azureH100PerHour": null,
+    "lambdaH100PerHour": null
+  },
+  "capex": {
+    "MSFT": null,
+    "GOOGL": null,
+    "AMZN": null,
+    "META": null,
+    "ORCL": null,
+    "NVDA": null
   },
   "modelPricing": {
-    "GPT-4o": { "inputPerM": 2.50, "outputPerM": 10.00 },
-    "GPT-4o-mini": { "inputPerM": 0.15, "outputPerM": 0.60 },
-    "Claude Sonnet 4.6": { "inputPerM": 3.00, "outputPerM": 15.00 },
-    "Claude Haiku 4.5": { "inputPerM": 0.80, "outputPerM": 4.00 },
-    "Gemini 1.5 Pro": { "inputPerM": 1.25, "outputPerM": 5.00 },
-    "Gemini 2.0 Flash": { "inputPerM": 0.10, "outputPerM": 0.40 },
-    "DeepSeek V3": { "inputPerM": 0.07, "outputPerM": 0.28 },
-    "Llama 3.3 70B": { "inputPerM": 0.23, "outputPerM": 0.40 }
+    "GPT-4o":           { "inputPerM": 2.50,  "outputPerM": 10.00 },
+    "GPT-4o-mini":      { "inputPerM": 0.15,  "outputPerM": 0.60  },
+    "GPT-5":            { "inputPerM": 10.00, "outputPerM": 40.00 },
+    "Claude Opus 4.8":  { "inputPerM": 15.00, "outputPerM": 75.00 },
+    "Claude Sonnet 4":  { "inputPerM": 3.00,  "outputPerM": 15.00 },
+    "Claude Haiku 4.5": { "inputPerM": 0.80,  "outputPerM": 4.00  },
+    "Gemini 2.5 Pro":   { "inputPerM": 1.25,  "outputPerM": 10.00 },
+    "Gemini 2.5 Flash": { "inputPerM": 0.075, "outputPerM": 0.30  },
+    "DeepSeek V3":      { "inputPerM": 0.07,  "outputPerM": 0.28  },
+    "DeepSeek R2":      { "inputPerM": 0.80,  "outputPerM": 3.20  },
+    "Kimi K2":          { "inputPerM": 0.15,  "outputPerM": 0.60  },
+    "Llama 4 Maverick": { "inputPerM": 0.19,  "outputPerM": 0.49  }
   }
 }

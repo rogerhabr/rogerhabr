@@ -42,8 +42,15 @@ function SliderInput({ label, value, min, max, step, onChange, format }: {
 
 export default function ROICCalculator() {
   const { params } = useGlobalParams();
-  const [inputs, setInputs] = useState(defaultROICInputs);
-  const [activePreset, setActivePreset] = useState<'bear' | 'base' | 'bull' | null>('base');
+  const [inputs, setInputs] = useState(() => ({
+    ...defaultROICInputs,
+    utilizationPct: params.gpuUtilizationPct,
+    powerCostPerKWh: params.powerCostPerKwh,
+    amortizationYears: params.gpuDepreciationYears,
+    costPerGPU: params.gpuCostB200kUSD * 1000,
+    revenuePerMTokens: params.tokenInputPricePerM,
+  }));
+  const [activePreset, setActivePreset] = useState<'bear' | 'base' | 'bull' | null>(null);
 
   const results = calcROIC(inputs);
 

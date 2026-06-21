@@ -33,7 +33,23 @@ export default function HardwareDemandForecast() {
     };
   });
 
-  const filteredVendorShare = vendorMarketShare.map(d => {
+  // Adjust vendor market share based on user's nvidiaSharePct (base 2025E = 80%)
+  const NV_BASE_2025 = 80;
+  const nvScale = params.nvidiaSharePct / NV_BASE_2025;
+
+  const adjustedVendorShare = vendorMarketShare.map(d => {
+    const adjNV = Math.min(99, Math.round(d.NVIDIA * nvScale));
+    const origNonNV = 100 - d.NVIDIA;
+    const newNonNV = 100 - adjNV;
+    const nonNVScale = origNonNV > 0 ? newNonNV / origNonNV : 1;
+    const adjAMD = Math.round(d.AMD * nonNVScale);
+    const adjGoogle = Math.round(d.Google * nonNVScale);
+    const adjAmazon = Math.round(d.Amazon * nonNVScale);
+    const adjOther = Math.max(0, 100 - adjNV - adjAMD - adjGoogle - adjAmazon);
+    return { year: d.year, NVIDIA: adjNV, AMD: adjAMD, Google: adjGoogle, Amazon: adjAmazon, Other: adjOther };
+  });
+
+  const filteredVendorShare = adjustedVendorShare.map(d => {
     if (vendor === 'NVIDIA') return { year: d.year, NVIDIA: d.NVIDIA, AMD: 0, Google: 0, Amazon: 0, Other: 0 };
     if (vendor === 'AMD') return { year: d.year, NVIDIA: 0, AMD: d.AMD, Google: 0, Amazon: 0, Other: 0 };
     if (vendor === 'Google') return { year: d.year, NVIDIA: 0, AMD: 0, Google: d.Google, Amazon: 0, Other: 0 };
@@ -79,7 +95,7 @@ export default function HardwareDemandForecast() {
         <MetricCard label="Total GPU Demand 2025E" value="1.4M" change="+125% YoY" changePositive subtext="B200-eq units shipped" accent icon="📦" />
         <MetricCard label="Inference Share 2025E" value={`${inferenceShare2025}%`} change="vs 65% in 2023" changePositive subtext="Inference growing faster" icon="⚡" />
         <MetricCard label="GPU Demand 2027E" value="4.7M" change="+233% vs 2025E" changePositive subtext="CAGR 2024-27: 96%" icon="📈" />
-        <MetricCard label="NVIDIA Market Share 2027E" value="70%" change="-15pp vs 2024" subtext="AMD/Google/Amazon gaining" changePositive={false} icon="🎯" />
+        <MetricCard label="NVIDIA Market Share 2027E" value={`${adjustedVendorShare.find(d => d.year === '2027E')?.NVIDIA ?? 70}%`} change={`${params.nvidiaSharePct}% in 2025E`} subtext="AMD/Google/Amazon gaining" changePositive={false} icon="🎯" />
       </div>
 
       <div className="flex items-center gap-4 mb-4 flex-wrap">
