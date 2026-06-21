@@ -7,19 +7,25 @@ import Header from '@/components/Header';
 import AssumptionsPanel from '@/components/AssumptionsPanel';
 import { ParamsProvider } from '@/contexts/ParamsContext';
 
-const Overview               = dynamic(() => import('@/components/sections/Overview'),                { ssr: false });
-const HardwareInstalledBase  = dynamic(() => import('@/components/sections/HardwareInstalledBase'),   { ssr: false });
-const TokenThroughput        = dynamic(() => import('@/components/sections/TokenThroughput'),         { ssr: false });
-const ComputeSupplyDemand    = dynamic(() => import('@/components/sections/ComputeSupplyDemand'),     { ssr: false });
-const SaasDisruption         = dynamic(() => import('@/components/sections/SaasDisruption'),          { ssr: false });
-const AddressableMarket      = dynamic(() => import('@/components/sections/AddressableMarket'),       { ssr: false });
-const TokenPricingTrends     = dynamic(() => import('@/components/sections/TokenPricingTrends'),      { ssr: false });
-const FoundationLabFinancials= dynamic(() => import('@/components/sections/FoundationLabFinancials'), { ssr: false });
-const ROICCalculator         = dynamic(() => import('@/components/sections/ROICCalculator'),           { ssr: false });
-const HardwareDemandForecast = dynamic(() => import('@/components/sections/HardwareDemandForecast'),  { ssr: false });
-const RevenueProfit          = dynamic(() => import('@/components/sections/RevenueProfit'),            { ssr: false });
-const ScenarioBar            = dynamic(() => import('@/components/ScenarioBar'),                       { ssr: false });
-const DataSources            = dynamic(() => import('@/components/sections/DataSources'),               { ssr: false });
+const LOADING = () => (
+  <div className="flex items-center justify-center h-48 text-sa-muted text-sm animate-pulse">
+    Loading section…
+  </div>
+);
+
+const Overview               = dynamic(() => import('@/components/sections/Overview'),                { ssr: false, loading: LOADING });
+const HardwareInstalledBase  = dynamic(() => import('@/components/sections/HardwareInstalledBase'),   { ssr: false, loading: LOADING });
+const TokenThroughput        = dynamic(() => import('@/components/sections/TokenThroughput'),         { ssr: false, loading: LOADING });
+const ComputeSupplyDemand    = dynamic(() => import('@/components/sections/ComputeSupplyDemand'),     { ssr: false, loading: LOADING });
+const SaasDisruption         = dynamic(() => import('@/components/sections/SaasDisruption'),          { ssr: false, loading: LOADING });
+const AddressableMarket      = dynamic(() => import('@/components/sections/AddressableMarket'),       { ssr: false, loading: LOADING });
+const TokenPricingTrends     = dynamic(() => import('@/components/sections/TokenPricingTrends'),      { ssr: false, loading: LOADING });
+const FoundationLabFinancials= dynamic(() => import('@/components/sections/FoundationLabFinancials'), { ssr: false, loading: LOADING });
+const ROICCalculator         = dynamic(() => import('@/components/sections/ROICCalculator'),           { ssr: false, loading: LOADING });
+const HardwareDemandForecast = dynamic(() => import('@/components/sections/HardwareDemandForecast'),  { ssr: false, loading: LOADING });
+const RevenueProfit          = dynamic(() => import('@/components/sections/RevenueProfit'),            { ssr: false, loading: LOADING });
+const ScenarioBar            = dynamic(() => import('@/components/ScenarioBar'),                       { ssr: false, loading: LOADING });
+const DataSources            = dynamic(() => import('@/components/sections/DataSources'),               { ssr: false, loading: LOADING });
 
 const SECTIONS = [
   { id: 'overview',            label: 'Overview',                icon: '🏠', group: 'Dashboard' },
