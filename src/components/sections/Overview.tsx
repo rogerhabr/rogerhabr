@@ -29,7 +29,7 @@ export default function Overview() {
   const { mult, params, navigate } = useGlobalParams();
 
   const tamTotal = tokenEconomyTAM.map(d => {
-    const isForecast = d.year !== '2024';
+    const isForecast = d.year.endsWith('E');
     const factor = isForecast ? mult.tam : 1;
     return {
       year: d.year,
@@ -41,7 +41,7 @@ export default function Overview() {
   });
 
   const adjustedRevenue = revenueByModel.map(d => {
-    const isForecast = d.year !== '2024';
+    const isForecast = d.year.endsWith('E');
     const factor = isForecast ? mult.revenue : 1;
     return {
       year: d.year,
@@ -52,7 +52,7 @@ export default function Overview() {
   });
 
   const adjustedROIC = roicByEntity.map(d => {
-    const isForecast = d.year !== '2024';
+    const isForecast = d.year.endsWith('E');
     const offset = isForecast ? mult.roicOffset : 0;
     return {
       year: d.year,
@@ -62,7 +62,7 @@ export default function Overview() {
     };
   });
 
-  const latest2025 = tamTotal.find(d => d.year === '2025E')!;
+  const latest2025 = tamTotal.find(d => d.year === '2025')!;
   const latest2027 = tamTotal.find(d => d.year === '2027E')!;
 
   return (
@@ -84,14 +84,14 @@ export default function Overview() {
       )}
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="Token Economy TAM 2025E" value={`$${latest2025?.total?.toFixed(1) ?? '35.5'}B`} change="+196% YoY" changePositive subtext="Consumer + API + Software" accent icon="💰" onClick={() => navigate('addressable-market')} />
-        <MetricCard label="Token Economy TAM 2027E" value={`$${latest2027?.total?.toFixed(0) ?? '201'}B`} change="+465% vs 2025E" changePositive subtext="3-year CAGR: 138%" icon="📈" onClick={() => navigate('addressable-market')} />
-        <MetricCard label="Total AI CapEx 2025E" value="$355B" change="+64% YoY" changePositive subtext="Big 5 hyperscalers + labs" icon="🏗️" onClick={() => navigate('hardware-base')} />
-        <MetricCard label="GPU Installed Base 2025E" value="~2.0M" change="+105% YoY" changePositive subtext="B200-eq units (all players)" icon="⚡" onClick={() => navigate('hardware-base')} />
-        <MetricCard label="Avg Hyperscaler ROIC 2025E" value="19%" change="+10pp vs 2024" changePositive subtext="vs. -12% for foundation labs" icon="📊" onClick={() => navigate('roic-calculator')} />
-        <MetricCard label="Neocloud ROIC 2025E" value="26%" change="+4pp YoY" changePositive subtext="CoreWeave, Nebius, Crusoe" icon="☁️" onClick={() => navigate('roic-calculator')} />
-        <MetricCard label="AI Revenue 2025E" value="$133B" change="+145% YoY" changePositive subtext="Rental + Model + Software" icon="💎" onClick={() => navigate('revenue-profit')} />
-        <MetricCard label="AI Revenue 2028E" value="$1.1T" change="+725% vs 2025E" changePositive subtext="3-year CAGR: 101%" icon="🚀" onClick={() => navigate('revenue-profit')} />
+        <MetricCard label="Token Economy TAM 2025" value={`$${latest2025?.total?.toFixed(1) ?? '35.5'}B`} change="+196% YoY" changePositive subtext="Consumer + API + Software" accent icon="💰" onClick={() => navigate('addressable-market')} />
+        <MetricCard label="Token Economy TAM 2027E" value={`$${latest2027?.total?.toFixed(0) ?? '201'}B`} change="+465% vs 2025" changePositive subtext="3-year CAGR: 138%" icon="📈" onClick={() => navigate('addressable-market')} />
+        <MetricCard label="Total AI CapEx 2025" value="$355B" change="+64% YoY" changePositive subtext="Big 5 hyperscalers + labs" icon="🏗️" onClick={() => navigate('hardware-base')} />
+        <MetricCard label="GPU Installed Base 2025" value="~2.0M" change="+105% YoY" changePositive subtext="B200-eq units (all players)" icon="⚡" onClick={() => navigate('hardware-base')} />
+        <MetricCard label="Avg Hyperscaler ROIC 2025" value="19%" change="+10pp vs 2024" changePositive subtext="vs. -12% for foundation labs" icon="📊" onClick={() => navigate('roic-calculator')} />
+        <MetricCard label="Neocloud ROIC 2025" value="26%" change="+4pp YoY" changePositive subtext="CoreWeave, Nebius, Crusoe" icon="☁️" onClick={() => navigate('roic-calculator')} />
+        <MetricCard label="AI Revenue 2025" value="$133B" change="+145% YoY" changePositive subtext="Rental + Model + Software" icon="💎" onClick={() => navigate('revenue-profit')} />
+        <MetricCard label="AI Revenue 2028E" value="$1.1T" change="+725% vs 2025" changePositive subtext="3-year CAGR: 101%" icon="🚀" onClick={() => navigate('revenue-profit')} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">

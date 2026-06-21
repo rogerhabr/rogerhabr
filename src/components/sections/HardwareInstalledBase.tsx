@@ -39,9 +39,9 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 type View = 'hyperscalers' | 'foundationLabs' | 'neoclouds' | 'capex';
 
 const TIME_RANGE_YEARS: Record<string, string[]> = {
-  '2022-2025': ['2022', '2023', '2024', '2025E'],
-  '2022-2026': ['2022', '2023', '2024', '2025E', '2026E'],
-  '2022-2028': ['2022', '2023', '2024', '2025E', '2026E', '2027E', '2028E'],
+  '2022-2025': ['2022', '2023', '2024', '2025'],
+  '2022-2026': ['2022', '2023', '2024', '2025', '2026E'],
+  '2022-2028': ['2022', '2023', '2024', '2025', '2026E', '2027E', '2028E'],
 };
 
 export default function HardwareInstalledBase() {
@@ -92,10 +92,10 @@ export default function HardwareInstalledBase() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="Hyperscaler GPUs 2025E" value="1.40M" change="+86% YoY" changePositive subtext="B200-eq units (5 players)" accent icon="🖥️" />
-        <MetricCard label="Foundation Lab GPUs 2025E" value="172k" change="+121% YoY" changePositive subtext="OpenAI, Anthropic, xAI, DeepSeek" icon="🧠" />
-        <MetricCard label="Neocloud GPUs 2025E" value="215k" change="+145% YoY" changePositive subtext="CoreWeave leads at 150k" icon="☁️" />
-        <MetricCard label="Total AI CapEx 2025E" value="$355B" change="+64% YoY" changePositive subtext="Big 5 hyperscalers combined" icon="💵" />
+        <MetricCard label="Hyperscaler GPUs 2025" value="1.40M" change="+86% YoY" changePositive subtext="B200-eq units (5 players)" accent icon="🖥️" />
+        <MetricCard label="Foundation Lab GPUs 2025" value="172k" change="+121% YoY" changePositive subtext="OpenAI, Anthropic, xAI, DeepSeek" icon="🧠" />
+        <MetricCard label="Neocloud GPUs 2025" value="215k" change="+145% YoY" changePositive subtext="CoreWeave leads at 150k" icon="☁️" />
+        <MetricCard label="Total AI CapEx 2025" value="$355B" change="+64% YoY" changePositive subtext="Big 5 hyperscalers combined" icon="💵" />
       </div>
 
       <div className="flex gap-2 mb-4 flex-wrap">

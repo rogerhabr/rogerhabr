@@ -73,7 +73,7 @@ export default function TokenThroughput() {
         <MetricCard label="GB200 Peak Throughput" value="2,230 t/s" subtext="Claude Sonnet 4 per chip" accent icon="⚡" />
         <MetricCard label="MoE Advantage" value="~6x" subtext="DeepSeek V3 vs GPT-5 on same HW" icon="🔮" />
         <MetricCard label="TPU v7 vs H100" value="2.0x" subtext="Throughput per chip (MoE models)" icon="📊" />
-        <MetricCard label="Total Tokens/Day 2025E" value="~850T" subtext="Global AI inference demand" icon="🌍" />
+        <MetricCard label="Total Tokens/Day 2025" value="~850T" subtext="Global AI inference demand" icon="🌍" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">

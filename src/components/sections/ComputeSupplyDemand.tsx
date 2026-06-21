@@ -58,8 +58,8 @@ export default function ComputeSupplyDemand() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="Total Supply 2025E" value="7.5M EFLOPS" change="+144% YoY" changePositive subtext="B200-eq annualized" accent icon="⚡" />
-        <MetricCard label="Total Demand 2025E" value="7.5M EFLOPS" change="+128% YoY" changePositive subtext="Inference + Training" icon="📊" />
+        <MetricCard label="Total Supply 2025" value="7.5M EFLOPS" change="+144% YoY" changePositive subtext="B200-eq annualized" accent icon="⚡" />
+        <MetricCard label="Total Demand 2025" value="7.5M EFLOPS" change="+128% YoY" changePositive subtext="Inference + Training" icon="📊" />
         <MetricCard label="Supply Utilization" value={`${displayUtilization}%`} change="+5pp YoY" changePositive subtext="Near tight markets" icon="📈" />
         <MetricCard label="Demand CAGR 2024-27" value="~115%" subtext="Inference growing faster than training" icon="🚀" />
       </div>

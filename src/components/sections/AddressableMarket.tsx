@@ -28,11 +28,11 @@ type SegmentFilter = 'all' | 'consumer' | 'api' | 'software';
 
 export default function AddressableMarket() {
   const { mult, params } = useGlobalParams();
-  const [selectedYear, setSelectedYear] = useState('2025E');
+  const [selectedYear, setSelectedYear] = useState('2025');
   const [segmentFilter, setSegmentFilter] = useState<SegmentFilter>('all');
 
   const adjustedTAM = tokenEconomyTAM.map(d => {
-    const isForecast = d.year !== '2024';
+    const isForecast = d.year.endsWith('E');
     const factor = (isForecast && params.scenario !== 'base') ? mult.tam : 1;
     return {
       year: d.year,
@@ -67,9 +67,9 @@ export default function AddressableMarket() {
     provider: a.provider,
     type: a.type,
     'MAU 2024 (M)': a.mau2024M,
-    'MAU 2025E (M)': a.mau2025M,
+    'MAU 2025 (M)': a.mau2025M,
     'Tokens/User/Day': a.tokensPerUserPerDay.toLocaleString(),
-    'Revenue 2025E ($B)': a.revenueRunRate2025B.toFixed(1),
+    'Revenue 2025 ($B)': a.revenueRunRate2025B.toFixed(1),
     pricing: a.pricingModel,
     color: a.color,
   }));
@@ -77,14 +77,14 @@ export default function AddressableMarket() {
   const mauGrowth = tokenApps.slice(0, 8).map(a => ({
     name: a.name.replace(' AI', '').replace(' Overviews', ''),
     '2024': a.mau2024M,
-    '2025E': a.mau2025M,
+    '2025': a.mau2025M,
     color: a.color,
   }));
 
   const TYPE_LABELS: Record<string, string> = { consumer: 'Consumer', api: 'API', software: 'Software' };
   const TYPE_COLORS: Record<string, string> = { consumer: '#f97316', api: '#3b82f6', software: '#10b981' };
 
-  const latest2025 = adjustedTAM.find(d => d.year === '2025E')!;
+  const latest2025 = adjustedTAM.find(d => d.year === '2025')!;
   const latest2027 = adjustedTAM.find(d => d.year === '2027E')!;
   const latest2028 = adjustedTAM.find(d => d.year === '2028E')!;
 
@@ -97,10 +97,10 @@ export default function AddressableMarket() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="Token Economy TAM 2025E" value={`$${(latest2025.consumerApps + latest2025.apiInference + latest2025.tokenSoftware).toFixed(1)}B`} change="+196% YoY" changePositive accent icon="💰" />
+        <MetricCard label="Token Economy TAM 2025" value={`$${(latest2025.consumerApps + latest2025.apiInference + latest2025.tokenSoftware).toFixed(1)}B`} change="+196% YoY" changePositive accent icon="💰" />
         <MetricCard label="Token Economy TAM 2027E" value={`$${(latest2027.consumerApps + latest2027.apiInference + latest2027.tokenSoftware).toFixed(0)}B`} change="3yr CAGR: 138%" changePositive icon="📈" />
         <MetricCard label="Token Economy TAM 2028E" value={`$${(latest2028.consumerApps + latest2028.apiInference + latest2028.tokenSoftware).toFixed(0)}B`} change="+100% vs 2027E" changePositive icon="🚀" />
-        <MetricCard label="Largest Segment 2025E" value="Consumer" subtext={`$${latest2025.consumerApps.toFixed(1)}B (${Math.round(latest2025.consumerApps / (latest2025.consumerApps + latest2025.apiInference + latest2025.tokenSoftware) * 100)}% share)`} icon="👤" />
+        <MetricCard label="Largest Segment 2025" value="Consumer" subtext={`$${latest2025.consumerApps.toFixed(1)}B (${Math.round(latest2025.consumerApps / (latest2025.consumerApps + latest2025.apiInference + latest2025.tokenSoftware) * 100)}% share)`} icon="👤" />
       </div>
 
       <div className="flex items-center gap-4 mb-4">
@@ -205,7 +205,7 @@ export default function AddressableMarket() {
             />
             <Legend wrapperStyle={{ fontSize: 11, color: '#94a3b8' }} />
             <Bar dataKey="2024" name="MAU 2024" fill="#1e40af" radius={[4, 4, 0, 0]} />
-            <Bar dataKey="2025E" name="MAU 2025E" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+            <Bar dataKey="2025" name="MAU 2025" fill="#3b82f6" radius={[4, 4, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -219,7 +219,7 @@ export default function AddressableMarket() {
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-sa-border">
-                {['Application', 'Provider', 'Type', 'MAU 2024', 'MAU 2025E', 'Tokens/User/Day', 'Revenue 2025E', 'Pricing'].map(h => (
+                {['Application', 'Provider', 'Type', 'MAU 2024', 'MAU 2025', 'Tokens/User/Day', 'Revenue 2025', 'Pricing'].map(h => (
                   <th key={h} className="px-3 py-2.5 text-left text-sa-muted font-semibold uppercase tracking-wider whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -235,11 +235,11 @@ export default function AddressableMarket() {
                     </span>
                   </td>
                   <td className="px-3 py-2.5 text-slate-300 number-cell">{app['MAU 2024 (M)']}M</td>
-                  <td className="px-3 py-2.5 text-sa-green number-cell font-bold">{app['MAU 2025E (M)']}M</td>
+                  <td className="px-3 py-2.5 text-sa-green number-cell font-bold">{app['MAU 2025 (M)']}M</td>
                   <td className="px-3 py-2.5 text-slate-300 number-cell">{app['Tokens/User/Day']}</td>
                   <td className="px-3 py-2.5 number-cell">
-                    {parseFloat(app['Revenue 2025E ($B)']) > 0
-                      ? <span className="text-sa-accent font-bold">${app['Revenue 2025E ($B)']}B</span>
+                    {parseFloat(app['Revenue 2025 ($B)']) > 0
+                      ? <span className="text-sa-accent font-bold">${app['Revenue 2025 ($B)']}B</span>
                       : <span className="text-sa-muted">—</span>
                     }
                   </td>

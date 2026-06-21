@@ -216,7 +216,7 @@ export default function SaasDisruption() {
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b border-sa-border">
-                  {['Company', 'Category', 'Founded', 'ARR 2025E', 'Revenue Model', 'Tokens/$1 Rev.', 'YoY Growth', 'ClusterMAX'].map(h => (
+                  {['Company', 'Category', 'Founded', 'ARR 2025', 'Revenue Model', 'Tokens/$1 Rev.', 'YoY Growth', 'ClusterMAX'].map(h => (
                     <th key={h} className="px-3 py-2.5 text-left text-sa-muted font-semibold uppercase tracking-wider whitespace-nowrap">{h}</th>
                   ))}
                 </tr>

@@ -67,10 +67,10 @@ export default function FoundationLabFinancials() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="OpenAI Revenue 2025E" value="$11.6B" change="+213% YoY" changePositive subtext="Largest foundation lab by revenue" accent icon="🟢" />
-        <MetricCard label="Anthropic Revenue 2025E" value="$3.0B" change="+200% YoY" changePositive subtext="API + Claude.ai + enterprise" icon="🟠" />
+        <MetricCard label="OpenAI Revenue 2025" value="$11.6B" change="+213% YoY" changePositive subtext="Largest foundation lab by revenue" accent icon="🟢" />
+        <MetricCard label="Anthropic Revenue 2025" value="$3.0B" change="+200% YoY" changePositive subtext="API + Claude.ai + enterprise" icon="🟠" />
         <MetricCard label="Total Lab Funding Raised" value={`$${Object.values(totalFunding).reduce((a, b) => a + b, 0).toFixed(0)}B+`} subtext="OpenAI, Anthropic, xAI combined" icon="💰" />
-        <MetricCard label="OpenAI Valuation 2025E" value="$340B" change="+116% vs 2024" changePositive subtext="SoftBank strategic round" icon="🦄" />
+        <MetricCard label="OpenAI Valuation 2025" value="$340B" change="+116% vs 2024" changePositive subtext="SoftBank strategic round" icon="🦄" />
       </div>
 
       <div className="flex gap-2 mb-5">
@@ -268,7 +268,7 @@ export default function FoundationLabFinancials() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
             {Object.entries(LAB_COLORS).map(([lab, color]) => {
               const latest = labValuations[labValuations.length - 1];
-              const rev2025 = labRevenue.find(r => r.year === '2025E')!;
+              const rev2025 = labRevenue.find(r => r.year === '2025')!;
               const revMultiple = lab in latest ? (latest as unknown as Record<string, number>)[lab] / (rev2025 as unknown as Record<string, number>)[lab] : 0;
               return (
                 <div key={lab} className="bg-sa-card rounded-xl border border-sa-border p-4">
@@ -280,7 +280,7 @@ export default function FoundationLabFinancials() {
                   <p className="text-xs text-sa-muted mt-1">2027E valuation</p>
                   {revMultiple > 0 && (
                     <p className="text-xs font-medium mt-2" style={{ color }}>
-                      {revMultiple.toFixed(0)}× 2025E revenue
+                      {revMultiple.toFixed(0)}× 2025 revenue
                     </p>
                   )}
                 </div>

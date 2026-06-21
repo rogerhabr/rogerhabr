@@ -207,7 +207,7 @@ export default function AssumptionsPanel() {
           {/* ── Market Structure ── */}
           <Divider title="Market Structure" />
           <Slider
-            label="NVIDIA Share (2025E)"
+            label="NVIDIA Share (2025)"
             value={params.nvidiaSharePct}
             min={40} max={95} step={1}
             format={v => `${v}%`}

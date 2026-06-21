@@ -1,8 +1,8 @@
 // All data is illustrative and based on publicly available estimates and analyst forecasts.
 // Sources: Company filings, earnings calls, Omdia, IDC, and public analyst reports.
 
-export const YEARS = ['2022', '2023', '2024', '2025E', '2026E', '2027E', '2028E'];
-export const FORECAST_YEARS = ['2025E', '2026E', '2027E', '2028E'];
+export const YEARS = ['2022', '2023', '2024', '2025', '2026E', '2027E', '2028E'];
+export const FORECAST_YEARS = ['2026E', '2027E', '2028E'];
 
 // ─── Hardware Installed Base ────────────────────────────────────────────────
 // B200-equivalent GPU units (thousands), normalized by FP8 throughput vs B200 SXM
@@ -11,7 +11,7 @@ export const hyperscalerGPUs = [
   { year: '2022', Microsoft: 16,  Google: 25,  Amazon: 13,  Meta: 16,  Oracle: 2  },
   { year: '2023', Microsoft: 47,  Google: 66,  Amazon: 30,  Meta: 33,  Oracle: 6  },
   { year: '2024', Microsoft: 153, Google: 184, Amazon: 106, Meta: 113, Oracle: 23 },
-  { year: '2025E',Microsoft: 288, Google: 328, Amazon: 213, Meta: 203, Oracle: 59 },
+  { year: '2025',Microsoft: 288, Google: 328, Amazon: 213, Meta: 203, Oracle: 59 },
   { year: '2026E',Microsoft: 431, Google: 513, Amazon: 341, Meta: 319, Oracle:106 },
   { year: '2027E',Microsoft: 613, Google: 725, Amazon: 488, Meta: 453, Oracle:159 },
   { year: '2028E',Microsoft: 828, Google: 969, Amazon: 650, Meta: 619, Oracle:225 },
@@ -29,7 +29,7 @@ export const foundationLabGPUs = [
   { year: '2022', OpenAI:  6, Anthropic:  2, xAI: 0,  DeepSeek:  1, 'Thinking Machines': 0 },
   { year: '2023', OpenAI:  9, Anthropic:  3, xAI: 3,  DeepSeek:  2, 'Thinking Machines': 1 },
   { year: '2024', OpenAI: 30, Anthropic:  9, xAI:13,  DeepSeek: 15, 'Thinking Machines': 3 },
-  { year: '2025E',OpenAI: 59, Anthropic: 20, xAI:41,  DeepSeek: 44, 'Thinking Machines': 8 },
+  { year: '2025',OpenAI: 59, Anthropic: 20, xAI:41,  DeepSeek: 44, 'Thinking Machines': 8 },
   { year: '2026E',OpenAI: 97, Anthropic: 39, xAI:78,  DeepSeek: 72, 'Thinking Machines':17 },
   { year: '2027E',OpenAI:138, Anthropic: 61, xAI:125, DeepSeek:106, 'Thinking Machines':28 },
 ];
@@ -46,7 +46,7 @@ export const neocloudGPUs = [
   { year: '2022', CoreWeave:  5, Nebius: 1, Crusoe:  1, 'Lambda Labs':  2 },
   { year: '2023', CoreWeave: 14, Nebius: 2, Crusoe:  2, 'Lambda Labs':  4 },
   { year: '2024', CoreWeave: 61, Nebius: 6, Crusoe:  4, 'Lambda Labs': 11 },
-  { year: '2025E',CoreWeave:150, Nebius:23, Crusoe: 15, 'Lambda Labs': 27 },
+  { year: '2025',CoreWeave:150, Nebius:23, Crusoe: 15, 'Lambda Labs': 27 },
   { year: '2026E',CoreWeave:244, Nebius:45, Crusoe: 31, 'Lambda Labs': 50 },
   { year: '2027E',CoreWeave:338, Nebius:75, Crusoe: 55, 'Lambda Labs': 81 },
 ];
@@ -63,7 +63,7 @@ export const hyperscalerCapex = [
   { year: '2022', Microsoft: 22, Google: 25, Amazon: 32, Meta: 15, Oracle: 4  },
   { year: '2023', Microsoft: 28, Google: 32, Amazon: 48, Meta: 28, Oracle: 8  },
   { year: '2024', Microsoft: 53, Google: 52, Amazon: 75, Meta: 38, Oracle: 14 },
-  { year: '2025E',Microsoft: 80, Google: 75, Amazon:105, Meta: 65, Oracle: 30 },
+  { year: '2025',Microsoft: 80, Google: 75, Amazon:105, Meta: 65, Oracle: 30 },
   { year: '2026E',Microsoft:115, Google:108, Amazon:138, Meta: 92, Oracle: 50 },
   { year: '2027E',Microsoft:150, Google:143, Amazon:175, Meta:120, Oracle: 70 },
   { year: '2028E',Microsoft:190, Google:185, Amazon:215, Meta:155, Oracle: 90 },
@@ -165,7 +165,7 @@ export const tokenEconomyTAM = [
   { year: '2022', consumerApps: 0.4,  apiInference: 0.3, tokenSoftware: 0.1 },
   { year: '2023', consumerApps: 1.5,  apiInference: 1.2, tokenSoftware: 0.3 },
   { year: '2024', consumerApps: 5.2,  apiInference: 4.8, tokenSoftware: 2.0 },
-  { year: '2025E',consumerApps: 14.5, apiInference:13.8, tokenSoftware: 7.2 },
+  { year: '2025',consumerApps: 14.5, apiInference:13.8, tokenSoftware: 7.2 },
   { year: '2026E',consumerApps: 36.0, apiInference:36.5, tokenSoftware:18.5 },
   { year: '2027E',consumerApps: 79.0, apiInference:82.0, tokenSoftware:40.0 },
   { year: '2028E',consumerApps:158.0, apiInference:165.0,tokenSoftware:80.0 },
@@ -252,7 +252,7 @@ export const supplyDemand = [
   { year: '2022', inferenceSupply: 0.25, trainingSupply: 0.13, inferenceDemand: 0.19, trainingDemand: 0.16 },
   { year: '2023', inferenceSupply: 0.69, trainingSupply: 0.34, inferenceDemand: 0.56, trainingDemand: 0.44 },
   { year: '2024', inferenceSupply: 2.13, trainingSupply: 1.00, inferenceDemand: 1.84, trainingDemand: 1.19 },
-  { year: '2025E',inferenceSupply: 5.16, trainingSupply: 2.34, inferenceDemand: 4.63, trainingDemand: 2.88 },
+  { year: '2025',inferenceSupply: 5.16, trainingSupply: 2.34, inferenceDemand: 4.63, trainingDemand: 2.88 },
   { year: '2026E',inferenceSupply:10.63, trainingSupply: 4.69, inferenceDemand:10.16, trainingDemand: 5.78 },
   { year: '2027E',inferenceSupply:20.00, trainingSupply: 8.44, inferenceDemand:19.06, trainingDemand:10.00 },
   { year: '2028E',inferenceSupply:35.94, trainingSupply:15.00, inferenceDemand:35.00, trainingDemand:16.25 },
@@ -263,7 +263,7 @@ export const supplyByType = [
   { year: '2022', hyperscalers: 0.28, foundationLabs: 0.06, neoclouds: 0.03 },
   { year: '2023', hyperscalers: 0.75, foundationLabs: 0.19, neoclouds: 0.09 },
   { year: '2024', hyperscalers: 2.34, foundationLabs: 0.56, neoclouds: 0.22 },
-  { year: '2025E',hyperscalers: 5.56, foundationLabs: 1.41, neoclouds: 0.53 },
+  { year: '2025',hyperscalers: 5.56, foundationLabs: 1.41, neoclouds: 0.53 },
   { year: '2026E',hyperscalers:11.56, foundationLabs: 2.81, neoclouds: 0.94 },
   { year: '2027E',hyperscalers:21.88, foundationLabs: 4.69, neoclouds: 1.88 },
   { year: '2028E',hyperscalers:39.38, foundationLabs: 8.13, neoclouds: 3.44 },
@@ -275,7 +275,7 @@ export const roicByEntity = [
   { year: '2022', hyperscalers: -8,  foundationLabs: -55, neoclouds: 12 },
   { year: '2023', hyperscalers: -3,  foundationLabs: -42, neoclouds: 17 },
   { year: '2024', hyperscalers:  9,  foundationLabs: -28, neoclouds: 22 },
-  { year: '2025E',hyperscalers: 19,  foundationLabs: -12, neoclouds: 26 },
+  { year: '2025',hyperscalers: 19,  foundationLabs: -12, neoclouds: 26 },
   { year: '2026E',hyperscalers: 26,  foundationLabs:   4, neoclouds: 30 },
   { year: '2027E',hyperscalers: 29,  foundationLabs:  17, neoclouds: 34 },
   { year: '2028E',hyperscalers: 31,  foundationLabs:  25, neoclouds: 36 },
@@ -288,7 +288,7 @@ export const revenueByModel = [
   { year: '2022', rental: 4,    model: 0.5, software: 1    },
   { year: '2023', rental: 8,    model: 2,   software: 5    },
   { year: '2024', rental: 22,   model: 10,  software: 18   },
-  { year: '2025E',rental: 48,   model: 30,  software: 55   },
+  { year: '2025',rental: 48,   model: 30,  software: 55   },
   { year: '2026E',rental: 95,   model: 70,  software: 130  },
   { year: '2027E',rental: 175,  model: 145, software: 280  },
   { year: '2028E',rental: 300,  model: 280, software: 520  },
@@ -299,7 +299,7 @@ export const marginsByModel = [
   { year: '2022', rental: 28, model: -80, software: 45 },
   { year: '2023', rental: 31, model: -65, software: 40 },
   { year: '2024', rental: 35, model: -30, software: 38 },
-  { year: '2025E',rental: 38, model:  -5, software: 42 },
+  { year: '2025',rental: 38, model:  -5, software: 42 },
   { year: '2026E',rental: 40, model:  18, software: 48 },
   { year: '2027E',rental: 42, model:  28, software: 52 },
   { year: '2028E',rental: 43, model:  35, software: 56 },
@@ -312,7 +312,7 @@ export const hardwareDemandForecast = [
   { year: '2022', inferenceGPUs:   56, trainingGPUs:   38, total:   94 },
   { year: '2023', inferenceGPUs:  150, trainingGPUs:  100, total:  250 },
   { year: '2024', inferenceGPUs:  406, trainingGPUs:  219, total:  625 },
-  { year: '2025E',inferenceGPUs:  969, trainingGPUs:  438, total: 1406 },
+  { year: '2025',inferenceGPUs:  969, trainingGPUs:  438, total: 1406 },
   { year: '2026E',inferenceGPUs: 1938, trainingGPUs:  719, total: 2656 },
   { year: '2027E',inferenceGPUs: 3594, trainingGPUs: 1094, total: 4688 },
   { year: '2028E',inferenceGPUs: 6094, trainingGPUs: 1563, total: 7656 },
@@ -323,7 +323,7 @@ export const vendorMarketShare = [
   { year: '2022', NVIDIA: 92, AMD: 4, Google: 2, Amazon: 1, Other: 1 },
   { year: '2023', NVIDIA: 90, AMD: 5, Google: 3, Amazon: 1, Other: 1 },
   { year: '2024', NVIDIA: 85, AMD: 8, Google: 4, Amazon: 2, Other: 1 },
-  { year: '2025E',NVIDIA: 80, AMD:10, Google: 6, Amazon: 3, Other: 1 },
+  { year: '2025',NVIDIA: 80, AMD:10, Google: 6, Amazon: 3, Other: 1 },
   { year: '2026E',NVIDIA: 75, AMD:12, Google: 7, Amazon: 4, Other: 2 },
   { year: '2027E',NVIDIA: 70, AMD:14, Google: 9, Amazon: 5, Other: 2 },
   { year: '2028E',NVIDIA: 65, AMD:16, Google:11, Amazon: 6, Other: 2 },
@@ -473,7 +473,7 @@ export const priceCompression = [
   { quarter: 'Q1 2025', medianInput: 1.2,  frontierInput: 15.0, cheapestInput: 0.075, tokensPerDollar: 3000000 },
   { quarter: 'Q2 2025', medianInput: 0.9,  frontierInput: 15.0, cheapestInput: 0.075, tokensPerDollar: 4000000 },
   { quarter: 'Q3 2025', medianInput: 0.5,  frontierInput: 10.0, cheapestInput: 0.05,  tokensPerDollar: 6000000 },
-  { quarter: 'Q4 2025E',medianInput: 0.35, frontierInput: 8.0,  cheapestInput: 0.03,  tokensPerDollar: 10000000 },
+  { quarter: 'Q4 2025',medianInput: 0.35, frontierInput: 8.0,  cheapestInput: 0.03,  tokensPerDollar: 10000000 },
   { quarter: 'Q2 2026E',medianInput: 0.20, frontierInput: 5.0,  cheapestInput: 0.02,  tokensPerDollar: 18000000 },
 ];
 
@@ -483,7 +483,7 @@ export const labRevenue = [
   { year: '2022', OpenAI: 0.4,  Anthropic: 0.05, xAI: 0,    DeepSeek: 0.01 },
   { year: '2023', OpenAI: 1.6,  Anthropic: 0.15, xAI: 0.04, DeepSeek: 0.03 },
   { year: '2024', OpenAI: 3.7,  Anthropic: 1.0,  xAI: 0.30, DeepSeek: 0.10 },
-  { year: '2025E',OpenAI: 11.6, Anthropic: 3.0,  xAI: 1.00, DeepSeek: 0.30 },
+  { year: '2025',OpenAI: 11.6, Anthropic: 3.0,  xAI: 1.00, DeepSeek: 0.30 },
   { year: '2026E',OpenAI: 28.0, Anthropic: 8.0,  xAI: 3.00, DeepSeek: 1.00 },
   { year: '2027E',OpenAI: 58.0, Anthropic: 18.0, xAI: 7.00, DeepSeek: 3.00 },
 ];
@@ -492,7 +492,7 @@ export const labOperatingIncome = [
   { year: '2022', OpenAI: -0.50, Anthropic: -0.30, xAI:  0.00, DeepSeek: -0.05 },
   { year: '2023', OpenAI: -0.54, Anthropic: -0.40, xAI: -0.20, DeepSeek: -0.10 },
   { year: '2024', OpenAI: -1.50, Anthropic: -0.60, xAI: -0.50, DeepSeek: -0.30 },
-  { year: '2025E',OpenAI: -2.00, Anthropic: -0.50, xAI: -0.80, DeepSeek: -0.40 },
+  { year: '2025',OpenAI: -2.00, Anthropic: -0.50, xAI: -0.80, DeepSeek: -0.40 },
   { year: '2026E',OpenAI:  2.00, Anthropic:  0.50, xAI: -0.50, DeepSeek: -0.20 },
   { year: '2027E',OpenAI: 12.00, Anthropic:  3.50, xAI:  0.50, DeepSeek:  0.20 },
 ];
@@ -524,7 +524,7 @@ export const labValuations = [
   { year: '2022', OpenAI: 29,  Anthropic: 4.5, xAI: 0,   DeepSeek: 0   },
   { year: '2023', OpenAI: 90,  Anthropic: 5,   xAI: 20,  DeepSeek: 0   },
   { year: '2024', OpenAI: 157, Anthropic: 18,  xAI: 24,  DeepSeek: 0   },
-  { year: '2025E',OpenAI: 340, Anthropic: 62,  xAI: 120, DeepSeek: 30  },
+  { year: '2025',OpenAI: 340, Anthropic: 62,  xAI: 120, DeepSeek: 30  },
   { year: '2026E',OpenAI: 600, Anthropic: 140, xAI: 200, DeepSeek: 80  },
   { year: '2027E',OpenAI: 1100,Anthropic: 300, xAI: 380, DeepSeek: 200 },
 ];
@@ -533,7 +533,7 @@ export const labHeadcount = [
   { year: '2022', OpenAI: 375,  Anthropic: 150,  xAI: 0,    DeepSeek: 50   },
   { year: '2023', OpenAI: 770,  Anthropic: 380,  xAI: 200,  DeepSeek: 150  },
   { year: '2024', OpenAI: 1800, Anthropic: 900,  xAI: 800,  DeepSeek: 300  },
-  { year: '2025E',OpenAI: 3500, Anthropic: 1600, xAI: 2000, DeepSeek: 500  },
+  { year: '2025',OpenAI: 3500, Anthropic: 1600, xAI: 2000, DeepSeek: 500  },
   { year: '2026E',OpenAI: 6000, Anthropic: 2800, xAI: 3500, DeepSeek: 900  },
 ];
 

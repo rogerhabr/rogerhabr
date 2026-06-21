@@ -17,14 +17,14 @@ export default function RevenueProfit() {
   const [segment, setSegment] = useState('all');
   const [view, setView] = useState('revenue');
 
-  // Base (2025E) values for each margin type — used to compute per-year deltas
+  // Base (2025) values for each margin type — used to compute per-year deltas
   const BASE_RENTAL_MARGIN = 38;
   const BASE_SOFTWARE_MARGIN = 42;
 
   // Combine revenue and margin data, applying scenario multiplier + user margin overrides
   const combinedData = revenueByModel.map((r, i) => {
     const m = marginsByModel[i];
-    const isForecast = r.year !== '2024';
+    const isForecast = r.year.endsWith('E');
     const factor = (isForecast && params.scenario !== 'base') ? mult.revenue : 1;
     const rental = +(r.rental * factor).toFixed(1);
     const model = +(r.model * factor).toFixed(1);
@@ -64,7 +64,7 @@ export default function RevenueProfit() {
   });
 
   const r2024 = combinedData.find(d => d.year === '2024')!;
-  const r2025 = combinedData.find(d => d.year === '2025E')!;
+  const r2025 = combinedData.find(d => d.year === '2025')!;
   const r2027 = combinedData.find(d => d.year === '2027E')!;
   const r2028 = combinedData.find(d => d.year === '2028E')!;
 
@@ -88,9 +88,9 @@ export default function RevenueProfit() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="Total AI Revenue 2025E" value={`$${r2025?.total ?? '133'}B`} change="+145% YoY" changePositive subtext="All 3 business models" accent icon="💰" />
-        <MetricCard label="Total AI Revenue 2027E" value={`$${r2027?.total ?? '600'}B`} change="+351% vs 2025E" changePositive subtext="CAGR 2024-27: 90%" icon="📈" />
-        <MetricCard label="Blended Margin 2025E" value="~28%" change="+8pp vs 2024" changePositive subtext="Model biz still negative" icon="📊" />
+        <MetricCard label="Total AI Revenue 2025" value={`$${r2025?.total ?? '133'}B`} change="+145% YoY" changePositive subtext="All 3 business models" accent icon="💰" />
+        <MetricCard label="Total AI Revenue 2027E" value={`$${r2027?.total ?? '600'}B`} change="+351% vs 2025" changePositive subtext="CAGR 2024-27: 90%" icon="📈" />
+        <MetricCard label="Blended Margin 2025" value="~28%" change="+8pp vs 2024" changePositive subtext="Model biz still negative" icon="📊" />
         <MetricCard label="Software Margin 2027E" value="52%" change="Best-in-class SaaS-like" changePositive subtext="Token software at scale" icon="💎" />
       </div>
 
@@ -168,7 +168,7 @@ export default function RevenueProfit() {
           <div className="grid grid-cols-3 gap-3">
             {[
               { year: '2024', rental: Math.round((r2024.rental / r2024.total) * 100), model: Math.round((r2024.model / r2024.total) * 100), software: Math.round((r2024.software / r2024.total) * 100), total: r2024.total },
-              { year: '2025E', rental: Math.round((r2025.rental / r2025.total) * 100), model: Math.round((r2025.model / r2025.total) * 100), software: Math.round((r2025.software / r2025.total) * 100), total: r2025.total },
+              { year: '2025', rental: Math.round((r2025.rental / r2025.total) * 100), model: Math.round((r2025.model / r2025.total) * 100), software: Math.round((r2025.software / r2025.total) * 100), total: r2025.total },
               { year: '2027E', rental: Math.round((r2027.rental / r2027.total) * 100), model: Math.round((r2027.model / r2027.total) * 100), software: Math.round((r2027.software / r2027.total) * 100), total: r2027.total },
             ].map(d => (
               <div key={d.year} className="p-3 rounded-lg bg-sa-surface border border-sa-border">

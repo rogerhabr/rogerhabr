@@ -27,7 +27,7 @@ export interface GlobalParams {
   modelMarginOffset: number;    // Adjustment to model API margin trajectory (pp)
   softwareMarginPct: number;    // Software / SaaS gross margin %
   gpuCostB200kUSD: number;      // Cost per B200-equiv GPU ($k)
-  nvidiaSharePct: number;       // NVIDIA accelerator market share in 2025E (%)
+  nvidiaSharePct: number;       // NVIDIA accelerator market share in 2025 (%)
 }
 
 export const SCENARIO_PRESETS: Record<Scenario, GlobalParams> = {
