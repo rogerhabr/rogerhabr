@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-21T04:41:59.113Z",
+  "lastUpdated": "2026-06-21T04:44:09.624Z",
   "sources": {
     "stocks": "Yahoo Finance API (query1.finance.yahoo.com/v8/finance/chart/{symbol})",
     "capex": "SEC EDGAR XBRL API (data.sec.gov/api/xbrl/companyfacts/CIK{n}.json) — PaymentsToAcquirePropertyPlantAndEquipment from 10-K",
@@ -51,7 +51,7 @@
     }
   },
   "gpuCloud": {
-    "azureH100PerHour": 1.396,
+    "azureH100PerHour": 6.98,
     "lambdaH100PerHour": null
   },
   "capex": {
@@ -66,8 +66,8 @@
       "source": "SEC EDGAR 10-K"
     },
     "AMZN": {
-      "value": 6.74,
-      "period": "2016-12-31",
+      "value": 27,
+      "period": "2025-12-31",
       "source": "SEC EDGAR 10-K"
     },
     "META": {
@@ -81,8 +81,8 @@
       "source": "SEC EDGAR 10-K"
     },
     "NVDA": {
-      "value": 0.14,
-      "period": "2012-01-29",
+      "value": 0.82,
+      "period": "2026-01-25",
       "source": "SEC EDGAR 10-K"
     }
   },
