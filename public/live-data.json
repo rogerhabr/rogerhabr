@@ -1,45 +1,92 @@
 {
-  "lastUpdated": "2026-06-21T04:30:12.370Z",
+  "lastUpdated": "2026-06-21T04:41:59.113Z",
   "sources": {
-    "stocks": "Yahoo Finance API (query1.finance.yahoo.com)",
-    "capex": "SEC EDGAR XBRL API (data.sec.gov) — 10-K filings",
-    "gpuCloud": "Azure Retail Prices API + Lambda Labs API",
-    "modelPricing": "Public API documentation (manually curated, last reviewed 2026-06)"
+    "stocks": "Yahoo Finance API (query1.finance.yahoo.com/v8/finance/chart/{symbol})",
+    "capex": "SEC EDGAR XBRL API (data.sec.gov/api/xbrl/companyfacts/CIK{n}.json) — PaymentsToAcquirePropertyPlantAndEquipment from 10-K",
+    "gpuCloud": "Azure Retail Prices API (prices.azure.com) + Lambda Labs API (cloud.lambdalabs.com)",
+    "modelPricing": "Public API documentation — manually curated, last reviewed 2026-06"
   },
   "stocks": {
-    "NVDA": null,
-    "MSFT": null,
-    "GOOGL": null,
-    "AMZN": null,
-    "META": null,
-    "AMD": null,
-    "ORCL": null
+    "NVDA": {
+      "price": 210.69,
+      "prevClose": 204.87,
+      "changePct": 2.84,
+      "marketCap": null
+    },
+    "MSFT": {
+      "price": 379.4,
+      "prevClose": 390.34,
+      "changePct": -2.8,
+      "marketCap": null
+    },
+    "GOOGL": {
+      "price": 368.03,
+      "prevClose": 357.77,
+      "changePct": 2.87,
+      "marketCap": null
+    },
+    "AMZN": {
+      "price": 244.39,
+      "prevClose": 241.51,
+      "changePct": 1.19,
+      "marketCap": null
+    },
+    "META": {
+      "price": 577.22,
+      "prevClose": 568.43,
+      "changePct": 1.55,
+      "marketCap": null
+    },
+    "AMD": {
+      "price": 537.37,
+      "prevClose": 488.45,
+      "changePct": 10.02,
+      "marketCap": null
+    },
+    "ORCL": {
+      "price": 184.29,
+      "prevClose": 184.1,
+      "changePct": 0.1,
+      "marketCap": null
+    }
   },
   "gpuCloud": {
-    "azureH100PerHour": null,
+    "azureH100PerHour": 1.396,
     "lambdaH100PerHour": null
   },
   "capex": {
-    "MSFT": null,
-    "GOOGL": null,
-    "AMZN": null,
-    "META": null,
-    "ORCL": null,
-    "NVDA": null
+    "MSFT": {
+      "value": 64.55,
+      "period": "2025-06-30",
+      "source": "SEC EDGAR 10-K"
+    },
+    "GOOGL": {
+      "value": 91.45,
+      "period": "2025-12-31",
+      "source": "SEC EDGAR 10-K"
+    },
+    "AMZN": {
+      "value": 6.74,
+      "period": "2016-12-31",
+      "source": "SEC EDGAR 10-K"
+    },
+    "META": {
+      "value": 69.69,
+      "period": "2025-12-31",
+      "source": "SEC EDGAR 10-K"
+    },
+    "ORCL": {
+      "value": 21.21,
+      "period": "2025-05-31",
+      "source": "SEC EDGAR 10-K"
+    },
+    "NVDA": {
+      "value": 0.14,
+      "period": "2012-01-29",
+      "source": "SEC EDGAR 10-K"
+    }
   },
   "modelPricing": {
-    "GPT-4o": {
-      "inputPerM": 2.5,
-      "outputPerM": 10
-    },
-    "GPT-4o-mini": {
-      "inputPerM": 0.15,
-      "outputPerM": 0.6
-    },
-    "GPT-5": {
-      "inputPerM": 10,
-      "outputPerM": 40
-    },
     "Claude Opus 4.8": {
       "inputPerM": 15,
       "outputPerM": 75
@@ -51,6 +98,18 @@
     "Claude Haiku 4.5": {
       "inputPerM": 0.8,
       "outputPerM": 4
+    },
+    "GPT-4o": {
+      "inputPerM": 2.5,
+      "outputPerM": 10
+    },
+    "GPT-4o-mini": {
+      "inputPerM": 0.15,
+      "outputPerM": 0.6
+    },
+    "GPT-5": {
+      "inputPerM": 10,
+      "outputPerM": 40
     },
     "Gemini 2.5 Pro": {
       "inputPerM": 1.25,
