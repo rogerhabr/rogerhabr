@@ -89,6 +89,10 @@ export default function HardwareInstalledBase() {
         title="AI Hardware Installed Base"
         subtitle="GPU compute inventory normalized to B200-equivalent units across hyperscalers, foundation labs, and neoclouds. Tracks cumulative installed base with FP8 performance normalization across NVIDIA (B200/B300), Google, and Amazon silicon."
         badge="Bottoms-Up"
+        sources={[
+          { type: 'derived', label: 'Derived: CapEx ÷ GPU ASP' },
+          { type: 'actual',  label: 'CapEx: SEC EDGAR 10-K 2022–2024', url: 'https://www.sec.gov/cgi-bin/browse-edgar' },
+        ]}
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

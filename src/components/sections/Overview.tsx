@@ -71,6 +71,10 @@ export default function Overview() {
         title="AI Tokenomics — Overview Dashboard"
         subtitle="End-to-end analysis connecting AI hardware investments to software revenue. Tracks the full value chain from GPU CapEx to token consumption and ROIC for hyperscalers, foundation labs, and neoclouds."
         badge="2026 Edition"
+        sources={[
+          { type: 'actual',   label: 'Live data: GitHub Actions daily' },
+          { type: 'estimate', label: 'Aggregated model — see Data Sources tab' },
+        ]}
       />
 
       {params.scenario !== 'base' && (

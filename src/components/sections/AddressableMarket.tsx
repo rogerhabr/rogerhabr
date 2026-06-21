@@ -94,6 +94,10 @@ export default function AddressableMarket() {
         title="Addressable Market — Token Economy"
         subtitle="Total addressable market for AI token consumption across consumer applications (ChatGPT, Grok, Meta AI), API inference endpoints (Claude, Gemini, DeepSeek), and token-consuming software companies (Cursor, Windsurf, Harvey, Perplexity)."
         badge="TAM Analysis"
+        sources={[
+          { type: 'estimate', label: 'Modeled TAM' },
+          { type: 'actual',   label: 'Anchors: OpenAI MAU, API pricing', url: 'https://openai.com/index/chatgpt-usage-march-2025/' },
+        ]}
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

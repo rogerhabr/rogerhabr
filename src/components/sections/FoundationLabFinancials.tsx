@@ -64,6 +64,10 @@ export default function FoundationLabFinancials() {
         title="Foundation Lab Financials"
         subtitle="Revenue growth, operating losses, funding rounds, and valuations for OpenAI, Anthropic, xAI, and DeepSeek. Tracks the path to profitability as model API revenue scales against compute and R&D costs."
         badge="Lab Economics"
+        sources={[
+          { type: 'estimate', label: 'Estimate: Private company disclosures' },
+          { type: 'actual',   label: 'Revenue anchors: Bloomberg / Reuters' },
+        ]}
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

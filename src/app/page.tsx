@@ -19,6 +19,7 @@ const ROICCalculator         = dynamic(() => import('@/components/sections/ROICC
 const HardwareDemandForecast = dynamic(() => import('@/components/sections/HardwareDemandForecast'),  { ssr: false });
 const RevenueProfit          = dynamic(() => import('@/components/sections/RevenueProfit'),            { ssr: false });
 const ScenarioBar            = dynamic(() => import('@/components/ScenarioBar'),                       { ssr: false });
+const DataSources            = dynamic(() => import('@/components/sections/DataSources'),               { ssr: false });
 
 const SECTIONS = [
   { id: 'overview',            label: 'Overview',                icon: '🏠', group: 'Dashboard' },
@@ -32,6 +33,7 @@ const SECTIONS = [
   { id: 'roic-calculator',     label: 'ROIC Calculator',         icon: '🧮', group: 'Economics' },
   { id: 'hardware-demand',     label: 'Hardware Demand Forecast',icon: '📦', group: 'Economics' },
   { id: 'revenue-profit',      label: 'Revenue & Profit',        icon: '💰', group: 'Economics' },
+  { id: 'data-sources',        label: 'Data Sources',            icon: '🔍', group: 'Methodology' },
 ];
 
 function SectionContent({ id }: { id: string }) {
@@ -47,6 +49,7 @@ function SectionContent({ id }: { id: string }) {
     case 'roic-calculator':    return <ROICCalculator />;
     case 'hardware-demand':    return <HardwareDemandForecast />;
     case 'revenue-profit':     return <RevenueProfit />;
+    case 'data-sources':       return <DataSources />;
     default:                   return null;
   }
 }

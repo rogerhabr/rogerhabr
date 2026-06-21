@@ -89,6 +89,10 @@ export default function HardwareDemandForecast() {
         title="AI Hardware Demand Forecast"
         subtitle="Aggregate GPU demand forecast based on inference adoption growth and training workload expansion. Translates token economy revenue growth into AI accelerator demand for NVIDIA, AMD, Google TPUs, Amazon Trainium, and emerging vendors."
         badge="Demand Model"
+        sources={[
+          { type: 'estimate', label: 'Modeled from NVIDIA guidance + IDC' },
+          { type: 'actual',   label: '2025 anchor: NVIDIA FY2026 guidance', url: 'https://investor.nvidia.com' },
+        ]}
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

@@ -106,6 +106,10 @@ export default function ROICCalculator() {
         title="ROIC Calculator"
         subtitle="Interactive return on invested capital model for AI compute deployments. Calculate revenue, costs, and ROIC for hyperscalers, foundation labs, and neoclouds. Adjust hardware, utilization, pricing, and OpEx assumptions."
         badge="Interactive"
+        sources={[
+          { type: 'actual',   label: 'Inputs: User-adjustable' },
+          { type: 'derived',  label: 'ROIC: Computed from your parameters' },
+        ]}
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">

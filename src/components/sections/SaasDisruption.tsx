@@ -62,6 +62,10 @@ export default function SaasDisruption() {
         title="SAAS Disruption Tracker"
         subtitle="AI removes the 'seat' from software sales. Traditional per-seat SaaS companies face token-based displacement as AI agents replace human workflows. Tracks revenue at risk, threat level, and emerging token-consuming replacements."
         badge="Disruption"
+        sources={[
+          { type: 'actual',   label: 'Revenue: SEC 10-K filings', url: 'https://www.sec.gov/cgi-bin/browse-edgar' },
+          { type: 'estimate', label: 'Risk %: Author model estimate' },
+        ]}
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

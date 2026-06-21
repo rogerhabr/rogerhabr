@@ -55,6 +55,10 @@ export default function ComputeSupplyDemand() {
         title="AI Compute Supply & Demand"
         subtitle="Track AI compute supply (available GPU capacity) versus demand (workload requirements) by hyperscalers, foundation labs, and neoclouds. Measured in B200-equivalent EFLOPS (millions) annualized."
         badge="Supply Chain"
+        sources={[
+          { type: 'derived',  label: 'Derived: GPU base × utilization' },
+          { type: 'estimate', label: 'Demand: Modeled workload estimates' },
+        ]}
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

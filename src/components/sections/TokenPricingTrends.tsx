@@ -63,6 +63,9 @@ export default function TokenPricingTrends() {
         title="Token Pricing Trends"
         subtitle="Price compression in AI inference APIs — from $30/1M tokens in 2023 to sub-$0.10/1M for commodity models. Tracks input/output pricing across OpenAI, Anthropic, Google, DeepSeek, and Meta. Falling prices are the single biggest driver of AI adoption growth."
         badge="Pricing Model"
+        sources={[
+          { type: 'actual', label: 'API Docs: Anthropic / OpenAI / Google', url: 'https://www.anthropic.com/pricing' },
+        ]}
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

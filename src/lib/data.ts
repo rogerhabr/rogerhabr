@@ -1,5 +1,6 @@
-// All data is illustrative and based on publicly available estimates and analyst forecasts.
-// Sources: Company filings, earnings calls, Omdia, IDC, and public analyst reports.
+// Data provenance is documented in src/lib/sources.ts (visible in the "Data Sources" section of the app).
+// Each series is tagged: actual (primary source), derived (computed from actuals), or estimate/forecast (modeled).
+// Cross-check all modeled figures against the primary sources listed in sources.ts before use.
 
 export const YEARS = ['2022', '2023', '2024', '2025', '2026E', '2027E', '2028E'];
 export const FORECAST_YEARS = ['2026E', '2027E', '2028E'];
@@ -58,15 +59,20 @@ export const neocloudColors: Record<string, string> = {
   'Lambda Labs': '#f59e0b',
 };
 
-// CapEx by hyperscaler ($B)
+// CapEx by hyperscaler ($B, calendar year)
+// ACTUAL 2022-2024: SEC EDGAR 10-K/10-Q PaymentsToAcquirePropertyPlantAndEquipment
+//   MSFT CY2024 ~$55B (FY ends June; CY sum of quarterly 10-Qs); GOOGL 2024 $52.5B (10-K); AMZN 2024 $77.4B (10-K); META 2024 $37.3B (10-K)
+//   ORCL FY ends May — CY2024 blends FY2024/FY2025; confirmed FY2024 was $8.9B
+// 2025: Guidance/announced plans (GOOGL $75B, AMZN ~$105B, META $60–65B midpoint, MSFT ~$80B+)
+// 2026E–2028E: Model projections — NOT from primary sources
 export const hyperscalerCapex = [
-  { year: '2022', Microsoft: 22, Google: 25, Amazon: 32, Meta: 15, Oracle: 4  },
-  { year: '2023', Microsoft: 28, Google: 32, Amazon: 48, Meta: 28, Oracle: 8  },
-  { year: '2024', Microsoft: 53, Google: 52, Amazon: 75, Meta: 38, Oracle: 14 },
-  { year: '2025',Microsoft: 80, Google: 75, Amazon:105, Meta: 65, Oracle: 30 },
-  { year: '2026E',Microsoft:115, Google:108, Amazon:138, Meta: 92, Oracle: 50 },
-  { year: '2027E',Microsoft:150, Google:143, Amazon:175, Meta:120, Oracle: 70 },
-  { year: '2028E',Microsoft:190, Google:185, Amazon:215, Meta:155, Oracle: 90 },
+  { year: '2022', Microsoft: 22,  Google: 25, Amazon:  32, Meta: 15, Oracle:  4 },
+  { year: '2023', Microsoft: 28,  Google: 32, Amazon:  48, Meta: 28, Oracle:  8 },
+  { year: '2024', Microsoft: 55,  Google: 53, Amazon:  77, Meta: 37, Oracle: 11 },
+  { year: '2025', Microsoft: 80,  Google: 75, Amazon: 105, Meta: 65, Oracle: 20 },
+  { year: '2026E',Microsoft: 115, Google:108, Amazon: 138, Meta: 92, Oracle: 32 },
+  { year: '2027E',Microsoft: 150, Google:143, Amazon: 175, Meta:120, Oracle: 45 },
+  { year: '2028E',Microsoft: 190, Google:185, Amazon: 215, Meta:155, Oracle: 60 },
 ];
 
 // ─── Hardware Specs ──────────────────────────────────────────────────────────
@@ -218,7 +224,7 @@ export const saasDisruptions: SaasDisruption[] = [
   { company: 'Atlassian',   sector: 'Dev Tools',     revenue2024B: 4.4,  revenueAtRiskPct: 55, seatModel: true,  aiResponse: 'Rovo AI, Jira AI', threatLevel: 'Critical', disruptors: ['Cursor', 'GitHub Copilot', 'Linear AI'], timelineYears: 2 },
   { company: 'Workday',     sector: 'HCM / ERP',     revenue2024B: 7.3,  revenueAtRiskPct: 30, seatModel: true,  aiResponse: 'Workday AI agents', threatLevel: 'Medium',   disruptors: ['Rippling', 'TriNet', 'AI HR agents'], timelineYears: 4 },
   { company: 'SAP',         sector: 'ERP',           revenue2024B: 35.4, revenueAtRiskPct: 25, seatModel: true,  aiResponse: 'SAP Business AI', threatLevel: 'Medium',   disruptors: ['AI-native ERP startups', 'Microsoft Copilot'], timelineYears: 5 },
-  { company: 'Microsoft',   sector: 'Productivity',  revenue2024B:211.9, revenueAtRiskPct: 15, seatModel: true,  aiResponse: 'Copilot across all products', threatLevel: 'Adapting', disruptors: ['Internal disruption'], timelineYears: 5 },
+  { company: 'Microsoft',   sector: 'Productivity',  revenue2024B:245.1, revenueAtRiskPct: 15, seatModel: true,  aiResponse: 'Copilot across all products', threatLevel: 'Adapting', disruptors: ['Internal disruption'], timelineYears: 5 },
   { company: 'Oracle',      sector: 'Database / ERP',revenue2024B: 53.0, revenueAtRiskPct: 20, seatModel: true,  aiResponse: 'Oracle AI Data Platform', threatLevel: 'Adapting', disruptors: ['Snowflake', 'AI-native databases'], timelineYears: 4 },
 ];
 

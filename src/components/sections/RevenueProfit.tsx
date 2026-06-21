@@ -85,6 +85,10 @@ export default function RevenueProfit() {
         title="AI Revenue & Profit Forecast"
         subtitle="Three-layer revenue model for the AI value chain: compute rental (hyperscalers/neoclouds), model API revenue (foundation labs), and AI software/SaaS revenue (token consumers). Tracks operating margins by segment as the industry matures."
         badge="P&L Model"
+        sources={[
+          { type: 'estimate', label: 'Modeled revenue split' },
+          { type: 'actual',   label: 'Anchors: CoreWeave S-1, OpenAI press', url: 'https://www.sec.gov/cgi-bin/browse-edgar?company=coreweave' },
+        ]}
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

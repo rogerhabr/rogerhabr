@@ -67,6 +67,10 @@ export default function TokenThroughput() {
         title="Token Throughput Forecast"
         subtitle="Bottoms-up token throughput analysis across hardware systems (GB200 NVL72, TPU v7, Trainium 3) and model architectures (GPT-5, Claude Sonnet, DeepSeek V3, Kimi K2). Measures actual inference capacity in tokens/second per chip."
         badge="Bottoms-Up"
+        sources={[
+          { type: 'derived', label: 'Derived: FP8 TFLOPS ratios' },
+          { type: 'actual',  label: 'Specs: Vendor datasheets', url: 'https://www.nvidia.com/en-us/data-center/' },
+        ]}
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
