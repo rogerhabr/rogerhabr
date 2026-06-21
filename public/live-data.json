@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-21T04:44:09.624Z",
+  "lastUpdated": "2026-06-21T04:55:01.321Z",
   "sources": {
     "stocks": "Yahoo Finance API (query1.finance.yahoo.com/v8/finance/chart/{symbol})",
     "capex": "SEC EDGAR XBRL API (data.sec.gov/api/xbrl/companyfacts/CIK{n}.json) — PaymentsToAcquirePropertyPlantAndEquipment from 10-K",
@@ -65,11 +65,7 @@
       "period": "2025-12-31",
       "source": "SEC EDGAR 10-K"
     },
-    "AMZN": {
-      "value": 27,
-      "period": "2025-12-31",
-      "source": "SEC EDGAR 10-K"
-    },
+    "AMZN": null,
     "META": {
       "value": 69.69,
       "period": "2025-12-31",
@@ -78,11 +74,6 @@
     "ORCL": {
       "value": 21.21,
       "period": "2025-05-31",
-      "source": "SEC EDGAR 10-K"
-    },
-    "NVDA": {
-      "value": 0.82,
-      "period": "2026-01-25",
       "source": "SEC EDGAR 10-K"
     }
   },
