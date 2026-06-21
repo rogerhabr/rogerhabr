@@ -62,12 +62,12 @@ export const DATA_SOURCES: Record<string, DataSource> = {
     sourceURL: 'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany',
     notes: [
       'CY2022–2024: Derived from quarterly 10-Q filings (calendar-year sum).',
-      'MSFT fiscal year ends June — CY estimate from Q3+Q4 FY prior + Q1+Q2 FY current.',
+      'MSFT fiscal year ends June — CY approximated from Q3+Q4 FY prior + Q1+Q2 FY current.',
       'ORCL fiscal year ends May — CY estimate blends two fiscal years.',
-      'CY2025: Mix of confirmed guidance (GOOGL $75B, AMZN ~$105B, META $60–65B) and estimates.',
+      'CY2025 CONFIRMED ACTUALS (SEC EDGAR 10-K): MSFT FY2025 $64.55B (ends Jun-2025), GOOGL CY2025 $91.45B, META CY2025 $69.69B, ORCL FY2025 $21.21B. AMZN CY2025 ~$105B from Q3 2025 earnings (EDGAR XBRL pipeline unavailable for AMZN post-2016 custom namespace).',
       'CY2026E–2028E: Model projections. Live data from SEC EDGAR XBRL API auto-refreshed daily by GitHub Actions.',
     ].join(' | '),
-    yearsActual: '2022–2024',
+    yearsActual: '2022–2025',
     yearsForecast: '2026E–2028E',
   },
 
@@ -75,9 +75,28 @@ export const DATA_SOURCES: Record<string, DataSource> = {
     label: 'Hyperscaler GPU Installed Base (B200-eq units, thousands)',
     sourceType: 'derived',
     primarySource: 'Derived from annual CapEx × estimated GPU CapEx allocation % ÷ blended GPU ASP; cross-checked against company disclosures',
-    notes: 'Hyperscalers do NOT publicly disclose exact GPU counts. Meta disclosed 350k H100s (Feb 2024 earnings). Microsoft disclosed 1.8M GPUs total fleet (Build 2024). These anchor points calibrate the model. Other figures are estimates.',
-    yearsActual: '2022–2024',
+    notes: 'Hyperscalers do NOT publicly disclose exact GPU counts. Meta disclosed 350k H100s (Feb 2024 earnings). Microsoft disclosed 1.8M GPUs total fleet (Build 2024). GOOGL disclosed TPU v5p/v6e deployments at Google I/O 2025. These anchor points calibrate the model. Normalized to B200-equivalent using FP8 TFLOPS ratios (H100=0.31×, B200=1×, TPU v7=1.41×).',
+    yearsActual: '2022–2025',
     yearsForecast: '2026E–2028E',
+  },
+
+  foundationLabGPUs: {
+    label: 'Foundation Lab GPU Installed Base (B200-eq units, thousands)',
+    sourceType: 'derived',
+    primarySource: 'Derived from reported CapEx and funding deployed in compute; anchored against company disclosures and compute cost benchmarks',
+    notes: 'Foundation labs do not publicly disclose GPU counts or compute budgets. OpenAI has referenced "tens of thousands" of H100s. xAI disclosed ~100k H100 cluster (Memphis, 2024). DeepSeek V3/R1 training costs suggest significant but lower compute access. Normalized to B200-equivalent. Treat as order-of-magnitude estimates only.',
+    yearsActual: '2022–2024',
+    yearsForecast: '2026E–2027E',
+  },
+
+  neocloudGPUs: {
+    label: 'Neocloud GPU Installed Base (B200-eq units, thousands)',
+    sourceType: 'derived',
+    primarySource: 'CoreWeave S-1/IPO filings (2024), Nebius IPO prospectus, Lambda Labs and Crusoe press disclosures',
+    notes: 'CoreWeave: ~150k H100-equivalent GPUs as of early 2024 per S-1; fleet growing rapidly post-IPO ($11.5B raised). Nebius: ~35k H100 disclosed at IPO (Q4 2024). Lambda Labs and Crusoe: from press and funding round disclosures. All figures normalized to B200-equivalent (H100=0.31×). 2025+ are model projections based on disclosed CapEx plans.',
+    sourceURL: 'https://www.sec.gov/cgi-bin/browse-edgar?company=coreweave',
+    yearsActual: '2022–2024',
+    yearsForecast: '2026E–2027E',
   },
 
   // ── Revenue & Profit ─────────────────────────────────────────────────────

@@ -139,7 +139,7 @@ export default function AssumptionsPanel() {
             min={0.05} max={10} step={0.05}
             format={v => `$${v.toFixed(2)}`}
             onChange={v => setParam('tokenInputPricePerM', v)}
-            source="API pricing pages"
+            source="Revenue-weighted avg"
           />
 
           {/* ── Hardware & Compute ── */}
