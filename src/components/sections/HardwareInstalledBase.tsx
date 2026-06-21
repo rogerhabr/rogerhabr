@@ -13,6 +13,7 @@ import {
   hyperscalerGPUs, hyperscalerColors, foundationLabGPUs, foundationLabColors,
   neocloudGPUs, neocloudColors, hyperscalerCapex,
 } from '@/lib/data';
+import { useLiveData } from '@/hooks/useLiveData';
 
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number; color: string }[]; label?: string }) => {
   if (!active || !payload?.length) return null;
@@ -44,10 +45,61 @@ const TIME_RANGE_YEARS: Record<string, string[]> = {
   '2022-2028': ['2022', '2023', '2024', '2025', '2026E', '2027E', '2028E'],
 };
 
+const HYPERSCALER_KEYS = ['Microsoft', 'Google', 'Amazon', 'Meta', 'Oracle'] as const;
+const FOUNDATION_LAB_KEYS = ['OpenAI', 'Anthropic', 'xAI', 'DeepSeek', 'Thinking Machines'] as const;
+const NEOCLOUD_KEYS = ['CoreWeave', 'Nebius', 'Crusoe', 'Lambda Labs'] as const;
+
+function sumKeys(row: Record<string, unknown>, keys: readonly string[]): number {
+  return keys.reduce((s, k) => s + ((row[k] as number) || 0), 0);
+}
+
+function yoyPct(curr: number, prev: number): string {
+  return `+${((curr / prev - 1) * 100).toFixed(0)}% YoY`;
+}
+
 export default function HardwareInstalledBase() {
   const [view, setView] = useState<View>('hyperscalers');
   const [timeRange, setTimeRange] = useState('2022-2028');
   const [gpuMetric, setGpuMetric] = useState('units');
+  const { liveData, liveLoaded } = useLiveData();
+
+  // 2025 CapEx: use live SEC EDGAR values where available; Amazon falls back to earnings estimate
+  const liveCapex2025 = {
+    Microsoft: liveData.capex?.['MSFT']?.value ?? 64.55,
+    Google:    liveData.capex?.['GOOGL']?.value ?? 91.45,
+    Amazon:    105,   // EDGAR XBRL unavailable for AMZN — Q3 2025 earnings estimate
+    Meta:      liveData.capex?.['META']?.value ?? 69.69,
+    Oracle:    liveData.capex?.['ORCL']?.value ?? 21.21,
+  };
+
+  // Replace 2025 row with live data; all other years use static 10-K actuals
+  const mergedCapex = hyperscalerCapex.map(row =>
+    row.year === '2025' ? { ...row, ...liveCapex2025 } : row
+  );
+
+  // Compute all metric values from data arrays — no hardcoded numbers in MetricCards
+  const h2024 = hyperscalerGPUs.find(d => d.year === '2024')!;
+  const h2025 = hyperscalerGPUs.find(d => d.year === '2025')!;
+  const hyperscalerTotal2024 = sumKeys(h2024, HYPERSCALER_KEYS);
+  const hyperscalerTotal2025 = sumKeys(h2025, HYPERSCALER_KEYS);
+
+  const fl2024 = foundationLabGPUs.find(d => d.year === '2024')!;
+  const fl2025 = foundationLabGPUs.find(d => d.year === '2025')!;
+  const foundationLabTotal2024 = sumKeys(fl2024, FOUNDATION_LAB_KEYS);
+  const foundationLabTotal2025 = sumKeys(fl2025, FOUNDATION_LAB_KEYS);
+
+  const nc2024 = neocloudGPUs.find(d => d.year === '2024')!;
+  const nc2025 = neocloudGPUs.find(d => d.year === '2025')!;
+  const neocloudTotal2024 = sumKeys(nc2024, NEOCLOUD_KEYS);
+  const neocloudTotal2025 = sumKeys(nc2025, NEOCLOUD_KEYS);
+
+  const capex2024 = hyperscalerCapex.find(d => d.year === '2024')!;
+  const capex2024Total = sumKeys(capex2024, HYPERSCALER_KEYS);
+  const capex2025Total = Object.values(liveCapex2025).reduce((s, v) => s + v, 0);
+
+  const capexFetchDate = liveLoaded && liveData.lastUpdated
+    ? new Date(liveData.lastUpdated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : null;
 
   const tabs: { id: View; label: string }[] = [
     { id: 'hyperscalers', label: 'Hyperscalers' },
@@ -57,29 +109,32 @@ export default function HardwareInstalledBase() {
   ];
 
   const dataMap = {
-    hyperscalers: { data: hyperscalerGPUs, colors: hyperscalerColors, keys: ['Microsoft', 'Google', 'Amazon', 'Meta', 'Oracle'], unit: 'k B200-eq GPUs' },
-    foundationLabs: { data: foundationLabGPUs, colors: foundationLabColors, keys: ['OpenAI', 'Anthropic', 'xAI', 'DeepSeek', 'Thinking Machines'], unit: 'k B200-eq GPUs' },
-    neoclouds: { data: neocloudGPUs, colors: neocloudColors, keys: ['CoreWeave', 'Nebius', 'Crusoe', 'Lambda Labs'], unit: 'k B200-eq GPUs' },
-    capex: { data: hyperscalerCapex, colors: hyperscalerColors, keys: ['Microsoft', 'Google', 'Amazon', 'Meta', 'Oracle'], unit: '$B CapEx' },
+    hyperscalers: { data: hyperscalerGPUs,   colors: hyperscalerColors,   keys: [...HYPERSCALER_KEYS],    unit: 'k B200-eq GPUs' },
+    foundationLabs: { data: foundationLabGPUs, colors: foundationLabColors, keys: [...FOUNDATION_LAB_KEYS], unit: 'k B200-eq GPUs' },
+    neoclouds:    { data: neocloudGPUs,       colors: neocloudColors,       keys: [...NEOCLOUD_KEYS],       unit: 'k B200-eq GPUs' },
+    capex:        { data: mergedCapex,         colors: hyperscalerColors,   keys: [...HYPERSCALER_KEYS],    unit: '$B CapEx' },
   };
 
   const { data: rawData, colors, keys, unit } = dataMap[view];
-
   const allowedYears = TIME_RANGE_YEARS[timeRange] || TIME_RANGE_YEARS['2022-2028'];
   const data = rawData.filter(row => allowedYears.includes(row.year));
 
-  // Build table data
   const tableData = data.map(row => {
     const r: Record<string, unknown> = { Year: row.year };
     keys.forEach(k => { r[k] = (row as Record<string, unknown>)[k]; });
     const total = keys.reduce((s, k) => s + ((row as Record<string, unknown>)[k] as number || 0), 0);
-    r['Total'] = view === 'capex' ? `$${total.toFixed(0)}B` : `${total.toLocaleString()}k`;
+    r['Total'] = view === 'capex' ? `$${total.toFixed(1)}B` : `${total.toLocaleString()}k`;
     return r;
   });
 
   const cols = [
     { key: 'Year', label: 'Year', align: 'left' as const },
-    ...keys.map(k => ({ key: k, label: k, align: 'right' as const, format: (v: unknown) => view === 'capex' ? `$${v}B` : `${v}k` })),
+    ...keys.map(k => ({
+      key: k,
+      label: k,
+      align: 'right' as const,
+      format: (v: unknown) => view === 'capex' ? `$${v}B` : `${v}k`,
+    })),
     { key: 'Total', label: 'Total', align: 'right' as const, highlight: true },
   ];
 
@@ -90,16 +145,52 @@ export default function HardwareInstalledBase() {
         subtitle="GPU compute inventory normalized to B200-equivalent units across hyperscalers, foundation labs, and neoclouds. Tracks cumulative installed base with FP8 performance normalization across NVIDIA (B200/B300), Google, and Amazon silicon."
         badge="Bottoms-Up"
         sources={[
-          { type: 'derived', label: 'Derived: CapEx ÷ GPU ASP' },
-          { type: 'actual',  label: 'CapEx: SEC EDGAR 10-K 2022–2024', url: 'https://www.sec.gov/cgi-bin/browse-edgar' },
+          { type: 'derived', label: 'GPU counts: Derived — CapEx ÷ GPU ASP' },
+          { type: 'actual',  label: `CapEx 2022–2025: SEC EDGAR 10-K${capexFetchDate ? ` · fetched ${capexFetchDate}` : ''}`, url: 'https://www.sec.gov/cgi-bin/browse-edgar' },
         ]}
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="Hyperscaler GPUs 2025" value="1.40M" change="+86% YoY" changePositive subtext="B200-eq units (5 players)" accent={view === 'hyperscalers'} icon="🖥️" onClick={() => setView('hyperscalers')} />
-        <MetricCard label="Foundation Lab GPUs 2025" value="172k" change="+121% YoY" changePositive subtext="OpenAI, Anthropic, xAI, DeepSeek" accent={view === 'foundationLabs'} icon="🧠" onClick={() => setView('foundationLabs')} />
-        <MetricCard label="Neocloud GPUs 2025" value="215k" change="+145% YoY" changePositive subtext="CoreWeave leads at 150k" accent={view === 'neoclouds'} icon="☁️" onClick={() => setView('neoclouds')} />
-        <MetricCard label="Total AI CapEx 2025" value="$355B" change="+64% YoY" changePositive subtext="Big 5 hyperscalers combined" accent={view === 'capex'} icon="💵" onClick={() => setView('capex')} />
+        <MetricCard
+          label="Hyperscaler GPUs 2025"
+          value={`${(hyperscalerTotal2025 / 1000).toFixed(2)}M`}
+          change={yoyPct(hyperscalerTotal2025, hyperscalerTotal2024)}
+          changePositive
+          subtext="B200-eq units, 5 players"
+          accent={view === 'hyperscalers'}
+          icon="🖥️"
+          onClick={() => setView('hyperscalers')}
+        />
+        <MetricCard
+          label="Foundation Lab GPUs 2025"
+          value={`${foundationLabTotal2025}k`}
+          change={yoyPct(foundationLabTotal2025, foundationLabTotal2024)}
+          changePositive
+          subtext="OpenAI, Anthropic, xAI, DeepSeek"
+          accent={view === 'foundationLabs'}
+          icon="🧠"
+          onClick={() => setView('foundationLabs')}
+        />
+        <MetricCard
+          label="Neocloud GPUs 2025"
+          value={`${neocloudTotal2025}k`}
+          change={yoyPct(neocloudTotal2025, neocloudTotal2024)}
+          changePositive
+          subtext="CoreWeave, Nebius, Crusoe, Lambda"
+          accent={view === 'neoclouds'}
+          icon="☁️"
+          onClick={() => setView('neoclouds')}
+        />
+        <MetricCard
+          label="Total AI CapEx 2025"
+          value={`$${capex2025Total.toFixed(1)}B`}
+          change={yoyPct(capex2025Total, capex2024Total)}
+          changePositive
+          subtext={liveLoaded && liveData.capex?.['MSFT']?.value ? 'SEC EDGAR live · AMZN est.' : 'Big 5 hyperscalers'}
+          accent={view === 'capex'}
+          icon="💵"
+          onClick={() => setView('capex')}
+        />
       </div>
 
       <div className="flex gap-2 mb-4 flex-wrap">
@@ -186,10 +277,15 @@ export default function HardwareInstalledBase() {
         compact
       />
 
-      <div className="mt-4 p-3 rounded-lg bg-sa-surface border border-sa-border">
-        <p className="text-xs text-sa-muted">
-          <span className="text-white font-medium">Normalization methodology:</span> All GPU counts normalized to B200 SXM FP8 throughput baseline (4,500 TFLOPS). H100 = 0.31×, H200 = 0.44×, B300 = 1.50×, GB200 NVL72 = 12.5× per rack, TPU v5p = 0.28×, TPU v7 Ironwood = 1.41×, Trainium 2 = 0.47×, Trainium 3 = 0.94×, MI300X = 0.56×, MI350X = 1.09×. Hyperscaler AI-dedicated compute only. Estimates based on public announcements, earnings calls, and supply chain analysis.
-        </p>
+      <div className="mt-4 p-3 rounded-lg bg-sa-surface border border-sa-border text-xs text-sa-muted">
+        <span className="text-white font-medium">Data sources: </span>
+        CapEx 2022–2025 from SEC EDGAR 10-K filings (auto-refreshed daily via GitHub Actions).
+        {' '}<span className="text-yellow-400 font-medium">Amazon 2025 CapEx is an estimate from Q3 2025 earnings guidance (~$105B)</span>
+        {' '}— EDGAR XBRL pipeline cannot parse AMZN post-2016 custom namespace; treat as estimate.
+        {' '}GPU installed base is derived (not directly disclosed): CapEx × AI-allocation factor ÷ blended GPU ASP. Anchors: Meta 350k H100s (Feb 2024 earnings), Microsoft 1.8M total GPU fleet (Build 2024).
+        {liveLoaded && liveData.lastUpdated && (
+          <> Live data last fetched: <span className="text-green-400">{new Date(liveData.lastUpdated).toLocaleDateString()}</span>.</>
+        )}
       </div>
     </div>
   );

@@ -70,7 +70,7 @@ export const hyperscalerCapex = [
   { year: '2022', Microsoft: 22,  Google: 25, Amazon:  32, Meta: 15, Oracle:  4 },
   { year: '2023', Microsoft: 28,  Google: 32, Amazon:  48, Meta: 28, Oracle:  8 },
   { year: '2024', Microsoft: 55,  Google: 53, Amazon:  77, Meta: 37, Oracle: 11 },
-  { year: '2025', Microsoft: 65,  Google: 91, Amazon: 105, Meta: 70, Oracle: 21 },
+  { year: '2025', Microsoft: 64.55, Google: 91.45, Amazon: 105, Meta: 69.69, Oracle: 21.21 },
   { year: '2026E',Microsoft: 115, Google:108, Amazon: 138, Meta: 92, Oracle: 32 },
   { year: '2027E',Microsoft: 150, Google:143, Amazon: 175, Meta:120, Oracle: 45 },
   { year: '2028E',Microsoft: 190, Google:185, Amazon: 215, Meta:155, Oracle: 60 },

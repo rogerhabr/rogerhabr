@@ -39,9 +39,11 @@ export default function Header({ activeSection, sections }: HeaderProps) {
           <span>⚙</span>
           <span>Tune Model</span>
         </button>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5" title="CapEx: SEC EDGAR 10-K (daily) · Stocks: Yahoo Finance · GPU pricing: Azure & Lambda APIs · Model pricing: curated API docs">
           <span className="w-2 h-2 rounded-full bg-sa-green animate-pulse" />
-          <span className="text-xs text-sa-green font-medium">LIVE MODEL</span>
+          <span className="text-xs text-sa-green font-medium">
+            {liveLoaded ? 'SEC EDGAR · Daily' : 'Live data…'}
+          </span>
         </div>
       </div>
     </header>

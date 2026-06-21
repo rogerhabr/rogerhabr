@@ -9,6 +9,7 @@ import SectionHeader from '../SectionHeader';
 import MetricCard from '../MetricCard';
 import { defaultROICInputs, hardwareDefaults, calcROIC, roicByEntity } from '@/lib/data';
 import { useGlobalParams } from '@/contexts/ParamsContext';
+import { useLiveData } from '@/hooks/useLiveData';
 
 const HARDWARE_OPTIONS = Object.keys(hardwareDefaults);
 
@@ -42,6 +43,7 @@ function SliderInput({ label, value, min, max, step, onChange, format }: {
 
 export default function ROICCalculator() {
   const { params } = useGlobalParams();
+  const { liveData, liveLoaded } = useLiveData();
   const [inputs, setInputs] = useState(() => ({
     ...defaultROICInputs,
     utilizationPct: params.gpuUtilizationPct,
@@ -51,6 +53,7 @@ export default function ROICCalculator() {
     revenuePerMTokens: params.tokenInputPricePerM,
   }));
   const [activePreset, setActivePreset] = useState<'bear' | 'base' | 'bull' | null>(null);
+  const [selectedPricingModel, setSelectedPricingModel] = useState('');
 
   const results = calcROIC(inputs);
 
@@ -63,6 +66,18 @@ export default function ROICCalculator() {
     const defaults = hardwareDefaults[hw] || {};
     setInputs(prev => ({ ...prev, hardware: hw, ...defaults }));
     setActivePreset(null);
+    setSelectedPricingModel('');
+  };
+
+  const handleModelPricingSelect = (modelName: string) => {
+    setSelectedPricingModel(modelName);
+    if (modelName && liveData.modelPricing[modelName]) {
+      const p = liveData.modelPricing[modelName];
+      // Blended rate: 3:1 input-to-output token ratio (typical chat/API workload)
+      const blended = parseFloat(((p.inputPerM * 3 + p.outputPerM) / 4).toFixed(3));
+      setInputs(prev => ({ ...prev, revenuePerMTokens: blended }));
+      setActivePreset(null);
+    }
   };
 
   const applyPreset = (preset: 'bear' | 'base' | 'bull') => {
@@ -146,6 +161,45 @@ export default function ROICCalculator() {
             </select>
           </div>
 
+          {/* Live model pricing — sets revenue/M tokens from actual API prices */}
+          <div className="mb-4 pb-4 border-b border-sa-border">
+            <p className="text-xs text-slate-400 mb-1.5">
+              Revenue/M tokens from live API pricing
+              {liveLoaded && liveData.lastUpdated && (
+                <span className="text-green-400 ml-1">· fetched {new Date(liveData.lastUpdated).toLocaleDateString()}</span>
+              )}
+            </p>
+            <select
+              value={selectedPricingModel}
+              onChange={e => handleModelPricingSelect(e.target.value)}
+              className="w-full text-xs"
+            >
+              <option value="">Manual (use slider below)</option>
+              {liveLoaded && Object.entries(liveData.modelPricing).map(([model, p]) => (
+                <option key={model} value={model}>
+                  {model} — ${p.inputPerM}/M in, ${p.outputPerM}/M out
+                </option>
+              ))}
+            </select>
+            {selectedPricingModel && liveData.modelPricing[selectedPricingModel] && (() => {
+              const p = liveData.modelPricing[selectedPricingModel];
+              const blended = (p.inputPerM * 3 + p.outputPerM) / 4;
+              return (
+                <p className="text-xs text-sa-muted mt-1">
+                  Blended ${blended.toFixed(3)}/M at 3:1 in:out ratio → applied to slider
+                </p>
+              );
+            })()}
+            {liveLoaded && liveData.gpuCloud?.azureH100PerHour && (
+              <div className="mt-2 p-2 rounded bg-blue-900/20 border border-blue-800/40 text-xs">
+                <span className="text-blue-400 font-medium">Azure H100 cloud price: </span>
+                <span className="text-white">${liveData.gpuCloud.azureH100PerHour.toFixed(2)}/hr</span>
+                <span className="text-sa-muted"> = ${(liveData.gpuCloud.azureH100PerHour * 24 * 365 / 1000).toFixed(0)}k/yr at 100% util</span>
+                <span className="text-sa-muted block mt-0.5">Source: Azure Retail Prices API</span>
+              </div>
+            )}
+          </div>
+
           <div className="space-y-4">
             <SliderInput
               label="Cluster Size (GPUs)" value={inputs.numGPUs} min={8} max={2048} step={8}
@@ -160,7 +214,7 @@ export default function ROICCalculator() {
               onChange={update('utilizationPct')} format={v => `${v}%`}
             />
             <SliderInput
-              label="Revenue per 1M Tokens ($)" value={inputs.revenuePerMTokens} min={0.25} max={5} step={0.05}
+              label="Revenue per 1M Tokens ($)" value={inputs.revenuePerMTokens} min={0.25} max={20} step={0.05}
               onChange={update('revenuePerMTokens')} format={v => `$${v.toFixed(2)}`}
             />
             <SliderInput
