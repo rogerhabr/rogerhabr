@@ -119,41 +119,54 @@ async function fetchSECCapex(company, cik) {
   const usGaap = d.facts?.['us-gaap'];
   if (!usGaap) { logE(`  ${company}: no us-gaap facts in response`); return null; }
 
+  // Collect ALL 10-K annual CapEx entries across EVERY known field name,
+  // then pick the single most recent by period-end date.
+  // This handles companies that changed XBRL field names (e.g. Amazon post-2016,
+  // NVIDIA whose CapEx field history is fragmented across fiscal years).
   const capexFields = [
     'PaymentsToAcquirePropertyPlantAndEquipment',
     'CapitalExpendituresIncurredButNotYetPaid',
     'PurchasesOfPropertyAndEquipmentAndOtherProductiveAssets',
+    'PurchaseOfPropertyPlantAndEquipmentNetOfProceedsFromSales',
+    'PurchasesOfPropertyAndEquipment',
+    'AcquisitionsOfPropertyPlantAndEquipment',
   ];
 
+  const allAnnual = [];
   for (const field of capexFields) {
     const data = usGaap[field];
     if (!data?.units?.USD?.length) continue;
-
-    const items = data.units.USD;
-    const annual = items
+    const entries = data.units.USD
       .filter(i => i.form === '10-K' && i.val > 0)
-      .sort((a, b) => b.end.localeCompare(a.end));
-
-    if (annual.length > 0) {
-      const top = annual[0];
-      const result = { value: +(top.val / 1e9).toFixed(2), period: top.end, source: 'SEC EDGAR 10-K' };
-      log(`  ${company}: $${result.value}B CapEx (period ending ${result.period}, field: ${field}, filing: ${top.form})`);
-      log(`  Source URL: https://data.sec.gov/api/xbrl/companyfacts/CIK${padded}.json`);
-      return result;
-    }
+      .map(i => ({ ...i, _field: field }));
+    allAnnual.push(...entries);
+    if (entries.length > 0) log(`  Found ${entries.length} 10-K entries in field: ${field}`);
   }
 
-  logE(`  ${company}: no annual 10-K CapEx found in any of the ${capexFields.length} fields checked`);
-  return null;
+  if (allAnnual.length === 0) {
+    logE(`  ${company}: no annual 10-K CapEx found across ${capexFields.length} fields`);
+    return null;
+  }
+
+  // Sort by period end date descending → pick the single most recent
+  allAnnual.sort((a, b) => b.end.localeCompare(a.end));
+  const top = allAnnual[0];
+  const result = { value: +(top.val / 1e9).toFixed(2), period: top.end, source: 'SEC EDGAR 10-K' };
+  log(`  ${company}: $${result.value}B CapEx (period ending ${result.period}, field: ${top._field})`);
+  log(`  Source URL: https://data.sec.gov/api/xbrl/companyfacts/CIK${padded}.json`);
+  return result;
 }
 
 // ── Azure GPU cloud pricing ───────────────────────────────────────────────────
 
 async function fetchAzureGPUPrice() {
   log(`\n── Azure H100 VM price ──`);
+  // Filter: NC-series H100 VMs, Consumption pricing, USD, not spot/low-priority
+  // NC40ads_H100_v5 = 1x H100 SXM5 80GB; NC80adis_H100_v5 = 2x H100
+  // We want the per-VM price (not per-vCPU), so filter for SKUs with GPU counts
   const queries = [
+    `serviceName eq 'Virtual Machines' and contains(skuName,'NC') and contains(skuName,'H100') and priceType eq 'Consumption' and currencyCode eq 'USD'`,
     `serviceName eq 'Virtual Machines' and contains(skuName,'H100') and priceType eq 'Consumption' and currencyCode eq 'USD'`,
-    `serviceName eq 'Virtual Machines' and contains(productName,'NC') and contains(productName,'H100') and priceType eq 'Consumption' and currencyCode eq 'USD'`,
   ];
   for (const filter of queries) {
     const url = `https://prices.azure.com/api/retail/prices?$filter=${encodeURIComponent(filter)}`;
@@ -161,17 +174,28 @@ async function fetchAzureGPUPrice() {
     if (!res) continue;
     try {
       const d = await res.json();
-      const items = (d.Items ?? []).filter(i => i.retailPrice > 0 && !i.skuName?.toLowerCase().includes('spot'));
+      log(`  Azure returned ${d.Items?.length ?? 0} items for filter`);
+      // Log all matching SKUs so we can see exactly what we got
+      (d.Items ?? []).slice(0, 10).forEach(i =>
+        log(`    SKU: ${i.skuName} | $${i.retailPrice}/hr | region: ${i.armRegionName} | type: ${i.type}`)
+      );
+      // Exclude Spot/LowPriority, keep only pay-as-you-go > $5/hr (true GPU VMs cost >$10/hr)
+      const items = (d.Items ?? []).filter(i =>
+        i.retailPrice > 5 &&
+        !i.skuName?.toLowerCase().includes('spot') &&
+        !i.skuName?.toLowerCase().includes('low priority') &&
+        i.type !== 'DevTest'
+      );
       if (items.length > 0) {
         items.sort((a, b) => a.retailPrice - b.retailPrice);
         const item = items[0];
-        log(`  Azure H100: $${item.retailPrice}/hr (SKU: ${item.skuName}, region: ${item.armRegionName})`);
+        log(`  Azure H100 (selected): $${item.retailPrice}/hr (SKU: ${item.skuName}, region: ${item.armRegionName})`);
         log(`  Source URL: https://prices.azure.com/api/retail/prices`);
         return { perHour: item.retailPrice, sku: item.skuName, source: 'Azure Retail Prices API' };
       }
     } catch (e) { logE(`  Parse error: ${e.message}`); }
   }
-  logE('  Azure H100: no matching SKU found');
+  logE('  Azure H100: no matching SKU found with price > $5/hr');
   return null;
 }
 
