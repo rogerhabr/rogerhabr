@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: '0 6 * * *'  # Every day 6 AM UTC
   workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - 'scripts/fetch-live-data.mjs'
+      - '.github/workflows/refresh-data.yml'
 
 permissions:
   contents: write
@@ -16,8 +21,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Fetch live data
+
+      - name: Fetch live data (with verbose logging)
         run: node scripts/fetch-live-data.mjs
+
+      - name: Show fetched values
+        run: |
+          echo "=========================================="
+          echo "  LIVE DATA FETCHED — API RESULTS BELOW"
+          echo "=========================================="
+          cat public/live-data.json
+          echo ""
+          echo "=========================================="
+
       - name: Commit if changed
         run: |
           git config user.email "noreply@anthropic.com"
