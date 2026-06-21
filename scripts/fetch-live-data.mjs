@@ -119,17 +119,21 @@ async function fetchSECCapex(company, cik) {
   const usGaap = d.facts?.['us-gaap'];
   if (!usGaap) { logE(`  ${company}: no us-gaap facts in response`); return null; }
 
-  // Collect ALL 10-K annual CapEx entries across EVERY known field name,
+  // Collect ALL 10-K annual CapEx entries across known cash-flow field names,
   // then pick the single most recent by period-end date.
-  // This handles companies that changed XBRL field names (e.g. Amazon post-2016,
-  // NVIDIA whose CapEx field history is fragmented across fiscal years).
+  // NOTE: CapitalExpendituresIncurredButNotYetPaid is intentionally excluded —
+  // it is a supplemental non-cash disclosure (accrued PP&E payables), NOT the
+  // actual CapEx cash outflow. Using it for Amazon returned $27B vs true ~$105B.
+  // Amazon uses a custom XBRL namespace after 2016; standard fields stop at 2016.
+  // For Amazon, the pipeline will return null (stale data) — the static data.ts
+  // estimate of $105B (from Q3 2025 earnings disclosures) is used instead.
   const capexFields = [
     'PaymentsToAcquirePropertyPlantAndEquipment',
-    'CapitalExpendituresIncurredButNotYetPaid',
     'PurchasesOfPropertyAndEquipmentAndOtherProductiveAssets',
     'PurchaseOfPropertyPlantAndEquipmentNetOfProceedsFromSales',
     'PurchasesOfPropertyAndEquipment',
     'AcquisitionsOfPropertyPlantAndEquipment',
+    'PaymentsForCapitalImprovements',
   ];
 
   const allAnnual = [];
@@ -151,6 +155,16 @@ async function fetchSECCapex(company, cik) {
   // Sort by period end date descending → pick the single most recent
   allAnnual.sort((a, b) => b.end.localeCompare(a.end));
   const top = allAnnual[0];
+
+  // Staleness check: reject if most recent data is older than 4 years
+  const stalenessCutoff = new Date();
+  stalenessCutoff.setFullYear(stalenessCutoff.getFullYear() - 4);
+  const cutoffDate = stalenessCutoff.toISOString().split('T')[0];
+  if (top.end < cutoffDate) {
+    logE(`  ${company}: most recent 10-K CapEx data is from ${top.end} — too stale (older than ${cutoffDate}).`);
+    logE(`  ${company}: company likely uses a custom XBRL namespace not accessible via standard us-gaap fields.`);
+    return null;
+  }
   const result = { value: +(top.val / 1e9).toFixed(2), period: top.end, source: 'SEC EDGAR 10-K' };
   log(`  ${company}: $${result.value}B CapEx (period ending ${result.period}, field: ${top._field})`);
   log(`  Source URL: https://data.sec.gov/api/xbrl/companyfacts/CIK${padded}.json`);
@@ -242,7 +256,7 @@ async function main() {
     },
     stocks:   {},
     gpuCloud: { azureH100PerHour: null, lambdaH100PerHour: null },
-    capex:    { MSFT: null, GOOGL: null, AMZN: null, META: null, ORCL: null, NVDA: null },
+    capex:    { MSFT: null, GOOGL: null, AMZN: null, META: null, ORCL: null },
     modelPricing: {
       // Prices from public API documentation — verified June 2026
       // Anthropic: anthropic.com/pricing
@@ -283,10 +297,9 @@ async function main() {
   const companies = [
     { ticker: 'MSFT',  cik: 789019  },
     { ticker: 'GOOGL', cik: 1652044 },
-    { ticker: 'AMZN',  cik: 1018724 },
+    { ticker: 'AMZN',  cik: 1018724 },  // NOTE: returns null — custom XBRL namespace post-2016
     { ticker: 'META',  cik: 1326801 },
     { ticker: 'ORCL',  cik: 1341439 },
-    { ticker: 'NVDA',  cik: 1045810 },
   ];
   for (const { ticker, cik } of companies) {
     result.capex[ticker] = await fetchSECCapex(ticker, cik);

@@ -59,17 +59,18 @@ export const neocloudColors: Record<string, string> = {
   'Lambda Labs': '#f59e0b',
 };
 
-// CapEx by hyperscaler ($B, calendar year)
-// ACTUAL 2022-2024: SEC EDGAR 10-K/10-Q PaymentsToAcquirePropertyPlantAndEquipment
-//   MSFT CY2024 ~$55B (FY ends June; CY sum of quarterly 10-Qs); GOOGL 2024 $52.5B (10-K); AMZN 2024 $77.4B (10-K); META 2024 $37.3B (10-K)
-//   ORCL FY ends May — CY2024 blends FY2024/FY2025; confirmed FY2024 was $8.9B
-// 2025: Guidance/announced plans (GOOGL $75B, AMZN ~$105B, META $60–65B midpoint, MSFT ~$80B+)
-// 2026E–2028E: Model projections — NOT from primary sources
+// CapEx by hyperscaler ($B, calendar year unless noted)
+// ACTUAL 2022-2024: SEC EDGAR 10-K PaymentsToAcquirePropertyPlantAndEquipment
+//   MSFT CY2024 ~$55B (FY ends June; CY approximated from quarterly 10-Qs); GOOGL CY2024 $52.5B; AMZN CY2024 $77.4B; META CY2024 $37.3B
+//   ORCL FY ends May — ORCL FY2024 (ending May 2024) $8.9B; CY2024 blends FY2024+FY2025
+// ACTUAL 2025: MSFT FY2025 $64.55B (ends Jun-2025); GOOGL CY2025 $91.45B; META CY2025 $69.69B; ORCL FY2025 $21.21B — all SEC EDGAR 10-K
+//   AMZN CY2025 ~$105B estimated (Q3 2025 earnings; EDGAR pipeline null — custom XBRL namespace post-2016)
+// FORECAST 2026E–2028E: Model projections — NOT from primary sources
 export const hyperscalerCapex = [
   { year: '2022', Microsoft: 22,  Google: 25, Amazon:  32, Meta: 15, Oracle:  4 },
   { year: '2023', Microsoft: 28,  Google: 32, Amazon:  48, Meta: 28, Oracle:  8 },
   { year: '2024', Microsoft: 55,  Google: 53, Amazon:  77, Meta: 37, Oracle: 11 },
-  { year: '2025', Microsoft: 80,  Google: 75, Amazon: 105, Meta: 65, Oracle: 20 },
+  { year: '2025', Microsoft: 65,  Google: 91, Amazon: 105, Meta: 70, Oracle: 21 },
   { year: '2026E',Microsoft: 115, Google:108, Amazon: 138, Meta: 92, Oracle: 32 },
   { year: '2027E',Microsoft: 150, Google:143, Amazon: 175, Meta:120, Oracle: 45 },
   { year: '2028E',Microsoft: 190, Google:185, Amazon: 215, Meta:155, Oracle: 60 },
