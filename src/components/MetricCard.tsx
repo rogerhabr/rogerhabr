@@ -15,15 +15,14 @@ interface MetricCardProps {
 export default function MetricCard({
   label, value, change, changePositive, subtext, accent, icon, onClick,
 }: MetricCardProps) {
-  return (
-    <div
-      onClick={onClick}
-      className={`rounded-xl p-4 border transition-all ${
-        accent
-          ? 'bg-sa-accent/10 border-sa-accent/40'
-          : 'bg-sa-card border-sa-border'
-      } ${onClick ? 'cursor-pointer hover:border-sa-accent/60 hover:bg-sa-surface group' : ''}`}
-    >
+  const cls = `rounded-xl p-4 border transition-colors ${
+    accent
+      ? 'bg-sa-accent/10 border-sa-accent/40'
+      : 'bg-sa-card border-sa-border'
+  } ${onClick ? 'cursor-pointer hover:border-sa-accent/60 hover:bg-sa-surface group' : ''}`;
+
+  const inner = (
+    <>
       <div className="flex items-start justify-between gap-2">
         <p className="text-xs text-sa-muted font-medium uppercase tracking-wider leading-tight">
           {label}
@@ -42,6 +41,16 @@ export default function MetricCard({
         </p>
       )}
       {subtext && <p className="text-xs text-sa-muted mt-1">{subtext}</p>}
-    </div>
+    </>
   );
+
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className={`w-full text-left ${cls}`}>
+        {inner}
+      </button>
+    );
+  }
+
+  return <div className={cls}>{inner}</div>;
 }
