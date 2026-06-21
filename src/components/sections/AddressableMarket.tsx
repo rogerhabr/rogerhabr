@@ -115,7 +115,8 @@ export default function AddressableMarket() {
         />
         <MetricCard
           label="Token Economy TAM 2027E" value={`$${total2027.toFixed(0)}B`}
-          change={`${((total2027 / total2025 - 1) * 100).toFixed(0)}% vs 2025 · ${((Math.sqrt(total2027 / total2025) - 1) * 100).toFixed(0)}%/yr CAGR`}
+          change={`+${((total2027 / total2025 - 1) * 100).toFixed(0)}% vs 2025`}
+          subtext={`2-yr CAGR: ${((Math.sqrt(total2027 / total2025) - 1) * 100).toFixed(0)}%/yr`}
           changePositive icon="📈"
           onClick={() => setSelectedYear('2027E')}
         />
