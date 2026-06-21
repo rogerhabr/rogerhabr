@@ -71,10 +71,10 @@ export default function FoundationLabFinancials() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="OpenAI Revenue 2025" value="$11.6B" change="+213% YoY" changePositive subtext="Largest foundation lab by revenue" accent icon="🟢" />
-        <MetricCard label="Anthropic Revenue 2025" value="$3.0B" change="+200% YoY" changePositive subtext="API + Claude.ai + enterprise" icon="🟠" />
-        <MetricCard label="Total Lab Funding Raised" value={`$${Object.values(totalFunding).reduce((a, b) => a + b, 0).toFixed(0)}B+`} subtext="OpenAI, Anthropic, xAI combined" icon="💰" />
-        <MetricCard label="OpenAI Valuation 2025" value="$340B" change="+116% vs 2024" changePositive subtext="SoftBank strategic round" icon="🦄" />
+        <MetricCard label="OpenAI Revenue 2025" value="$11.6B" change="+213% YoY" changePositive subtext="Largest foundation lab by revenue" accent={tab === 'revenue'} icon="🟢" onClick={() => setTab('revenue')} />
+        <MetricCard label="Anthropic Revenue 2025" value="$3.0B" change="+200% YoY" changePositive subtext="API + Claude.ai + enterprise" accent={tab === 'profitability'} icon="🟠" onClick={() => setTab('profitability')} />
+        <MetricCard label="Total Lab Funding Raised" value={`$${Object.values(totalFunding).reduce((a, b) => a + b, 0).toFixed(0)}B+`} subtext="OpenAI, Anthropic, xAI combined" accent={tab === 'funding'} icon="💰" onClick={() => setTab('funding')} />
+        <MetricCard label="OpenAI Valuation 2025" value="$340B" change="+116% vs 2024" changePositive subtext="SoftBank strategic round" accent={tab === 'valuation'} icon="🦄" onClick={() => setTab('valuation')} />
       </div>
 
       <div className="flex gap-2 mb-5">
