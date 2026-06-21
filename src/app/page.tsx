@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
 import AssumptionsPanel from '@/components/AssumptionsPanel';
+import SectionErrorBoundary from '@/components/SectionErrorBoundary';
 import { ParamsProvider } from '@/contexts/ParamsContext';
 
 const LOADING = () => (
@@ -72,7 +73,9 @@ export default function Home() {
           <ScenarioBar />
           <main className="pt-24 min-h-screen">
             <div className="p-6 max-w-7xl">
-              <SectionContent key={active} id={active} />
+              <SectionErrorBoundary key={active}>
+                <SectionContent id={active} />
+              </SectionErrorBoundary>
             </div>
           </main>
         </div>
