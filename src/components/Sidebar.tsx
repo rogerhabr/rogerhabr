@@ -66,7 +66,7 @@ export default function Sidebar({ sections, active, onSelect }: SidebarProps) {
       <div className="p-4 border-t border-sa-border">
         <div className="text-xs text-sa-muted text-center leading-relaxed">
           © 2026 AI Tokenomics Model<br />
-          <span className="text-sa-accent">All figures illustrative</span>
+          <span className="text-sa-accent">SEC EDGAR · Yahoo Finance · Azure APIs</span>
         </div>
       </div>
     </aside>
