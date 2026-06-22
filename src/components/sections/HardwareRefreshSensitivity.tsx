@@ -13,6 +13,8 @@ const COLORS = { noRefresh: '#64748b', retire: '#f97316', resale: '#10b981' };
 
 const RESALE_VALS  = [0, 10, 20, 30, 40];
 const DECAY_VALS   = [0, 10, 20, 30];
+const ENERGY_COSTS = [0.050, 0.075, 0.100, 0.125, 0.150];
+const PUE_VALS     = [1.05, 1.10, 1.15, 1.20, 1.25, 1.30];
 
 function Slider({ label, value, min, max, step, onChange, format }: {
   label: string; value: number; min: number; max: number; step: number;
@@ -179,8 +181,10 @@ export default function HardwareRefreshSensitivity() {
             onChange={set('resalePct')} format={v => `${v}%`} />
           <Slider label="Refresh Cycle (years)" value={inp.refreshCycleYears} min={2} max={5} step={1}
             onChange={set('refreshCycleYears')} format={v => `${v}yr`} />
-          <Slider label="Power Cost ($/kWh)" value={inp.powerCostPerKWh} min={0.02} max={0.12} step={0.005}
+          <Slider label="Power Cost ($/kWh)" value={inp.powerCostPerKWh} min={0.05} max={0.15} step={0.005}
             onChange={set('powerCostPerKWh')} format={v => `$${v.toFixed(3)}`} />
+          <Slider label="PUE (DC overhead)" value={inp.pue} min={1.05} max={1.30} step={0.05}
+            onChange={set('pue')} format={v => v.toFixed(2)} />
           <Slider label="Other OpEx (% of CapEx/yr)" value={inp.opexPctCapex} min={5} max={25} step={1}
             onChange={set('opexPctCapex')} format={v => `${v}%`} />
 
@@ -334,6 +338,57 @@ export default function HardwareRefreshSensitivity() {
         <p className="text-xs text-sa-muted mt-2">
           Current inputs highlighted in orange. Break-even: refresh pays off when resale proceeds + revenue uplift exceed the net CapEx reinvestment.
           At {inp.tokenPriceDecayPctPerYr}% annual price compression, {uplift}× throughput uplift {fcfAdv >= 0 ? 'still generates' : 'does not recover'} the incremental CapEx within {N} years.
+        </p>
+      </div>
+
+      {/* Energy Cost × PUE sensitivity */}
+      <div className="bg-sa-card rounded-xl border border-sa-border p-4">
+        <h3 className="text-sm font-semibold text-white mb-1">
+          Energy Sensitivity — {N}Y FCF Delta: Refresh + Resale vs No Refresh ($M)
+        </h3>
+        <p className="text-xs text-sa-muted mb-3">
+          PUE (Power Usage Effectiveness): 1.05 = hyperscale best-in-class · 1.20 = good colo · 1.30 = older DC.
+          Shows how energy cost and DC efficiency shift the refresh economics at {inp.resalePct}% resale / {inp.tokenPriceDecayPctPerYr}%/yr price decay.
+          Green = refresh still wins; red = cheaper to keep existing fleet. Current selection outlined in orange.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="text-xs w-full">
+            <thead>
+              <tr>
+                <th className="px-3 py-2 text-left text-sa-muted font-semibold">PUE \ ¢/kWh</th>
+                {ENERGY_COSTS.map(c => (
+                  <th key={c} className="px-3 py-2 text-center text-sa-muted font-semibold">{(c * 100).toFixed(1)}¢</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {PUE_VALS.map(pue => (
+                <tr key={pue} className="border-t border-sa-border/30">
+                  <td className="px-3 py-2 text-slate-400 font-semibold whitespace-nowrap">PUE {pue.toFixed(2)}</td>
+                  {ENERGY_COSTS.map(cost => {
+                    const r = calcRefreshCycle({ ...effectiveInputs, powerCostPerKWh: cost, pue });
+                    const adv = (r.refreshResale.totalFCF - r.noRefresh.totalFCF) / 1e6;
+                    const intensity = Math.min(Math.abs(adv) / 150, 1);
+                    const bg = adv > 0
+                      ? `rgba(16,185,129,${0.10 + intensity * 0.40})`
+                      : `rgba(239,68,68,${0.10 + intensity * 0.40})`;
+                    const nearest = Math.abs(pue - inp.pue) < 0.025 && Math.abs(cost - inp.powerCostPerKWh) < 0.013;
+                    return (
+                      <td key={cost} className="px-3 py-2.5 text-center font-bold number-cell"
+                        style={{ background: bg, color: adv > 0 ? '#10b981' : '#ef4444', outline: nearest ? '2px solid #f97316' : 'none' }}>
+                        {adv > 0 ? '+' : ''}{adv.toFixed(0)}M
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-sa-muted mt-2">
+          At PUE {inp.pue.toFixed(2)} and {(inp.powerCostPerKWh * 100).toFixed(1)}¢/kWh, annual facility power cost: <span className="text-white font-semibold">
+            ${((inp.numGPUs * (hardwareDefaults[inp.gen1Hardware]?.powerW ?? 1500) * inp.pue / 1000) * 24 * 365 * inp.powerCostPerKWh / 1e6).toFixed(2)}M/yr
+          </span> (Gen 1 fleet, post-refresh). High-energy environments erode refresh advantage — <span className="text-orange-400">VERA RUBIN's lower per-token energy cost</span> partially compensates.
         </p>
       </div>
     </div>

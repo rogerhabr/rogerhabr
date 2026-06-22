@@ -350,6 +350,7 @@ export interface ROICInputs {
   tokensPerGPUPerSec: number;
   powerW: number;
   powerCostPerKWh: number;
+  pue: number;
   opexPctCapex: number;
   amortizationYears: number;
 }
@@ -363,6 +364,7 @@ export const defaultROICInputs: ROICInputs = {
   tokensPerGPUPerSec: 800,
   powerW: 1667,
   powerCostPerKWh: 0.04,
+  pue: 1.20,
   opexPctCapex: 10,
   amortizationYears: 3,
 };
@@ -387,7 +389,7 @@ export function calcROIC(inputs: ROICInputs) {
   const annualTokens = totalTokensPerDay * 365;
   const annualRevenue = (annualTokens / 1e6) * inputs.revenuePerMTokens;
 
-  const totalPowerW = inputs.numGPUs * inputs.powerW;
+  const totalPowerW = inputs.numGPUs * inputs.powerW * inputs.pue;
   const annualPowerKWh = (totalPowerW / 1000) * 24 * 365;
   const annualPowerCost = annualPowerKWh * inputs.powerCostPerKWh;
   const annualOpex = (inputs.opexPctCapex / 100) * capex;
@@ -422,6 +424,7 @@ export interface RefreshInputs {
   revenuePerMTokensY0: number;
   tokenPriceDecayPctPerYr: number;
   powerCostPerKWh: number;
+  pue: number;
   opexPctCapex: number;
   refreshCycleYears: number;
   resalePct: number;
@@ -462,6 +465,7 @@ export const defaultRefreshInputs: RefreshInputs = {
   revenuePerMTokensY0: 1.75,
   tokenPriceDecayPctPerYr: 20,
   powerCostPerKWh: 0.04,
+  pue: 1.20,
   opexPctCapex: 10,
   refreshCycleYears: 3,
   resalePct: 25,
@@ -508,7 +512,7 @@ export function calcRefreshCycle(inputs: RefreshInputs): {
 
       const tokenPrice   = inputs.revenuePerMTokensY0 * Math.pow(1 - inputs.tokenPriceDecayPctPerYr / 100, y - 1);
       const revenue      = (inputs.numGPUs * thr * secPerYear * util / 1e6) * tokenPrice;
-      const powerCost    = (inputs.numGPUs * pwr / 1000) * 24 * 365 * inputs.powerCostPerKWh;
+      const powerCost    = (inputs.numGPUs * pwr / 1000) * 24 * 365 * inputs.powerCostPerKWh * inputs.pue;
       const otherOpex    = (inputs.opexPctCapex / 100) * base;
       const opex         = powerCost + otherOpex;
       const capexOut     = isRefreshYear ? capexG1 : 0;

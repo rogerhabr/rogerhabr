@@ -12,6 +12,8 @@ import { useGlobalParams } from '@/contexts/ParamsContext';
 import { useLiveData } from '@/hooks/useLiveData';
 
 const HARDWARE_OPTIONS = Object.keys(hardwareDefaults);
+const ENERGY_COSTS = [0.050, 0.075, 0.100, 0.125, 0.150];
+const PUE_VALS     = [1.05, 1.10, 1.15, 1.20, 1.25, 1.30];
 
 const ROIC_SCENARIO_PRESETS = {
   bear: { utilizationPct: 65, revenuePerMTokens: 0.50, powerCostPerKWh: 0.055 },
@@ -226,8 +228,12 @@ export default function ROICCalculator() {
               onChange={update('powerW')} format={v => `${v}W`}
             />
             <SliderInput
-              label="Power Cost ($/kWh)" value={inputs.powerCostPerKWh} min={0.02} max={0.15} step={0.005}
+              label="Power Cost ($/kWh)" value={inputs.powerCostPerKWh} min={0.05} max={0.15} step={0.005}
               onChange={update('powerCostPerKWh')} format={v => `$${v.toFixed(3)}`}
+            />
+            <SliderInput
+              label="PUE (Data Centre Overhead)" value={inputs.pue} min={1.05} max={1.30} step={0.05}
+              onChange={update('pue')} format={v => v.toFixed(2)}
             />
             <SliderInput
               label="Other OpEx (% of CapEx/yr)" value={inputs.opexPctCapex} min={5} max={30} step={1}
@@ -331,6 +337,55 @@ export default function ROICCalculator() {
             </LineChart>
           </ResponsiveContainer>
         </div>
+      </div>
+
+      {/* Energy Cost × PUE Sensitivity */}
+      <div className="bg-sa-card rounded-xl border border-sa-border p-4 mb-5">
+        <h3 className="text-sm font-semibold text-white mb-1">Energy Sensitivity — ROIC % vs Power Cost × PUE</h3>
+        <p className="text-xs text-sa-muted mb-3">
+          PUE (Power Usage Effectiveness) = total facility power ÷ IT equipment power.
+          1.05 = hyperscale best-in-class; 1.20 = good colo; 1.30 = older/edge DC.
+          Current selection outlined in orange.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="text-xs w-full">
+            <thead>
+              <tr>
+                <th className="px-3 py-2 text-left text-sa-muted font-semibold">PUE \ ¢/kWh</th>
+                {ENERGY_COSTS.map(c => (
+                  <th key={c} className="px-3 py-2 text-center text-sa-muted font-semibold">{(c * 100).toFixed(1)}¢</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {PUE_VALS.map(pue => (
+                <tr key={pue} className="border-t border-sa-border/30">
+                  <td className="px-3 py-2 text-slate-400 font-semibold whitespace-nowrap">PUE {pue.toFixed(2)}</td>
+                  {ENERGY_COSTS.map(cost => {
+                    const r = calcROIC({ ...inputs, powerCostPerKWh: cost, pue });
+                    const v = r.roic;
+                    const intensity = Math.min(Math.max(v, 0) / 40, 1);
+                    const bg = v > 0
+                      ? `rgba(16,185,129,${0.08 + intensity * 0.45})`
+                      : `rgba(239,68,68,0.25)`;
+                    const textColor = v > 25 ? '#10b981' : v > 10 ? '#f97316' : v > 0 ? '#f59e0b' : '#ef4444';
+                    const current = Math.abs(pue - inputs.pue) < 0.025 && Math.abs(cost - inputs.powerCostPerKWh) < 0.013;
+                    return (
+                      <td key={cost} className="px-3 py-2 text-center font-bold number-cell"
+                        style={{ background: bg, color: textColor, outline: current ? '2px solid #f97316' : 'none' }}>
+                        {v > 0 ? '+' : ''}{v.toFixed(1)}%
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-sa-muted mt-2">
+          Annual power draw at current inputs: <span className="text-white font-semibold">{((inputs.numGPUs * inputs.powerW * inputs.pue / 1000) * 24 * 365 / 1e6).toFixed(2)} GWh/yr</span> (IT load × PUE).
+          Every 0.05 PUE step adds ~{((inputs.numGPUs * inputs.powerW * 0.05 / 1000) * 24 * 365 * inputs.powerCostPerKWh / 1e3).toFixed(0)}k/yr in energy cost.
+        </p>
       </div>
 
       {/* Industry ROIC Benchmark */}
