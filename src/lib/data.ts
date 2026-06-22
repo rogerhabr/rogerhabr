@@ -412,6 +412,135 @@ export function calcROIC(inputs: ROICInputs) {
   };
 }
 
+// ─── Hardware Refresh Sensitivity ────────────────────────────────────────────
+
+export interface RefreshInputs {
+  gen0Hardware: string;
+  gen1Hardware: string;
+  numGPUs: number;
+  utilizationPct: number;
+  revenuePerMTokensY0: number;
+  tokenPriceDecayPctPerYr: number;
+  powerCostPerKWh: number;
+  opexPctCapex: number;
+  refreshCycleYears: number;
+  resalePct: number;
+  analysisPeriodYears: number;
+}
+
+export interface RefreshYearData {
+  year: number;
+  hardware: string;
+  capexOut: number;
+  saleProceeds: number;
+  revenue: number;
+  opex: number;
+  fcf: number;
+  cumFCF: number;
+  tokensB: number;
+  tokenPrice: number;
+}
+
+export interface RefreshScenario {
+  id: string;
+  label: string;
+  color: string;
+  years: RefreshYearData[];
+  totalCapex: number;
+  totalSaleProceeds: number;
+  netCapex: number;
+  totalRevenue: number;
+  totalOpex: number;
+  totalFCF: number;
+}
+
+export const defaultRefreshInputs: RefreshInputs = {
+  gen0Hardware: 'B200 SXM',
+  gen1Hardware: 'VERA RUBIN',
+  numGPUs: 512,
+  utilizationPct: 82,
+  revenuePerMTokensY0: 1.75,
+  tokenPriceDecayPctPerYr: 20,
+  powerCostPerKWh: 0.04,
+  opexPctCapex: 10,
+  refreshCycleYears: 3,
+  resalePct: 25,
+  analysisPeriodYears: 6,
+};
+
+export function calcRefreshCycle(inputs: RefreshInputs): {
+  noRefresh: RefreshScenario;
+  refreshRetire: RefreshScenario;
+  refreshResale: RefreshScenario;
+} {
+  const d0 = hardwareDefaults[inputs.gen0Hardware] ?? {};
+  const d1 = hardwareDefaults[inputs.gen1Hardware] ?? {};
+  const costG0 = d0.costPerGPU ?? 55000;
+  const costG1 = d1.costPerGPU ?? 105000;
+  const thrG0  = d0.tokensPerGPUPerSec ?? 860;
+  const thrG1  = d1.tokensPerGPUPerSec ?? 2800;
+  const pwrG0  = d0.powerW ?? 1000;
+  const pwrG1  = d1.powerW ?? 1500;
+  const capexG0 = inputs.numGPUs * costG0;
+  const capexG1 = inputs.numGPUs * costG1;
+  const util = inputs.utilizationPct / 100;
+  const secPerYear = 86400 * 365;
+
+  function build(id: string, label: string, color: string, withRefresh: boolean, withResale: boolean): RefreshScenario {
+    const years: RefreshYearData[] = [];
+    let cumFCF = -capexG0;
+
+    years.push({
+      year: 0, hardware: inputs.gen0Hardware,
+      capexOut: capexG0, saleProceeds: 0, revenue: 0, opex: 0,
+      fcf: -capexG0, cumFCF,
+      tokensB: 0, tokenPrice: inputs.revenuePerMTokensY0,
+    });
+
+    for (let y = 1; y <= inputs.analysisPeriodYears; y++) {
+      const refreshed     = withRefresh && y > inputs.refreshCycleYears;
+      const isRefreshYear = withRefresh && y === inputs.refreshCycleYears + 1;
+
+      const hw   = refreshed ? inputs.gen1Hardware : inputs.gen0Hardware;
+      const thr  = refreshed ? thrG1 : thrG0;
+      const pwr  = refreshed ? pwrG1 : pwrG0;
+      const base = refreshed ? capexG1 : capexG0;
+
+      const tokenPrice   = inputs.revenuePerMTokensY0 * Math.pow(1 - inputs.tokenPriceDecayPctPerYr / 100, y - 1);
+      const revenue      = (inputs.numGPUs * thr * secPerYear * util / 1e6) * tokenPrice;
+      const powerCost    = (inputs.numGPUs * pwr / 1000) * 24 * 365 * inputs.powerCostPerKWh;
+      const otherOpex    = (inputs.opexPctCapex / 100) * base;
+      const opex         = powerCost + otherOpex;
+      const capexOut     = isRefreshYear ? capexG1 : 0;
+      const saleProceeds = isRefreshYear && withResale ? capexG0 * (inputs.resalePct / 100) : 0;
+      const fcf          = revenue - opex - capexOut + saleProceeds;
+      cumFCF += fcf;
+
+      years.push({
+        year: y, hardware: hw, capexOut, saleProceeds,
+        revenue, opex, fcf, cumFCF,
+        tokensB: inputs.numGPUs * thr * secPerYear * util / 1e9,
+        tokenPrice,
+      });
+    }
+
+    const totalCapex       = capexG0 + (withRefresh ? capexG1 : 0);
+    const totalSaleProceeds = withRefresh && withResale ? capexG0 * (inputs.resalePct / 100) : 0;
+    const netCapex         = totalCapex - totalSaleProceeds;
+    const totalRevenue     = years.reduce((s, r) => s + r.revenue, 0);
+    const totalOpex        = years.reduce((s, r) => s + r.opex, 0);
+    const totalFCF         = totalRevenue - totalOpex - netCapex;
+
+    return { id, label, color, years, totalCapex, totalSaleProceeds, netCapex, totalRevenue, totalOpex, totalFCF };
+  }
+
+  return {
+    noRefresh:     build('no-refresh',     'No Refresh',       '#64748b', false, false),
+    refreshRetire: build('refresh-retire', 'Refresh + Retire', '#f97316', true,  false),
+    refreshResale: build('refresh-resale', 'Refresh + Resale', '#10b981', true,  true),
+  };
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 export function fmt(n: number, decimals = 0): string {

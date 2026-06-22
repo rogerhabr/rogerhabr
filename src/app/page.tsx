@@ -22,9 +22,10 @@ const SaasDisruption         = dynamic(() => import('@/components/sections/SaasD
 const AddressableMarket      = dynamic(() => import('@/components/sections/AddressableMarket'),       { ssr: false, loading: LOADING });
 const TokenPricingTrends     = dynamic(() => import('@/components/sections/TokenPricingTrends'),      { ssr: false, loading: LOADING });
 const FoundationLabFinancials= dynamic(() => import('@/components/sections/FoundationLabFinancials'), { ssr: false, loading: LOADING });
-const ROICCalculator         = dynamic(() => import('@/components/sections/ROICCalculator'),           { ssr: false, loading: LOADING });
-const HardwareDemandForecast = dynamic(() => import('@/components/sections/HardwareDemandForecast'),  { ssr: false, loading: LOADING });
-const RevenueProfit          = dynamic(() => import('@/components/sections/RevenueProfit'),            { ssr: false, loading: LOADING });
+const ROICCalculator              = dynamic(() => import('@/components/sections/ROICCalculator'),               { ssr: false, loading: LOADING });
+const HardwareDemandForecast      = dynamic(() => import('@/components/sections/HardwareDemandForecast'),        { ssr: false, loading: LOADING });
+const HardwareRefreshSensitivity  = dynamic(() => import('@/components/sections/HardwareRefreshSensitivity'),    { ssr: false, loading: LOADING });
+const RevenueProfit               = dynamic(() => import('@/components/sections/RevenueProfit'),                 { ssr: false, loading: LOADING });
 const ScenarioBar            = dynamic(() => import('@/components/ScenarioBar'),                       { ssr: false });
 const DataSources            = dynamic(() => import('@/components/sections/DataSources'),               { ssr: false, loading: LOADING });
 
@@ -38,6 +39,7 @@ const SECTIONS = [
   { id: 'token-pricing',       label: 'Token Pricing Trends',    icon: '📉', group: 'Demand' },
   { id: 'lab-financials',      label: 'Lab Financials',          icon: '🏦', group: 'Demand' },
   { id: 'roic-calculator',     label: 'ROIC Calculator',         icon: '🧮', group: 'Economics' },
+  { id: 'hardware-refresh',    label: 'HW Refresh Sensitivity',  icon: '🔄', group: 'Economics' },
   { id: 'hardware-demand',     label: 'Hardware Demand Forecast',icon: '📦', group: 'Economics' },
   { id: 'revenue-profit',      label: 'Revenue & Profit',        icon: '💰', group: 'Economics' },
   { id: 'data-sources',        label: 'Data Sources',            icon: '🔍', group: 'Methodology' },
@@ -54,6 +56,7 @@ function SectionContent({ id }: { id: string }) {
     case 'token-pricing':      return <TokenPricingTrends />;
     case 'lab-financials':     return <FoundationLabFinancials />;
     case 'roic-calculator':    return <ROICCalculator />;
+    case 'hardware-refresh':   return <HardwareRefreshSensitivity />;
     case 'hardware-demand':    return <HardwareDemandForecast />;
     case 'revenue-profit':     return <RevenueProfit />;
     case 'data-sources':       return <DataSources />;
