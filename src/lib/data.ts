@@ -91,10 +91,10 @@ export const hardwareSpecs: HardwareSpec[] = [
   { name: 'B200',          vendor: 'NVIDIA', chip: 'B200',  fp8TFLOPS:  4500, hbmTB: 0.192, hbmBWTBs:   8.00, powerW:   1000, b200Equiv:  1.00, releaseYear: 2025 },
   { name: 'B300',          vendor: 'NVIDIA', chip: 'B300',  fp8TFLOPS:  6750, hbmTB: 0.288, hbmBWTBs:  10.00, powerW:   1200, b200Equiv:  1.50, releaseYear: 2026 },
   // ── Grace Blackwell NVL racks ─────────────────────────────────────────────────
-  { name: 'GB200 NVL72',   vendor: 'NVIDIA', chip: 'GB200', fp8TFLOPS: 13900, hbmTB: 8.064, hbmBWTBs: 576.00, powerW: 120000, b200Equiv: 12.50, releaseYear: 2025 },
-  { name: 'GB300 NVL72',   vendor: 'NVIDIA', chip: 'GB300', fp8TFLOPS: 20850, hbmTB:12.096, hbmBWTBs: 864.00, powerW: 130000, b200Equiv: 18.75, releaseYear: 2026 },
-  // ── Vera Rubin NVL rack ───────────────────────────────────────────────────────
-  { name: 'VR200 NVL144',  vendor: 'NVIDIA', chip: 'R100',  fp8TFLOPS: 89000, hbmTB:24.192, hbmBWTBs:1728.00, powerW: 300000, b200Equiv: 80.00, releaseYear: 2027 },
+  { name: 'GB200',          vendor: 'NVIDIA', chip: 'GB200', fp8TFLOPS: 13900, hbmTB: 8.064, hbmBWTBs: 576.00, powerW: 120000, b200Equiv: 12.50, releaseYear: 2025 },
+  { name: 'GB300',          vendor: 'NVIDIA', chip: 'GB300', fp8TFLOPS: 20850, hbmTB:12.096, hbmBWTBs: 864.00, powerW: 130000, b200Equiv: 18.75, releaseYear: 2026 },
+  // ── Vera Rubin rack ───────────────────────────────────────────────────────────
+  { name: 'VR200',          vendor: 'NVIDIA', chip: 'R100',  fp8TFLOPS: 89000, hbmTB:24.192, hbmBWTBs:1728.00, powerW: 300000, b200Equiv: 80.00, releaseYear: 2027 },
   // ── Google TPU ───────────────────────────────────────────────────────────────
   { name: 'TPU v5p',         vendor: 'Google', chip: 'TPUv5p', fp8TFLOPS:   459, hbmTB: 0.095, hbmBWTBs:   2.76, powerW:    175, b200Equiv:  0.28, releaseYear: 2023 },
   { name: 'TPU v7 Ironwood', vendor: 'Google', chip: 'TPUv7',  fp8TFLOPS:  4614, hbmTB: 0.192, hbmBWTBs:   7.37, powerW:    200, b200Equiv:  1.41, releaseYear: 2025 },
@@ -138,9 +138,9 @@ export const throughputMatrix: Record<string, Record<string, number>> = {
   'H200':            { 'GPT-4o': 460, 'GPT-5': 125, 'Claude Sonnet 4': 555, 'Claude Opus 4.8': 195, 'Fable 5': 155, 'DeepSeek V3': 620, 'Kimi K2': 575, 'Gemini 2.5 Pro': 375 },
   'B200':            { 'GPT-4o': 780, 'GPT-5': 210, 'Claude Sonnet 4': 940, 'Claude Opus 4.8': 330, 'Fable 5': 263, 'DeepSeek V3':1050, 'Kimi K2': 970, 'Gemini 2.5 Pro': 635 },
   'B300':            { 'GPT-4o':1170, 'GPT-5': 315, 'Claude Sonnet 4':1410, 'Claude Opus 4.8': 495, 'Fable 5': 395, 'DeepSeek V3':1575, 'Kimi K2':1455, 'Gemini 2.5 Pro': 955 }, // 1.5× B200
-  'GB200 NVL72':     { 'GPT-4o':1850, 'GPT-5': 495, 'Claude Sonnet 4':2230, 'Claude Opus 4.8': 780, 'Fable 5': 624, 'DeepSeek V3':2490, 'Kimi K2':2300, 'Gemini 2.5 Pro':1510 },
-  'GB300 NVL72':     { 'GPT-4o':2775, 'GPT-5': 745, 'Claude Sonnet 4':3345, 'Claude Opus 4.8':1170, 'Fable 5': 940, 'DeepSeek V3':3735, 'Kimi K2':3450, 'Gemini 2.5 Pro':2265 }, // 1.5× GB200 NVL72
-  'VR200 NVL144':    { 'GPT-4o':2500, 'GPT-5': 670, 'Claude Sonnet 4':3010, 'Claude Opus 4.8':1055, 'Fable 5': 843, 'DeepSeek V3':3360, 'Kimi K2':3100, 'Gemini 2.5 Pro':2030 }, // Vera+Rubin rack: 144 R100 GPUs, 3.2× B200 per chip
+  'GB200':     { 'GPT-4o':1850, 'GPT-5': 495, 'Claude Sonnet 4':2230, 'Claude Opus 4.8': 780, 'Fable 5': 624, 'DeepSeek V3':2490, 'Kimi K2':2300, 'Gemini 2.5 Pro':1510 },
+  'GB300':     { 'GPT-4o':2775, 'GPT-5': 745, 'Claude Sonnet 4':3345, 'Claude Opus 4.8':1170, 'Fable 5': 940, 'DeepSeek V3':3735, 'Kimi K2':3450, 'Gemini 2.5 Pro':2265 }, // 1.5× GB200 NVL72
+  'VR200':    { 'GPT-4o':2500, 'GPT-5': 670, 'Claude Sonnet 4':3010, 'Claude Opus 4.8':1055, 'Fable 5': 843, 'DeepSeek V3':3360, 'Kimi K2':3100, 'Gemini 2.5 Pro':2030 }, // Vera+Rubin rack: 144 R100 GPUs, 3.2× B200 per chip
   'TPU v5p':         { 'GPT-4o': 290, 'GPT-5': 79,  'Claude Sonnet 4': 350, 'Claude Opus 4.8': 123, 'Fable 5': 98,  'DeepSeek V3': 390, 'Kimi K2': 360, 'Gemini 2.5 Pro': 235 },
   'TPU v7 Ironwood': { 'GPT-4o': 640, 'GPT-5': 172, 'Claude Sonnet 4': 770, 'Claude Opus 4.8': 270, 'Fable 5': 216, 'DeepSeek V3': 860, 'Kimi K2': 795, 'Gemini 2.5 Pro': 520 },
   'Trainium 2':      { 'GPT-4o': 280, 'GPT-5': 76,  'Claude Sonnet 4': 340, 'Claude Opus 4.8': 119, 'Fable 5': 95,  'DeepSeek V3': 375, 'Kimi K2': 348, 'Gemini 2.5 Pro': 228 },
@@ -359,7 +359,7 @@ export interface ROICInputs {
 }
 
 export const defaultROICInputs: ROICInputs = {
-  hardware: 'GB200 NVL72',
+  hardware: 'GB200',
   numGPUs: 72,
   costPerGPU: 65000,
   utilizationPct: 82,
@@ -378,9 +378,9 @@ export const hardwareDefaults: Record<string, Partial<ROICInputs>> = {
   'H200':            { costPerGPU: 40000, tokensPerGPUPerSec: 510, powerW: 700,    revenuePerMTokens: 2.00 },
   'B200':            { costPerGPU: 55000,  tokensPerGPUPerSec:  860, powerW: 1000,  revenuePerMTokens: 1.75 },
   'B300':            { costPerGPU: 75000,  tokensPerGPUPerSec: 1300, powerW: 1200,  revenuePerMTokens: 1.50 }, // est. ~$75k/chip; 1.5× B200 throughput
-  'GB200 NVL72':     { costPerGPU: 65000,  tokensPerGPUPerSec:  800, powerW: 1667,  revenuePerMTokens: 1.50 },
-  'GB300 NVL72':     { costPerGPU: 85000,  tokensPerGPUPerSec: 1200, powerW: 1806,  revenuePerMTokens: 1.25 }, // est. ~$6.1M rack ÷ 72; 130kW ÷ 72 ≈ 1806W/GPU
-  'VR200 NVL144':    { costPerGPU: 200000, tokensPerGPUPerSec: 2800, powerW: 2083,  revenuePerMTokens: 1.00 }, // Vera Rubin: est. ~$29M rack ÷ 144 GPUs; 300kW ÷ 144 ≈ 2083W/GPU
+  'GB200':     { costPerGPU: 65000,  tokensPerGPUPerSec:  800, powerW: 1667,  revenuePerMTokens: 1.50 },
+  'GB300':     { costPerGPU: 85000,  tokensPerGPUPerSec: 1200, powerW: 1806,  revenuePerMTokens: 1.25 }, // est. ~$6.1M rack ÷ 72; 130kW ÷ 72 ≈ 1806W/GPU
+  'VR200':    { costPerGPU: 200000, tokensPerGPUPerSec: 2800, powerW: 2083,  revenuePerMTokens: 1.00 }, // Vera Rubin: est. ~$29M rack ÷ 144 GPUs; 300kW ÷ 144 ≈ 2083W/GPU
   'TPU v7 Ironwood': { costPerGPU: 35000, tokensPerGPUPerSec: 700, powerW: 200,    revenuePerMTokens: 2.00 },
   'Trainium 3':      { costPerGPU: 30000, tokensPerGPUPerSec: 580, powerW: 700,    revenuePerMTokens: 2.20 },
   'MI300X':          { costPerGPU: 25000, tokensPerGPUPerSec: 460, powerW: 750,    revenuePerMTokens: 2.80 },
@@ -464,7 +464,7 @@ export interface RefreshScenario {
 
 export const defaultRefreshInputs: RefreshInputs = {
   gen0Hardware: 'B200',
-  gen1Hardware: 'VR200 NVL144',
+  gen1Hardware: 'VR200',
   numGPUs: 512,
   utilizationPct: 82,
   revenuePerMTokensY0: 1.75,
