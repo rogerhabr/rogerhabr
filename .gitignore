@@ -6,6 +6,9 @@ node_modules/
 # Claude Code
 .claude/
 
+# TypeScript build cache
+tsconfig.tsbuildinfo
+
 # Misc
 .DS_Store
 *.pem
