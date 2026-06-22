@@ -15,11 +15,11 @@ const MODEL_KEYS = Object.keys(throughputMatrix[HARDWARE_KEYS[0]] || {});
 
 export default function TokenThroughput() {
   const [selectedModel, setSelectedModel] = useState('Claude Sonnet 4');
-  const [selectedHardware, setSelectedHardware] = useState('GB200 NVL72');
+  const [selectedHardware, setSelectedHardware] = useState('GB200');
 
   // By hardware for selected model
   const hwChartData = HARDWARE_KEYS.map(hw => ({
-    name: hw.replace(' SXM5', '').replace(' NVL72', '').replace(' Ironwood', ''),
+    name: hw.replace(' Ironwood', ''),
     tokPerSec: throughputMatrix[hw][selectedModel] || 0,
     fullName: hw,
   })).sort((a, b) => b.tokPerSec - a.tokPerSec);
@@ -65,7 +65,7 @@ export default function TokenThroughput() {
     <div>
       <SectionHeader
         title="Token Throughput Forecast"
-        subtitle="Bottoms-up token throughput analysis across hardware systems (GB200 NVL72, TPU v7, Trainium 3) and model architectures (GPT-5, Claude Sonnet, DeepSeek V3, Kimi K2). Measures actual inference capacity in tokens/second per chip."
+        subtitle="Bottoms-up token throughput analysis across hardware systems (GB200, GB300, VR200, TPU v7, Trainium 3) and model architectures (GPT-5, Claude Sonnet, DeepSeek V3, Kimi K2). Measures actual inference capacity in tokens/second per chip."
         badge="Bottoms-Up"
         sources={[
           { type: 'derived', label: 'Derived: FP8 TFLOPS ratios' },

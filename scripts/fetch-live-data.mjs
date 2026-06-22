@@ -177,11 +177,11 @@ async function fetchSECCapex(company, cik) {
 // ── GPU catalog — canonical names and regex matchers ─────────────────────────
 
 const GPU_CATALOG = [
-  { name: 'H100 SXM5',   patterns: [/h100[._-]?sxm/i] },
-  { name: 'H200 SXM5',   patterns: [/h200/i] },
-  { name: 'B200 SXM',    patterns: [/\bb200\b/i] },
-  { name: 'GB200 NVL72', patterns: [/gb200/i, /nvl72/i] },
-  { name: 'VERA RUBIN',  patterns: [/vera.?rubin/i, /r100\b/i] },
+  { name: 'H100',        patterns: [/h100[._-]?sxm/i] },
+  { name: 'H200',        patterns: [/h200/i] },
+  { name: 'B200',        patterns: [/\bb200\b/i] },
+  { name: 'GB200', patterns: [/gb200/i, /nvl72/i] },
+  { name: 'VR200', patterns: [/vera.?rubin/i, /vr200/i, /r100\b/i] },
   { name: 'A100 SXM4',   patterns: [/a100[._-]?(sxm|80gb)/i] },
   { name: 'A100 PCIe',   patterns: [/a100[._-]?pcie/i] },
   { name: 'A10',         patterns: [/\ba10g?\b/i] },
@@ -620,7 +620,7 @@ async function main() {
     },
     stocks:             {},
     capex:              { MSFT: null, GOOGL: null, AMZN: null, META: null, ORCL: null },
-    gpuRentalPrices:    {},   // { 'H100 SXM5': { lambdaPerHour, azurePerHour, lowestPerHour, sources }, '_discovered': [] }
+    gpuRentalPrices:    {},   // { 'H100': { lambdaPerHour, azurePerHour, lowestPerHour, sources }, '_discovered': [] }
     modelPricing:       {},   // { modelId: { inputPerM, outputPerM, provider, displayName, contextK? } }
     nvdaFinancials:     null,
     corewaveFinancials: null,
@@ -661,8 +661,8 @@ async function main() {
   const [lambdaResult, azureResult] = await Promise.all([fetchLambdaAllGPUs(), fetchAzureAllGPUs()]);
   result.gpuRentalPrices = buildGPURentalMatrix(lambdaResult, azureResult);
 
-  // Populate legacy gpuCloud from H100 SXM5 entry for backward compat
-  const h100Entry = result.gpuRentalPrices['H100 SXM5'];
+  // Populate legacy gpuCloud from H100 entry for backward compat
+  const h100Entry = result.gpuRentalPrices['H100'];
   if (h100Entry && typeof h100Entry === 'object' && !Array.isArray(h100Entry)) {
     result.gpuCloud.lambdaH100PerHour = h100Entry.lambdaPerHour ?? null;
     result.gpuCloud.azureH100PerHour  = h100Entry.azurePerHour  ?? null;

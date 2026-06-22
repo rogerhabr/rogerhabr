@@ -1,18 +1,17 @@
-// Data provenance is documented in src/lib/sources.ts (visible in the "Data Sources" section of the app).
-// Each series is tagged: actual (primary source), derived (computed from actuals), or estimate/forecast (modeled).
-// Cross-check all modeled figures against the primary sources listed in sources.ts before use.
+// All data is illustrative and based on publicly available estimates and analyst forecasts.
+// Sources: Company filings, earnings calls, Omdia, IDC, and public analyst reports.
 
-export const YEARS = ['2022', '2023', '2024', '2025', '2026E', '2027E', '2028E'];
-export const FORECAST_YEARS = ['2026E', '2027E', '2028E'];
+export const YEARS = ['2022', '2023', '2024', '2025E', '2026E', '2027E', '2028E'];
+export const FORECAST_YEARS = ['2025E', '2026E', '2027E', '2028E'];
 
 // ─── Hardware Installed Base ────────────────────────────────────────────────
-// B200-equivalent GPU units (thousands), normalized by FP8 throughput vs B200 SXM
+// B200-equivalent GPU units (thousands), normalized by FP8 throughput vs B200
 
 export const hyperscalerGPUs = [
   { year: '2022', Microsoft: 16,  Google: 25,  Amazon: 13,  Meta: 16,  Oracle: 2  },
   { year: '2023', Microsoft: 47,  Google: 66,  Amazon: 30,  Meta: 33,  Oracle: 6  },
   { year: '2024', Microsoft: 153, Google: 184, Amazon: 106, Meta: 113, Oracle: 23 },
-  { year: '2025',Microsoft: 288, Google: 328, Amazon: 213, Meta: 203, Oracle: 59 },
+  { year: '2025E',Microsoft: 288, Google: 328, Amazon: 213, Meta: 203, Oracle: 59 },
   { year: '2026E',Microsoft: 431, Google: 513, Amazon: 341, Meta: 319, Oracle:106 },
   { year: '2027E',Microsoft: 613, Google: 725, Amazon: 488, Meta: 453, Oracle:159 },
   { year: '2028E',Microsoft: 828, Google: 969, Amazon: 650, Meta: 619, Oracle:225 },
@@ -30,7 +29,7 @@ export const foundationLabGPUs = [
   { year: '2022', OpenAI:  6, Anthropic:  2, xAI: 0,  DeepSeek:  1, 'Thinking Machines': 0 },
   { year: '2023', OpenAI:  9, Anthropic:  3, xAI: 3,  DeepSeek:  2, 'Thinking Machines': 1 },
   { year: '2024', OpenAI: 30, Anthropic:  9, xAI:13,  DeepSeek: 15, 'Thinking Machines': 3 },
-  { year: '2025',OpenAI: 59, Anthropic: 20, xAI:41,  DeepSeek: 44, 'Thinking Machines': 8 },
+  { year: '2025E',OpenAI: 59, Anthropic: 20, xAI:41,  DeepSeek: 44, 'Thinking Machines': 8 },
   { year: '2026E',OpenAI: 97, Anthropic: 39, xAI:78,  DeepSeek: 72, 'Thinking Machines':17 },
   { year: '2027E',OpenAI:138, Anthropic: 61, xAI:125, DeepSeek:106, 'Thinking Machines':28 },
 ];
@@ -47,7 +46,7 @@ export const neocloudGPUs = [
   { year: '2022', CoreWeave:  5, Nebius: 1, Crusoe:  1, 'Lambda Labs':  2 },
   { year: '2023', CoreWeave: 14, Nebius: 2, Crusoe:  2, 'Lambda Labs':  4 },
   { year: '2024', CoreWeave: 61, Nebius: 6, Crusoe:  4, 'Lambda Labs': 11 },
-  { year: '2025',CoreWeave:150, Nebius:23, Crusoe: 15, 'Lambda Labs': 27 },
+  { year: '2025E',CoreWeave:150, Nebius:23, Crusoe: 15, 'Lambda Labs': 27 },
   { year: '2026E',CoreWeave:244, Nebius:45, Crusoe: 31, 'Lambda Labs': 50 },
   { year: '2027E',CoreWeave:338, Nebius:75, Crusoe: 55, 'Lambda Labs': 81 },
 ];
@@ -59,21 +58,15 @@ export const neocloudColors: Record<string, string> = {
   'Lambda Labs': '#f59e0b',
 };
 
-// CapEx by hyperscaler ($B, calendar year unless noted)
-// ACTUAL 2022-2024: SEC EDGAR 10-K PaymentsToAcquirePropertyPlantAndEquipment
-//   MSFT CY2024 ~$55B (FY ends June; CY approximated from quarterly 10-Qs); GOOGL CY2024 $52.5B; AMZN CY2024 $77.4B; META CY2024 $37.3B
-//   ORCL FY ends May — ORCL FY2024 (ending May 2024) $8.9B; CY2024 blends FY2024+FY2025
-// ACTUAL 2025: MSFT FY2025 $64.55B (ends Jun-2025); GOOGL CY2025 $91.45B; META CY2025 $69.69B; ORCL FY2025 $21.21B — all SEC EDGAR 10-K
-//   AMZN CY2025 ~$105B estimated (Q3 2025 earnings; EDGAR pipeline null — custom XBRL namespace post-2016)
-// FORECAST 2026E–2028E: Model projections — NOT from primary sources
+// CapEx by hyperscaler ($B)
 export const hyperscalerCapex = [
-  { year: '2022', Microsoft: 22,  Google: 25, Amazon:  32, Meta: 15, Oracle:  4 },
-  { year: '2023', Microsoft: 28,  Google: 32, Amazon:  48, Meta: 28, Oracle:  8 },
-  { year: '2024', Microsoft: 55,  Google: 53, Amazon:  77, Meta: 37, Oracle: 11 },
-  { year: '2025', Microsoft: 64.55, Google: 91.45, Amazon: 105, Meta: 69.69, Oracle: 21.21 },
-  { year: '2026E',Microsoft: 115, Google:108, Amazon: 138, Meta: 92, Oracle: 32 },
-  { year: '2027E',Microsoft: 150, Google:143, Amazon: 175, Meta:120, Oracle: 45 },
-  { year: '2028E',Microsoft: 190, Google:185, Amazon: 215, Meta:155, Oracle: 60 },
+  { year: '2022', Microsoft: 22, Google: 25, Amazon: 32, Meta: 15, Oracle: 4  },
+  { year: '2023', Microsoft: 28, Google: 32, Amazon: 48, Meta: 28, Oracle: 8  },
+  { year: '2024', Microsoft: 53, Google: 52, Amazon: 75, Meta: 38, Oracle: 14 },
+  { year: '2025E',Microsoft: 80, Google: 75, Amazon:105, Meta: 65, Oracle: 30 },
+  { year: '2026E',Microsoft:115, Google:108, Amazon:138, Meta: 92, Oracle: 50 },
+  { year: '2027E',Microsoft:150, Google:143, Amazon:175, Meta:120, Oracle: 70 },
+  { year: '2028E',Microsoft:190, Google:185, Amazon:215, Meta:155, Oracle: 90 },
 ];
 
 // ─── Hardware Specs ──────────────────────────────────────────────────────────
@@ -91,19 +84,26 @@ export interface HardwareSpec {
 }
 
 export const hardwareSpecs: HardwareSpec[] = [
-  { name: 'H100 SXM5',       vendor: 'NVIDIA', chip: 'H100',    fp8TFLOPS: 1979,  hbmTB: 0.080, hbmBWTBs:  3.35, powerW:   700,  b200Equiv: 0.31, releaseYear: 2022 },
-  { name: 'H200 SXM5',       vendor: 'NVIDIA', chip: 'H200',    fp8TFLOPS: 1979,  hbmTB: 0.141, hbmBWTBs:  4.80, powerW:   700,  b200Equiv: 0.44, releaseYear: 2024 },
-  { name: 'B200 SXM',        vendor: 'NVIDIA', chip: 'B200',    fp8TFLOPS: 4500,  hbmTB: 0.192, hbmBWTBs:  8.00, powerW:  1000,  b200Equiv: 1.00, releaseYear: 2025 },
-  { name: 'B300 SXM',        vendor: 'NVIDIA', chip: 'B300',    fp8TFLOPS: 6750,  hbmTB: 0.288, hbmBWTBs: 10.00, powerW:  1200,  b200Equiv: 1.50, releaseYear: 2026 },
-  { name: 'GB200 NVL72',     vendor: 'NVIDIA', chip: 'GB200',   fp8TFLOPS:13900,  hbmTB: 8.064, hbmBWTBs:576.00, powerW: 120000, b200Equiv:12.50, releaseYear: 2025 },
-  { name: 'GB300 NVL72',     vendor: 'NVIDIA', chip: 'GB300',   fp8TFLOPS:20850,  hbmTB:12.096, hbmBWTBs:864.00, powerW: 130000, b200Equiv:18.75, releaseYear: 2026 }, // 72× B300 @ 1.5× GB200; est. 130kW rack
-  { name: 'VERA RUBIN',      vendor: 'NVIDIA', chip: 'R100',    fp8TFLOPS:14400,  hbmTB: 0.288, hbmBWTBs: 12.00, powerW:  1500,  b200Equiv: 3.20, releaseYear: 2026 }, // Vera Rubin R100 SXM — GTC 2025 est., 3.2× B200, HBM4
-  { name: 'TPU v5p',         vendor: 'Google', chip: 'TPUv5p',  fp8TFLOPS:  459,  hbmTB: 0.095, hbmBWTBs:  2.76, powerW:   175,  b200Equiv: 0.28, releaseYear: 2023 },
-  { name: 'TPU v7 Ironwood', vendor: 'Google', chip: 'TPUv7',   fp8TFLOPS: 4614,  hbmTB: 0.192, hbmBWTBs:  7.37, powerW:   200,  b200Equiv: 1.41, releaseYear: 2025 },
-  { name: 'Trainium 2',      vendor: 'Amazon', chip: 'Trn2',    fp8TFLOPS: 2832,  hbmTB: 0.096, hbmBWTBs:  5.12, powerW:   700,  b200Equiv: 0.47, releaseYear: 2024 },
-  { name: 'Trainium 3',      vendor: 'Amazon', chip: 'Trn3',    fp8TFLOPS: 5664,  hbmTB: 0.192, hbmBWTBs:  9.60, powerW:   700,  b200Equiv: 0.94, releaseYear: 2026 },
-  { name: 'MI300X',          vendor: 'AMD',    chip: 'MI300X',  fp8TFLOPS: 2610,  hbmTB: 0.192, hbmBWTBs:  5.30, powerW:   750,  b200Equiv: 0.56, releaseYear: 2024 },
-  { name: 'MI350X',          vendor: 'AMD',    chip: 'MI350X',  fp8TFLOPS: 5220,  hbmTB: 0.288, hbmBWTBs:  9.60, powerW:   750,  b200Equiv: 1.09, releaseYear: 2025 },
+  // ── Hopper (single chip) ──────────────────────────────────────────────────────
+  { name: 'H100',          vendor: 'NVIDIA', chip: 'H100',  fp8TFLOPS:  1979, hbmTB: 0.080, hbmBWTBs:   3.35, powerW:    700, b200Equiv:  0.31, releaseYear: 2022 },
+  { name: 'H200',          vendor: 'NVIDIA', chip: 'H200',  fp8TFLOPS:  1979, hbmTB: 0.141, hbmBWTBs:   4.80, powerW:    700, b200Equiv:  0.44, releaseYear: 2024 },
+  // ── Blackwell (single chip) ───────────────────────────────────────────────────
+  { name: 'B200',          vendor: 'NVIDIA', chip: 'B200',  fp8TFLOPS:  4500, hbmTB: 0.192, hbmBWTBs:   8.00, powerW:   1000, b200Equiv:  1.00, releaseYear: 2025 },
+  { name: 'B300',          vendor: 'NVIDIA', chip: 'B300',  fp8TFLOPS:  6750, hbmTB: 0.288, hbmBWTBs:  10.00, powerW:   1200, b200Equiv:  1.50, releaseYear: 2026 },
+  // ── Grace Blackwell NVL racks ─────────────────────────────────────────────────
+  { name: 'GB200',          vendor: 'NVIDIA', chip: 'GB200', fp8TFLOPS: 13900, hbmTB: 8.064, hbmBWTBs: 576.00, powerW: 120000, b200Equiv: 12.50, releaseYear: 2025 },
+  { name: 'GB300',          vendor: 'NVIDIA', chip: 'GB300', fp8TFLOPS: 20850, hbmTB:12.096, hbmBWTBs: 864.00, powerW: 130000, b200Equiv: 18.75, releaseYear: 2026 },
+  // ── Vera Rubin rack ───────────────────────────────────────────────────────────
+  { name: 'VR200',          vendor: 'NVIDIA', chip: 'R100',  fp8TFLOPS: 89000, hbmTB:24.192, hbmBWTBs:1728.00, powerW: 300000, b200Equiv: 80.00, releaseYear: 2027 },
+  // ── Google TPU ───────────────────────────────────────────────────────────────
+  { name: 'TPU v5p',         vendor: 'Google', chip: 'TPUv5p', fp8TFLOPS:   459, hbmTB: 0.095, hbmBWTBs:   2.76, powerW:    175, b200Equiv:  0.28, releaseYear: 2023 },
+  { name: 'TPU v7 Ironwood', vendor: 'Google', chip: 'TPUv7',  fp8TFLOPS:  4614, hbmTB: 0.192, hbmBWTBs:   7.37, powerW:    200, b200Equiv:  1.41, releaseYear: 2025 },
+  // ── Amazon Trainium ───────────────────────────────────────────────────────────
+  { name: 'Trainium 2',      vendor: 'Amazon', chip: 'Trn2',   fp8TFLOPS:  2832, hbmTB: 0.096, hbmBWTBs:   5.12, powerW:    700, b200Equiv:  0.47, releaseYear: 2024 },
+  { name: 'Trainium 3',      vendor: 'Amazon', chip: 'Trn3',   fp8TFLOPS:  5664, hbmTB: 0.192, hbmBWTBs:   9.60, powerW:    700, b200Equiv:  0.94, releaseYear: 2026 },
+  // ── AMD Instinct ──────────────────────────────────────────────────────────────
+  { name: 'MI300X',          vendor: 'AMD',    chip: 'MI300X', fp8TFLOPS:  2610, hbmTB: 0.192, hbmBWTBs:   5.30, powerW:    750, b200Equiv:  0.56, releaseYear: 2024 },
+  { name: 'MI350X',          vendor: 'AMD',    chip: 'MI350X', fp8TFLOPS:  5220, hbmTB: 0.288, hbmBWTBs:   9.60, powerW:    750, b200Equiv:  1.09, releaseYear: 2025 },
 ];
 
 // ─── Model Architectures ─────────────────────────────────────────────────────
@@ -123,7 +123,6 @@ export const modelSpecs: ModelSpec[] = [
   { name: 'GPT-5',           provider: 'OpenAI',    params: 500,  activeParams: 500, contextK: 200, type: 'dense', released: '2025-02' },
   { name: 'Claude Sonnet 4', provider: 'Anthropic', params: 70,   activeParams: 70,  contextK: 200, type: 'dense', released: '2025-02' },
   { name: 'Claude Opus 4.8', provider: 'Anthropic', params: 200,  activeParams: 200, contextK: 200, type: 'dense', released: '2025-06' },
-  { name: 'Fable 5',         provider: 'Anthropic', params: 250,  activeParams: 250, contextK: 200, type: 'dense', released: '2026-03' },
   { name: 'DeepSeek V3',     provider: 'DeepSeek',  params: 671,  activeParams: 37,  contextK: 128, type: 'moe',   released: '2024-12' },
   { name: 'DeepSeek R2',     provider: 'DeepSeek',  params: 800,  activeParams: 40,  contextK: 128, type: 'moe',   released: '2025-06' },
   { name: 'Kimi K2',         provider: 'Moonshot',  params: 1000, activeParams: 32,  contextK: 128, type: 'moe',   released: '2025-07' },
@@ -135,13 +134,13 @@ export const modelSpecs: ModelSpec[] = [
 // Tokens/second per chip for inference (output tokens, batchsize ~32, fp8)
 
 export const throughputMatrix: Record<string, Record<string, number>> = {
-  'H100 SXM5':       { 'GPT-4o': 320, 'GPT-5': 88,  'Claude Sonnet 4': 385, 'Claude Opus 4.8': 135, 'Fable 5': 108, 'DeepSeek V3': 430, 'Kimi K2': 400, 'Gemini 2.5 Pro': 260 },
-  'H200 SXM5':       { 'GPT-4o': 460, 'GPT-5': 125, 'Claude Sonnet 4': 555, 'Claude Opus 4.8': 195, 'Fable 5': 155, 'DeepSeek V3': 620, 'Kimi K2': 575, 'Gemini 2.5 Pro': 375 },
-  'B200 SXM':        { 'GPT-4o': 780, 'GPT-5': 210, 'Claude Sonnet 4': 940, 'Claude Opus 4.8': 330, 'Fable 5': 263, 'DeepSeek V3':1050, 'Kimi K2': 970, 'Gemini 2.5 Pro': 635 },
-  'B300 SXM':        { 'GPT-4o':1170, 'GPT-5': 315, 'Claude Sonnet 4':1410, 'Claude Opus 4.8': 495, 'Fable 5': 395, 'DeepSeek V3':1575, 'Kimi K2':1455, 'Gemini 2.5 Pro': 955 }, // 1.5× B200 SXM
-  'GB200 NVL72':     { 'GPT-4o':1850, 'GPT-5': 495, 'Claude Sonnet 4':2230, 'Claude Opus 4.8': 780, 'Fable 5': 624, 'DeepSeek V3':2490, 'Kimi K2':2300, 'Gemini 2.5 Pro':1510 },
-  'GB300 NVL72':     { 'GPT-4o':2775, 'GPT-5': 745, 'Claude Sonnet 4':3345, 'Claude Opus 4.8':1170, 'Fable 5': 940, 'DeepSeek V3':3735, 'Kimi K2':3450, 'Gemini 2.5 Pro':2265 }, // 1.5× GB200 NVL72
-  'VERA RUBIN':      { 'GPT-4o':2500, 'GPT-5': 670, 'Claude Sonnet 4':3010, 'Claude Opus 4.8':1055, 'Fable 5': 843, 'DeepSeek V3':3360, 'Kimi K2':3100, 'Gemini 2.5 Pro':2030 }, // R100 SXM, 3.2× B200
+  'H100':            { 'GPT-4o': 320, 'GPT-5': 88,  'Claude Sonnet 4': 385, 'Claude Opus 4.8': 135, 'Fable 5': 108, 'DeepSeek V3': 430, 'Kimi K2': 400, 'Gemini 2.5 Pro': 260 },
+  'H200':            { 'GPT-4o': 460, 'GPT-5': 125, 'Claude Sonnet 4': 555, 'Claude Opus 4.8': 195, 'Fable 5': 155, 'DeepSeek V3': 620, 'Kimi K2': 575, 'Gemini 2.5 Pro': 375 },
+  'B200':            { 'GPT-4o': 780, 'GPT-5': 210, 'Claude Sonnet 4': 940, 'Claude Opus 4.8': 330, 'Fable 5': 263, 'DeepSeek V3':1050, 'Kimi K2': 970, 'Gemini 2.5 Pro': 635 },
+  'B300':            { 'GPT-4o':1170, 'GPT-5': 315, 'Claude Sonnet 4':1410, 'Claude Opus 4.8': 495, 'Fable 5': 395, 'DeepSeek V3':1575, 'Kimi K2':1455, 'Gemini 2.5 Pro': 955 }, // 1.5× B200
+  'GB200':     { 'GPT-4o':1850, 'GPT-5': 495, 'Claude Sonnet 4':2230, 'Claude Opus 4.8': 780, 'Fable 5': 624, 'DeepSeek V3':2490, 'Kimi K2':2300, 'Gemini 2.5 Pro':1510 },
+  'GB300':     { 'GPT-4o':2775, 'GPT-5': 745, 'Claude Sonnet 4':3345, 'Claude Opus 4.8':1170, 'Fable 5': 940, 'DeepSeek V3':3735, 'Kimi K2':3450, 'Gemini 2.5 Pro':2265 }, // 1.5× GB200 NVL72
+  'VR200':    { 'GPT-4o':2500, 'GPT-5': 670, 'Claude Sonnet 4':3010, 'Claude Opus 4.8':1055, 'Fable 5': 843, 'DeepSeek V3':3360, 'Kimi K2':3100, 'Gemini 2.5 Pro':2030 }, // Vera+Rubin rack: 144 R100 GPUs, 3.2× B200 per chip
   'TPU v5p':         { 'GPT-4o': 290, 'GPT-5': 79,  'Claude Sonnet 4': 350, 'Claude Opus 4.8': 123, 'Fable 5': 98,  'DeepSeek V3': 390, 'Kimi K2': 360, 'Gemini 2.5 Pro': 235 },
   'TPU v7 Ironwood': { 'GPT-4o': 640, 'GPT-5': 172, 'Claude Sonnet 4': 770, 'Claude Opus 4.8': 270, 'Fable 5': 216, 'DeepSeek V3': 860, 'Kimi K2': 795, 'Gemini 2.5 Pro': 520 },
   'Trainium 2':      { 'GPT-4o': 280, 'GPT-5': 76,  'Claude Sonnet 4': 340, 'Claude Opus 4.8': 119, 'Fable 5': 95,  'DeepSeek V3': 375, 'Kimi K2': 348, 'Gemini 2.5 Pro': 228 },
@@ -178,7 +177,7 @@ export const tokenEconomyTAM = [
   { year: '2022', consumerApps: 0.4,  apiInference: 0.3, tokenSoftware: 0.1 },
   { year: '2023', consumerApps: 1.5,  apiInference: 1.2, tokenSoftware: 0.3 },
   { year: '2024', consumerApps: 5.2,  apiInference: 4.8, tokenSoftware: 2.0 },
-  { year: '2025',consumerApps: 14.5, apiInference:13.8, tokenSoftware: 7.2 },
+  { year: '2025E',consumerApps: 14.5, apiInference:13.8, tokenSoftware: 7.2 },
   { year: '2026E',consumerApps: 36.0, apiInference:36.5, tokenSoftware:18.5 },
   { year: '2027E',consumerApps: 79.0, apiInference:82.0, tokenSoftware:40.0 },
   { year: '2028E',consumerApps:158.0, apiInference:165.0,tokenSoftware:80.0 },
@@ -231,7 +230,7 @@ export const saasDisruptions: SaasDisruption[] = [
   { company: 'Atlassian',   sector: 'Dev Tools',     revenue2024B: 4.4,  revenueAtRiskPct: 55, seatModel: true,  aiResponse: 'Rovo AI, Jira AI', threatLevel: 'Critical', disruptors: ['Cursor', 'GitHub Copilot', 'Linear AI'], timelineYears: 2 },
   { company: 'Workday',     sector: 'HCM / ERP',     revenue2024B: 7.3,  revenueAtRiskPct: 30, seatModel: true,  aiResponse: 'Workday AI agents', threatLevel: 'Medium',   disruptors: ['Rippling', 'TriNet', 'AI HR agents'], timelineYears: 4 },
   { company: 'SAP',         sector: 'ERP',           revenue2024B: 35.4, revenueAtRiskPct: 25, seatModel: true,  aiResponse: 'SAP Business AI', threatLevel: 'Medium',   disruptors: ['AI-native ERP startups', 'Microsoft Copilot'], timelineYears: 5 },
-  { company: 'Microsoft',   sector: 'Productivity',  revenue2024B:245.1, revenueAtRiskPct: 15, seatModel: true,  aiResponse: 'Copilot across all products', threatLevel: 'Adapting', disruptors: ['Internal disruption'], timelineYears: 5 },
+  { company: 'Microsoft',   sector: 'Productivity',  revenue2024B:211.9, revenueAtRiskPct: 15, seatModel: true,  aiResponse: 'Copilot across all products', threatLevel: 'Adapting', disruptors: ['Internal disruption'], timelineYears: 5 },
   { company: 'Oracle',      sector: 'Database / ERP',revenue2024B: 53.0, revenueAtRiskPct: 20, seatModel: true,  aiResponse: 'Oracle AI Data Platform', threatLevel: 'Adapting', disruptors: ['Snowflake', 'AI-native databases'], timelineYears: 4 },
 ];
 
@@ -265,7 +264,7 @@ export const supplyDemand = [
   { year: '2022', inferenceSupply: 0.25, trainingSupply: 0.13, inferenceDemand: 0.19, trainingDemand: 0.16 },
   { year: '2023', inferenceSupply: 0.69, trainingSupply: 0.34, inferenceDemand: 0.56, trainingDemand: 0.44 },
   { year: '2024', inferenceSupply: 2.13, trainingSupply: 1.00, inferenceDemand: 1.84, trainingDemand: 1.19 },
-  { year: '2025',inferenceSupply: 5.16, trainingSupply: 2.34, inferenceDemand: 4.63, trainingDemand: 2.88 },
+  { year: '2025E',inferenceSupply: 5.16, trainingSupply: 2.34, inferenceDemand: 4.63, trainingDemand: 2.88 },
   { year: '2026E',inferenceSupply:10.63, trainingSupply: 4.69, inferenceDemand:10.16, trainingDemand: 5.78 },
   { year: '2027E',inferenceSupply:20.00, trainingSupply: 8.44, inferenceDemand:19.06, trainingDemand:10.00 },
   { year: '2028E',inferenceSupply:35.94, trainingSupply:15.00, inferenceDemand:35.00, trainingDemand:16.25 },
@@ -276,7 +275,7 @@ export const supplyByType = [
   { year: '2022', hyperscalers: 0.28, foundationLabs: 0.06, neoclouds: 0.03 },
   { year: '2023', hyperscalers: 0.75, foundationLabs: 0.19, neoclouds: 0.09 },
   { year: '2024', hyperscalers: 2.34, foundationLabs: 0.56, neoclouds: 0.22 },
-  { year: '2025',hyperscalers: 5.56, foundationLabs: 1.41, neoclouds: 0.53 },
+  { year: '2025E',hyperscalers: 5.56, foundationLabs: 1.41, neoclouds: 0.53 },
   { year: '2026E',hyperscalers:11.56, foundationLabs: 2.81, neoclouds: 0.94 },
   { year: '2027E',hyperscalers:21.88, foundationLabs: 4.69, neoclouds: 1.88 },
   { year: '2028E',hyperscalers:39.38, foundationLabs: 8.13, neoclouds: 3.44 },
@@ -288,7 +287,7 @@ export const roicByEntity = [
   { year: '2022', hyperscalers: -8,  foundationLabs: -55, neoclouds: 12 },
   { year: '2023', hyperscalers: -3,  foundationLabs: -42, neoclouds: 17 },
   { year: '2024', hyperscalers:  9,  foundationLabs: -28, neoclouds: 22 },
-  { year: '2025',hyperscalers: 19,  foundationLabs: -12, neoclouds: 26 },
+  { year: '2025E',hyperscalers: 19,  foundationLabs: -12, neoclouds: 26 },
   { year: '2026E',hyperscalers: 26,  foundationLabs:   4, neoclouds: 30 },
   { year: '2027E',hyperscalers: 29,  foundationLabs:  17, neoclouds: 34 },
   { year: '2028E',hyperscalers: 31,  foundationLabs:  25, neoclouds: 36 },
@@ -301,7 +300,7 @@ export const revenueByModel = [
   { year: '2022', rental: 4,    model: 0.5, software: 1    },
   { year: '2023', rental: 8,    model: 2,   software: 5    },
   { year: '2024', rental: 22,   model: 10,  software: 18   },
-  { year: '2025',rental: 48,   model: 30,  software: 55   },
+  { year: '2025E',rental: 48,   model: 30,  software: 55   },
   { year: '2026E',rental: 95,   model: 70,  software: 130  },
   { year: '2027E',rental: 175,  model: 145, software: 280  },
   { year: '2028E',rental: 300,  model: 280, software: 520  },
@@ -312,7 +311,7 @@ export const marginsByModel = [
   { year: '2022', rental: 28, model: -80, software: 45 },
   { year: '2023', rental: 31, model: -65, software: 40 },
   { year: '2024', rental: 35, model: -30, software: 38 },
-  { year: '2025',rental: 38, model:  -5, software: 42 },
+  { year: '2025E',rental: 38, model:  -5, software: 42 },
   { year: '2026E',rental: 40, model:  18, software: 48 },
   { year: '2027E',rental: 42, model:  28, software: 52 },
   { year: '2028E',rental: 43, model:  35, software: 56 },
@@ -325,7 +324,7 @@ export const hardwareDemandForecast = [
   { year: '2022', inferenceGPUs:   56, trainingGPUs:   38, total:   94 },
   { year: '2023', inferenceGPUs:  150, trainingGPUs:  100, total:  250 },
   { year: '2024', inferenceGPUs:  406, trainingGPUs:  219, total:  625 },
-  { year: '2025',inferenceGPUs:  969, trainingGPUs:  438, total: 1406 },
+  { year: '2025E',inferenceGPUs:  969, trainingGPUs:  438, total: 1406 },
   { year: '2026E',inferenceGPUs: 1938, trainingGPUs:  719, total: 2656 },
   { year: '2027E',inferenceGPUs: 3594, trainingGPUs: 1094, total: 4688 },
   { year: '2028E',inferenceGPUs: 6094, trainingGPUs: 1563, total: 7656 },
@@ -336,7 +335,7 @@ export const vendorMarketShare = [
   { year: '2022', NVIDIA: 92, AMD: 4, Google: 2, Amazon: 1, Other: 1 },
   { year: '2023', NVIDIA: 90, AMD: 5, Google: 3, Amazon: 1, Other: 1 },
   { year: '2024', NVIDIA: 85, AMD: 8, Google: 4, Amazon: 2, Other: 1 },
-  { year: '2025',NVIDIA: 80, AMD:10, Google: 6, Amazon: 3, Other: 1 },
+  { year: '2025E',NVIDIA: 80, AMD:10, Google: 6, Amazon: 3, Other: 1 },
   { year: '2026E',NVIDIA: 75, AMD:12, Google: 7, Amazon: 4, Other: 2 },
   { year: '2027E',NVIDIA: 70, AMD:14, Google: 9, Amazon: 5, Other: 2 },
   { year: '2028E',NVIDIA: 65, AMD:16, Google:11, Amazon: 6, Other: 2 },
@@ -352,36 +351,36 @@ export interface ROICInputs {
   revenuePerMTokens: number;
   tokensPerGPUPerSec: number;
   powerW: number;
-  powerCostPerKWh: number;
   pue: number;
+  powerCostPerKWh: number;
   opexPctCapex: number;
   amortizationYears: number;
-  fixedAnnualOverheadM: number; // staff + networking + facility costs not proportional to GPU count
+  fixedAnnualOverheadM: number;
 }
 
 export const defaultROICInputs: ROICInputs = {
-  hardware: 'GB200 NVL72',
+  hardware: 'GB200',
   numGPUs: 72,
   costPerGPU: 65000,
   utilizationPct: 82,
   revenuePerMTokens: 1.50,
   tokensPerGPUPerSec: 800,
   powerW: 1667,
-  powerCostPerKWh: 0.04,
   pue: 1.20,
+  powerCostPerKWh: 0.04,
   opexPctCapex: 10,
   amortizationYears: 3,
   fixedAnnualOverheadM: 0.5,
 };
 
 export const hardwareDefaults: Record<string, Partial<ROICInputs>> = {
-  'H100 SXM5':       { costPerGPU: 30000, tokensPerGPUPerSec: 350, powerW: 700,    revenuePerMTokens: 2.50 },
-  'H200 SXM5':       { costPerGPU: 40000, tokensPerGPUPerSec: 510, powerW: 700,    revenuePerMTokens: 2.00 },
-  'B200 SXM':        { costPerGPU: 55000,  tokensPerGPUPerSec:  860, powerW: 1000,  revenuePerMTokens: 1.75 },
-  'B300 SXM':        { costPerGPU: 75000,  tokensPerGPUPerSec: 1300, powerW: 1200,  revenuePerMTokens: 1.50 }, // est. ~$75k/chip; 1.5× B200 throughput
-  'GB200 NVL72':     { costPerGPU: 65000,  tokensPerGPUPerSec:  800, powerW: 1667,  revenuePerMTokens: 1.50 },
-  'GB300 NVL72':     { costPerGPU: 85000,  tokensPerGPUPerSec: 1200, powerW: 1806,  revenuePerMTokens: 1.25 }, // est. ~$6.1M rack ÷ 72; 130kW ÷ 72 ≈ 1806W/GPU
-  'VERA RUBIN':      { costPerGPU: 105000, tokensPerGPUPerSec: 2800, powerW: 1500,  revenuePerMTokens: 1.25 }, // R100 SXM — $7.6M NVL72 rack ÷ 72 GPUs
+  'H100':            { costPerGPU: 30000, tokensPerGPUPerSec: 350, powerW: 700,    revenuePerMTokens: 2.50 },
+  'H200':            { costPerGPU: 40000, tokensPerGPUPerSec: 510, powerW: 700,    revenuePerMTokens: 2.00 },
+  'B200':            { costPerGPU: 55000,  tokensPerGPUPerSec:  860, powerW: 1000,  revenuePerMTokens: 1.75 },
+  'B300':            { costPerGPU: 75000,  tokensPerGPUPerSec: 1300, powerW: 1200,  revenuePerMTokens: 1.50 }, // est. ~$75k/chip; 1.5× B200 throughput
+  'GB200':     { costPerGPU: 65000,  tokensPerGPUPerSec:  800, powerW: 1667,  revenuePerMTokens: 1.50 },
+  'GB300':     { costPerGPU: 85000,  tokensPerGPUPerSec: 1200, powerW: 1806,  revenuePerMTokens: 1.25 }, // est. ~$6.1M rack ÷ 72; 130kW ÷ 72 ≈ 1806W/GPU
+  'VR200':    { costPerGPU: 200000, tokensPerGPUPerSec: 2800, powerW: 2083,  revenuePerMTokens: 1.00 }, // Vera Rubin: est. ~$29M rack ÷ 144 GPUs; 300kW ÷ 144 ≈ 2083W/GPU
   'TPU v7 Ironwood': { costPerGPU: 35000, tokensPerGPUPerSec: 700, powerW: 200,    revenuePerMTokens: 2.00 },
   'Trainium 3':      { costPerGPU: 30000, tokensPerGPUPerSec: 580, powerW: 700,    revenuePerMTokens: 2.20 },
   'MI300X':          { costPerGPU: 25000, tokensPerGPUPerSec: 460, powerW: 750,    revenuePerMTokens: 2.80 },
@@ -391,29 +390,18 @@ export const hardwareDefaults: Record<string, Partial<ROICInputs>> = {
 export function calcROIC(inputs: ROICInputs) {
   const capex = inputs.numGPUs * inputs.costPerGPU;
   const secPerYear = 86400 * 365;
-
-  // Revenue: GPU count × throughput × utilization × price per M tokens
   const annualTokens = inputs.numGPUs * inputs.tokensPerGPUPerSec * secPerYear * (inputs.utilizationPct / 100);
   const annualRevenue = (annualTokens / 1e6) * inputs.revenuePerMTokens;
-
-  // Costs: variable (scale with GPUs) + fixed overhead (does not scale with GPUs)
   const annualPowerCost = (inputs.numGPUs * inputs.powerW * inputs.pue / 1000) * 24 * 365 * inputs.powerCostPerKWh;
-  const annualOpex = (inputs.opexPctCapex / 100) * capex;         // % of CapEx per year
-  const annualAmortization = capex / inputs.amortizationYears;    // straight-line depreciation
-  const annualFixedOverhead = inputs.fixedAnnualOverheadM * 1e6;  // staff, networking, facility — breaks scale invariance
-
+  const annualOpex = (inputs.opexPctCapex / 100) * capex;
+  const annualAmortization = capex / inputs.amortizationYears;
+  const annualFixedOverhead = inputs.fixedAnnualOverheadM * 1e6;
   const annualTotalCost = annualPowerCost + annualOpex + annualAmortization + annualFixedOverhead;
   const annualProfit = annualRevenue - annualTotalCost;
-
-  // ROIC: annualProfit / total invested capital. Fixed overhead breaks scale invariance —
-  // larger clusters spread fixed costs over more GPUs, improving ROIC%.
   const roic = (annualProfit / capex) * 100;
   const paybackMonths = annualProfit > 0 ? (capex / annualProfit) * 12 : Infinity;
-
-  // Gross margin excludes amortization (capital cost) but includes all operating costs
   const grossMarginPct = annualRevenue > 0
-    ? ((annualRevenue - annualPowerCost - annualOpex - annualFixedOverhead) / annualRevenue) * 100
-    : 0;
+    ? ((annualRevenue - annualPowerCost - annualOpex - annualFixedOverhead) / annualRevenue) * 100 : 0;
 
   return {
     capex,
@@ -475,8 +463,8 @@ export interface RefreshScenario {
 }
 
 export const defaultRefreshInputs: RefreshInputs = {
-  gen0Hardware: 'B200 SXM',
-  gen1Hardware: 'VERA RUBIN',
+  gen0Hardware: 'B200',
+  gen1Hardware: 'VR200',
   numGPUs: 512,
   utilizationPct: 82,
   revenuePerMTokensY0: 1.75,
@@ -634,7 +622,7 @@ export const priceCompression = [
   { quarter: 'Q1 2025', medianInput: 1.2,  frontierInput: 15.0, cheapestInput: 0.075, tokensPerDollar: 3000000 },
   { quarter: 'Q2 2025', medianInput: 0.9,  frontierInput: 15.0, cheapestInput: 0.075, tokensPerDollar: 4000000 },
   { quarter: 'Q3 2025', medianInput: 0.5,  frontierInput: 10.0, cheapestInput: 0.05,  tokensPerDollar: 6000000 },
-  { quarter: 'Q4 2025',medianInput: 0.35, frontierInput: 8.0,  cheapestInput: 0.03,  tokensPerDollar: 10000000 },
+  { quarter: 'Q4 2025E',medianInput: 0.35, frontierInput: 8.0,  cheapestInput: 0.03,  tokensPerDollar: 10000000 },
   { quarter: 'Q2 2026E',medianInput: 0.20, frontierInput: 5.0,  cheapestInput: 0.02,  tokensPerDollar: 18000000 },
 ];
 
@@ -644,7 +632,7 @@ export const labRevenue = [
   { year: '2022', OpenAI: 0.4,  Anthropic: 0.05, xAI: 0,    DeepSeek: 0.01 },
   { year: '2023', OpenAI: 1.6,  Anthropic: 0.15, xAI: 0.04, DeepSeek: 0.03 },
   { year: '2024', OpenAI: 3.7,  Anthropic: 1.0,  xAI: 0.30, DeepSeek: 0.10 },
-  { year: '2025',OpenAI: 11.6, Anthropic: 3.0,  xAI: 1.00, DeepSeek: 0.30 },
+  { year: '2025E',OpenAI: 11.6, Anthropic: 3.0,  xAI: 1.00, DeepSeek: 0.30 },
   { year: '2026E',OpenAI: 28.0, Anthropic: 8.0,  xAI: 3.00, DeepSeek: 1.00 },
   { year: '2027E',OpenAI: 58.0, Anthropic: 18.0, xAI: 7.00, DeepSeek: 3.00 },
 ];
@@ -653,7 +641,7 @@ export const labOperatingIncome = [
   { year: '2022', OpenAI: -0.50, Anthropic: -0.30, xAI:  0.00, DeepSeek: -0.05 },
   { year: '2023', OpenAI: -0.54, Anthropic: -0.40, xAI: -0.20, DeepSeek: -0.10 },
   { year: '2024', OpenAI: -1.50, Anthropic: -0.60, xAI: -0.50, DeepSeek: -0.30 },
-  { year: '2025',OpenAI: -2.00, Anthropic: -0.50, xAI: -0.80, DeepSeek: -0.40 },
+  { year: '2025E',OpenAI: -2.00, Anthropic: -0.50, xAI: -0.80, DeepSeek: -0.40 },
   { year: '2026E',OpenAI:  2.00, Anthropic:  0.50, xAI: -0.50, DeepSeek: -0.20 },
   { year: '2027E',OpenAI: 12.00, Anthropic:  3.50, xAI:  0.50, DeepSeek:  0.20 },
 ];
@@ -685,7 +673,7 @@ export const labValuations = [
   { year: '2022', OpenAI: 29,  Anthropic: 4.5, xAI: 0,   DeepSeek: 0   },
   { year: '2023', OpenAI: 90,  Anthropic: 5,   xAI: 20,  DeepSeek: 0   },
   { year: '2024', OpenAI: 157, Anthropic: 18,  xAI: 24,  DeepSeek: 0   },
-  { year: '2025',OpenAI: 340, Anthropic: 62,  xAI: 120, DeepSeek: 30  },
+  { year: '2025E',OpenAI: 340, Anthropic: 62,  xAI: 120, DeepSeek: 30  },
   { year: '2026E',OpenAI: 600, Anthropic: 140, xAI: 200, DeepSeek: 80  },
   { year: '2027E',OpenAI: 1100,Anthropic: 300, xAI: 380, DeepSeek: 200 },
 ];
@@ -694,7 +682,7 @@ export const labHeadcount = [
   { year: '2022', OpenAI: 375,  Anthropic: 150,  xAI: 0,    DeepSeek: 50   },
   { year: '2023', OpenAI: 770,  Anthropic: 380,  xAI: 200,  DeepSeek: 150  },
   { year: '2024', OpenAI: 1800, Anthropic: 900,  xAI: 800,  DeepSeek: 300  },
-  { year: '2025',OpenAI: 3500, Anthropic: 1600, xAI: 2000, DeepSeek: 500  },
+  { year: '2025E',OpenAI: 3500, Anthropic: 1600, xAI: 2000, DeepSeek: 500  },
   { year: '2026E',OpenAI: 6000, Anthropic: 2800, xAI: 3500, DeepSeek: 900  },
 ];
 

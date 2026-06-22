@@ -26,7 +26,7 @@ export const DATA_SOURCES: Record<string, DataSource> = {
     sourceType: 'actual',
     primarySource: 'NVIDIA, AMD, Google, Amazon — official product datasheets',
     sourceURL: 'https://www.nvidia.com/en-us/data-center/products/hopper-gpu/',
-    notes: 'B200-equivalent normalization uses FP8 TFLOPS ratio: B200 SXM = 4,500 TFLOPS baseline. VERA RUBIN (R100 SXM): estimated from NVIDIA GTC 2025 system-level claim of ~3.3× GB200 NVL72; individual chip FP8 TFLOPS not yet officially disclosed — treated as 3.2× B200 (14,400 TFLOPS). HBM4 specs estimated. Cost ~$105k/GPU derived from NVL72 rack price (~$7.6M ÷ 72 GPUs); +3D NAND storage config reaches ~$122k/GPU. All Vera Rubin figures are 2026E forecasts.',
+    notes: 'B200-equivalent normalization uses FP8 TFLOPS ratio: B200 = 4,500 TFLOPS baseline. Grace Blackwell rack systems (GB200, GB300, VR200) use rack-level specs; per-GPU figures derived by dividing rack totals by GPU count. VR200 (Vera Rubin): 144 × R100 GPUs + Vera CPUs per rack; estimated from NVIDIA GTC 2025 roadmap (~3.3× GB200 system throughput). HBM4 specs and power envelope are 2026-2027E forecasts. Cost ~$200k/GPU derived from estimated ~$29M rack ÷ 144 GPUs.',
   },
 
   throughputMatrix: {
