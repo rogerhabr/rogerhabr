@@ -209,7 +209,7 @@ export default function ROICCalculator() {
             })()}
             {liveLoaded && (() => {
               // Prefer the new per-hardware rental matrix; fall back to legacy gpuCloud for H100
-              const rentalEntry = liveData.gpuRentalPrices[inputs.hardware];
+              const rentalEntry = liveData.gpuRentalPrices?.[inputs.hardware];
               const rentalInfo = rentalEntry && !Array.isArray(rentalEntry) ? rentalEntry : null;
 
               if (rentalInfo) {

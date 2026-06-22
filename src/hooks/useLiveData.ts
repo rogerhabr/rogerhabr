@@ -71,7 +71,7 @@ export function useLiveData() {
     const base = process.env.NODE_ENV === 'production' ? '/rogerhabr' : '';
     fetch(`${base}/live-data.json`)
       .then(r => r.json())
-      .then((d: LiveData) => { setData(d); setLoaded(true); })
+      .then((d: LiveData) => { setData({ ...EMPTY, ...d }); setLoaded(true); })
       .catch(() => setLoaded(true));
   }, []);
 
