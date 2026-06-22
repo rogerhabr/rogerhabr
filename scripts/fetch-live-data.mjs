@@ -1,6 +1,6 @@
 /**
  * fetch-live-data.mjs
- * Live data pipeline — runs on GitHub Actions (ubuntu-latest) daily at 06:00 UTC.
+ * Live data pipeline — runs on GitHub Actions (ubuntu-latest) daily at 06:00 UTC. [triggered 2026-06-22]
  * Fetches from multiple real external APIs:
  *   1. Yahoo Finance v8/v11  — stock prices + market caps
  *   2. SEC EDGAR XBRL API   — annual CapEx from 10-K filings
