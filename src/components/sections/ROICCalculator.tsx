@@ -57,6 +57,21 @@ export default function ROICCalculator() {
   const [activePreset, setActivePreset] = useState<'bear' | 'base' | 'bull' | null>(null);
   const [selectedPricingModel, setSelectedPricingModel] = useState('');
 
+  // Sync inputs whenever the global scenario changes
+  useEffect(() => {
+    setInputs(prev => ({
+      ...prev,
+      utilizationPct: params.gpuUtilizationPct,
+      powerCostPerKWh: params.powerCostPerKwh,
+      amortizationYears: params.gpuDepreciationYears,
+      costPerGPU: params.gpuCostB200kUSD * 1000,
+      revenuePerMTokens: params.tokenInputPricePerM,
+    }));
+    setActivePreset(params.scenario as 'bear' | 'base' | 'bull');
+    setSelectedPricingModel('');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.scenario]);
+
   const results = calcROIC(inputs);
 
   const update = (key: keyof typeof inputs) => (v: number | string) => {
