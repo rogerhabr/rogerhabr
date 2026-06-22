@@ -162,7 +162,7 @@ export default function Overview() {
 
       <div className="mt-5 p-4 rounded-xl bg-sa-accent/5 border border-sa-accent/20">
         <p className="text-xs text-sa-muted leading-relaxed">
-          <span className="text-sa-accent font-semibold">Model Methodology:</span> Token economy TAM measured as total AI inference revenue across consumer applications, API endpoints, and token-consuming software companies. GPU installed base normalized to B200-equivalent FP8 throughput (B200 SXM = 1×, B300 = 1.5×, H100 = 0.31×). ROIC calculated as (Annual AI-related operating income) / (Cumulative AI CapEx deployed). All figures are estimates based on public data and earnings disclosures. Forecasts are not investment advice.
+          <span className="text-sa-accent font-semibold">Model Methodology:</span> Token economy TAM measured as total AI inference revenue across consumer applications, API endpoints, and token-consuming software companies. GPU installed base normalized to B200-equivalent FP8 throughput (B200 = 1×, B300 = 1.5×, H100 = 0.31×). ROIC calculated as (Annual AI-related operating income) / (Cumulative AI CapEx deployed). Historical CapEx: SEC EDGAR 10-K filings (auto-refreshed daily). GPU counts: derived from CapEx ÷ blended ASP, anchored to NVIDIA revenue guidance and company disclosures. Forward estimates are model projections; each section labels sources as Actual, Derived, or Forecast.
         </p>
       </div>
     </div>

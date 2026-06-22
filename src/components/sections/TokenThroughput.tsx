@@ -19,7 +19,7 @@ export default function TokenThroughput() {
 
   // By hardware for selected model
   const hwChartData = HARDWARE_KEYS.map(hw => ({
-    name: hw.replace(' SXM5', '').replace(' NVL72', '').replace(' Ironwood', ''),
+    name: hw.replace(' NVL72', '').replace(' Ironwood', ''),
     tokPerSec: throughputMatrix[hw][selectedModel] || 0,
     fullName: hw,
   })).sort((a, b) => b.tokPerSec - a.tokPerSec);

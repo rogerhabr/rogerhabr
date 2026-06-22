@@ -184,7 +184,7 @@ export default function HardwareInstalledBase() {
 
       <div className="mt-4 p-3 rounded-lg bg-sa-surface border border-sa-border">
         <p className="text-xs text-sa-muted">
-          <span className="text-white font-medium">Normalization methodology:</span> All GPU counts normalized to B200 SXM FP8 throughput baseline (4,500 TFLOPS). H100 = 0.31×, H200 = 0.44×, B300 = 1.50×, GB200 NVL72 = 12.5× per rack, TPU v5p = 0.28×, TPU v7 Ironwood = 1.41×, Trainium 2 = 0.47×, Trainium 3 = 0.94×, MI300X = 0.56×, MI350X = 1.09×. Hyperscaler AI-dedicated compute only. Estimates based on public announcements, earnings calls, and supply chain analysis.
+          <span className="text-white font-medium">Normalization methodology:</span> All GPU counts normalized to B200 FP8 throughput baseline (4,500 TFLOPS). H100 = 0.31×, H200 = 0.44×, B300 = 1.50×, GB200 NVL72 = 12.5× per rack, TPU v5p = 0.28×, TPU v7 Ironwood = 1.41×, Trainium 2 = 0.47×, Trainium 3 = 0.94×, MI300X = 0.56×, MI350X = 1.09×. Hyperscaler AI-dedicated compute only. Estimates based on public announcements, earnings calls, and supply chain analysis.
         </p>
       </div>
     </div>

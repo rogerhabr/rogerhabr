@@ -5,7 +5,7 @@ export const YEARS = ['2022', '2023', '2024', '2025E', '2026E', '2027E', '2028E'
 export const FORECAST_YEARS = ['2025E', '2026E', '2027E', '2028E'];
 
 // ─── Hardware Installed Base ────────────────────────────────────────────────
-// B200-equivalent GPU units (thousands), normalized by FP8 throughput vs B200 SXM
+// B200-equivalent GPU units (thousands), normalized by FP8 throughput vs B200
 
 export const hyperscalerGPUs = [
   { year: '2022', Microsoft: 16,  Google: 25,  Amazon: 13,  Meta: 16,  Oracle: 2  },
@@ -84,10 +84,10 @@ export interface HardwareSpec {
 }
 
 export const hardwareSpecs: HardwareSpec[] = [
-  { name: 'H100 SXM5',       vendor: 'NVIDIA', chip: 'H100',    fp8TFLOPS: 1979,  hbmTB: 0.080, hbmBWTBs:  3.35, powerW:   700,  b200Equiv: 0.31, releaseYear: 2022 },
-  { name: 'H200 SXM5',       vendor: 'NVIDIA', chip: 'H200',    fp8TFLOPS: 1979,  hbmTB: 0.141, hbmBWTBs:  4.80, powerW:   700,  b200Equiv: 0.44, releaseYear: 2024 },
-  { name: 'B200 SXM',        vendor: 'NVIDIA', chip: 'B200',    fp8TFLOPS: 4500,  hbmTB: 0.192, hbmBWTBs:  8.00, powerW:  1000,  b200Equiv: 1.00, releaseYear: 2025 },
-  { name: 'B300 SXM',        vendor: 'NVIDIA', chip: 'B300',    fp8TFLOPS: 6750,  hbmTB: 0.288, hbmBWTBs: 10.00, powerW:  1200,  b200Equiv: 1.50, releaseYear: 2026 },
+  { name: 'H100',             vendor: 'NVIDIA', chip: 'H100',    fp8TFLOPS: 1979,  hbmTB: 0.080, hbmBWTBs:  3.35, powerW:   700,  b200Equiv: 0.31, releaseYear: 2022 },
+  { name: 'H200',             vendor: 'NVIDIA', chip: 'H200',    fp8TFLOPS: 1979,  hbmTB: 0.141, hbmBWTBs:  4.80, powerW:   700,  b200Equiv: 0.44, releaseYear: 2024 },
+  { name: 'B200',             vendor: 'NVIDIA', chip: 'B200',    fp8TFLOPS: 4500,  hbmTB: 0.192, hbmBWTBs:  8.00, powerW:  1000,  b200Equiv: 1.00, releaseYear: 2025 },
+  { name: 'B300',             vendor: 'NVIDIA', chip: 'B300',    fp8TFLOPS: 6750,  hbmTB: 0.288, hbmBWTBs: 10.00, powerW:  1200,  b200Equiv: 1.50, releaseYear: 2026 },
   { name: 'GB200 NVL72',     vendor: 'NVIDIA', chip: 'GB200',   fp8TFLOPS:13900,  hbmTB: 8.064, hbmBWTBs:576.00, powerW: 120000, b200Equiv:12.50, releaseYear: 2025 },
   { name: 'TPU v5p',         vendor: 'Google', chip: 'TPUv5p',  fp8TFLOPS:  459,  hbmTB: 0.095, hbmBWTBs:  2.76, powerW:   175,  b200Equiv: 0.28, releaseYear: 2023 },
   { name: 'TPU v7 Ironwood', vendor: 'Google', chip: 'TPUv7',   fp8TFLOPS: 4614,  hbmTB: 0.192, hbmBWTBs:  7.37, powerW:   200,  b200Equiv: 1.41, releaseYear: 2025 },
@@ -125,16 +125,19 @@ export const modelSpecs: ModelSpec[] = [
 // Tokens/second per chip for inference (output tokens, batchsize ~32, fp8)
 
 export const throughputMatrix: Record<string, Record<string, number>> = {
-  'H100 SXM5':       { 'GPT-4o': 320, 'GPT-5': 88,  'Claude Sonnet 4': 385, 'DeepSeek V3': 430, 'Kimi K2': 400, 'Gemini 2.5 Pro': 260 },
-  'H200 SXM5':       { 'GPT-4o': 460, 'GPT-5': 125, 'Claude Sonnet 4': 555, 'DeepSeek V3': 620, 'Kimi K2': 575, 'Gemini 2.5 Pro': 375 },
-  'B200 SXM':        { 'GPT-4o': 780, 'GPT-5': 210, 'Claude Sonnet 4': 940, 'DeepSeek V3':1050, 'Kimi K2': 970, 'Gemini 2.5 Pro': 635 },
-  'GB200 NVL72':     { 'GPT-4o':1850, 'GPT-5': 495, 'Claude Sonnet 4':2230, 'DeepSeek V3':2490, 'Kimi K2':2300, 'Gemini 2.5 Pro':1510 },
-  'TPU v5p':         { 'GPT-4o': 290, 'GPT-5': 79,  'Claude Sonnet 4': 350, 'DeepSeek V3': 390, 'Kimi K2': 360, 'Gemini 2.5 Pro': 235 },
-  'TPU v7 Ironwood': { 'GPT-4o': 640, 'GPT-5': 172, 'Claude Sonnet 4': 770, 'DeepSeek V3': 860, 'Kimi K2': 795, 'Gemini 2.5 Pro': 520 },
-  'Trainium 2':      { 'GPT-4o': 280, 'GPT-5': 76,  'Claude Sonnet 4': 340, 'DeepSeek V3': 375, 'Kimi K2': 348, 'Gemini 2.5 Pro': 228 },
-  'Trainium 3':      { 'GPT-4o': 525, 'GPT-5': 141, 'Claude Sonnet 4': 635, 'DeepSeek V3': 705, 'Kimi K2': 655, 'Gemini 2.5 Pro': 428 },
-  'MI300X':          { 'GPT-4o': 410, 'GPT-5': 110, 'Claude Sonnet 4': 495, 'DeepSeek V3': 555, 'Kimi K2': 513, 'Gemini 2.5 Pro': 334 },
-  'MI350X':          { 'GPT-4o': 720, 'GPT-5': 193, 'Claude Sonnet 4': 870, 'DeepSeek V3': 970, 'Kimi K2': 898, 'Gemini 2.5 Pro': 586 },
+  'H100':            { 'GPT-4o': 320, 'GPT-5': 88,  'Claude Sonnet 4': 385, 'Claude Opus 4.8': 135, 'Fable 5': 108, 'DeepSeek V3': 430, 'Kimi K2': 400, 'Gemini 2.5 Pro': 260 },
+  'H200':            { 'GPT-4o': 460, 'GPT-5': 125, 'Claude Sonnet 4': 555, 'Claude Opus 4.8': 195, 'Fable 5': 155, 'DeepSeek V3': 620, 'Kimi K2': 575, 'Gemini 2.5 Pro': 375 },
+  'B200':            { 'GPT-4o': 780, 'GPT-5': 210, 'Claude Sonnet 4': 940, 'Claude Opus 4.8': 330, 'Fable 5': 263, 'DeepSeek V3':1050, 'Kimi K2': 970, 'Gemini 2.5 Pro': 635 },
+  'B300':            { 'GPT-4o':1170, 'GPT-5': 315, 'Claude Sonnet 4':1410, 'Claude Opus 4.8': 495, 'Fable 5': 395, 'DeepSeek V3':1575, 'Kimi K2':1455, 'Gemini 2.5 Pro': 955 }, // 1.5× B200
+  'GB200 NVL72':     { 'GPT-4o':1850, 'GPT-5': 495, 'Claude Sonnet 4':2230, 'Claude Opus 4.8': 780, 'Fable 5': 624, 'DeepSeek V3':2490, 'Kimi K2':2300, 'Gemini 2.5 Pro':1510 },
+  'GB300 NVL72':     { 'GPT-4o':2775, 'GPT-5': 745, 'Claude Sonnet 4':3345, 'Claude Opus 4.8':1170, 'Fable 5': 940, 'DeepSeek V3':3735, 'Kimi K2':3450, 'Gemini 2.5 Pro':2265 }, // 1.5× GB200 NVL72
+  'VERA RUBIN':      { 'GPT-4o':2500, 'GPT-5': 670, 'Claude Sonnet 4':3010, 'Claude Opus 4.8':1055, 'Fable 5': 843, 'DeepSeek V3':3360, 'Kimi K2':3100, 'Gemini 2.5 Pro':2030 }, // R100, 3.2× B200
+  'TPU v5p':         { 'GPT-4o': 290, 'GPT-5': 79,  'Claude Sonnet 4': 350, 'Claude Opus 4.8': 123, 'Fable 5': 98,  'DeepSeek V3': 390, 'Kimi K2': 360, 'Gemini 2.5 Pro': 235 },
+  'TPU v7 Ironwood': { 'GPT-4o': 640, 'GPT-5': 172, 'Claude Sonnet 4': 770, 'Claude Opus 4.8': 270, 'Fable 5': 216, 'DeepSeek V3': 860, 'Kimi K2': 795, 'Gemini 2.5 Pro': 520 },
+  'Trainium 2':      { 'GPT-4o': 280, 'GPT-5': 76,  'Claude Sonnet 4': 340, 'Claude Opus 4.8': 119, 'Fable 5': 95,  'DeepSeek V3': 375, 'Kimi K2': 348, 'Gemini 2.5 Pro': 228 },
+  'Trainium 3':      { 'GPT-4o': 525, 'GPT-5': 141, 'Claude Sonnet 4': 635, 'Claude Opus 4.8': 222, 'Fable 5': 178, 'DeepSeek V3': 705, 'Kimi K2': 655, 'Gemini 2.5 Pro': 428 },
+  'MI300X':          { 'GPT-4o': 410, 'GPT-5': 110, 'Claude Sonnet 4': 495, 'Claude Opus 4.8': 173, 'Fable 5': 139, 'DeepSeek V3': 555, 'Kimi K2': 513, 'Gemini 2.5 Pro': 334 },
+  'MI350X':          { 'GPT-4o': 720, 'GPT-5': 193, 'Claude Sonnet 4': 870, 'Claude Opus 4.8': 305, 'Fable 5': 244, 'DeepSeek V3': 970, 'Kimi K2': 898, 'Gemini 2.5 Pro': 586 },
 };
 
 // ─── Workload Characteristics ────────────────────────────────────────────────
@@ -339,9 +342,11 @@ export interface ROICInputs {
   revenuePerMTokens: number;
   tokensPerGPUPerSec: number;
   powerW: number;
+  pue: number;
   powerCostPerKWh: number;
   opexPctCapex: number;
   amortizationYears: number;
+  fixedAnnualOverheadM: number;
 }
 
 export const defaultROICInputs: ROICInputs = {
@@ -352,16 +357,21 @@ export const defaultROICInputs: ROICInputs = {
   revenuePerMTokens: 1.50,
   tokensPerGPUPerSec: 800,
   powerW: 1667,
+  pue: 1.20,
   powerCostPerKWh: 0.04,
   opexPctCapex: 10,
   amortizationYears: 3,
+  fixedAnnualOverheadM: 0.5,
 };
 
 export const hardwareDefaults: Record<string, Partial<ROICInputs>> = {
-  'H100 SXM5':       { costPerGPU: 30000, tokensPerGPUPerSec: 350, powerW: 700,    revenuePerMTokens: 2.50 },
-  'H200 SXM5':       { costPerGPU: 40000, tokensPerGPUPerSec: 510, powerW: 700,    revenuePerMTokens: 2.00 },
-  'B200 SXM':        { costPerGPU: 55000, tokensPerGPUPerSec: 860, powerW: 1000,   revenuePerMTokens: 1.75 },
-  'GB200 NVL72':     { costPerGPU: 65000, tokensPerGPUPerSec: 800, powerW: 1667,   revenuePerMTokens: 1.50 },
+  'H100':            { costPerGPU: 30000, tokensPerGPUPerSec: 350, powerW: 700,    revenuePerMTokens: 2.50 },
+  'H200':            { costPerGPU: 40000, tokensPerGPUPerSec: 510, powerW: 700,    revenuePerMTokens: 2.00 },
+  'B200':            { costPerGPU: 55000,  tokensPerGPUPerSec:  860, powerW: 1000,  revenuePerMTokens: 1.75 },
+  'B300':            { costPerGPU: 75000,  tokensPerGPUPerSec: 1300, powerW: 1200,  revenuePerMTokens: 1.50 }, // est. ~$75k/chip; 1.5× B200 throughput
+  'GB200 NVL72':     { costPerGPU: 65000,  tokensPerGPUPerSec:  800, powerW: 1667,  revenuePerMTokens: 1.50 },
+  'GB300 NVL72':     { costPerGPU: 85000,  tokensPerGPUPerSec: 1200, powerW: 1806,  revenuePerMTokens: 1.25 }, // est. ~$6.1M rack ÷ 72; 130kW ÷ 72 ≈ 1806W/GPU
+  'VERA RUBIN':      { costPerGPU: 105000, tokensPerGPUPerSec: 2800, powerW: 1500,  revenuePerMTokens: 1.25 }, // R100 — $7.6M NVL72 rack ÷ 72 GPUs
   'TPU v7 Ironwood': { costPerGPU: 35000, tokensPerGPUPerSec: 700, powerW: 200,    revenuePerMTokens: 2.00 },
   'Trainium 3':      { costPerGPU: 30000, tokensPerGPUPerSec: 580, powerW: 700,    revenuePerMTokens: 2.20 },
   'MI300X':          { costPerGPU: 25000, tokensPerGPUPerSec: 460, powerW: 750,    revenuePerMTokens: 2.80 },
@@ -370,21 +380,19 @@ export const hardwareDefaults: Record<string, Partial<ROICInputs>> = {
 
 export function calcROIC(inputs: ROICInputs) {
   const capex = inputs.numGPUs * inputs.costPerGPU;
-  const secPerDay = 86400;
-  const tokensPerGPUPerDay = inputs.tokensPerGPUPerSec * secPerDay;
-  const totalTokensPerDay = inputs.numGPUs * tokensPerGPUPerDay * (inputs.utilizationPct / 100);
-  const annualTokens = totalTokensPerDay * 365;
+  const secPerYear = 86400 * 365;
+  const annualTokens = inputs.numGPUs * inputs.tokensPerGPUPerSec * secPerYear * (inputs.utilizationPct / 100);
   const annualRevenue = (annualTokens / 1e6) * inputs.revenuePerMTokens;
-
-  const totalPowerW = inputs.numGPUs * inputs.powerW;
-  const annualPowerKWh = (totalPowerW / 1000) * 24 * 365;
-  const annualPowerCost = annualPowerKWh * inputs.powerCostPerKWh;
+  const annualPowerCost = (inputs.numGPUs * inputs.powerW * inputs.pue / 1000) * 24 * 365 * inputs.powerCostPerKWh;
   const annualOpex = (inputs.opexPctCapex / 100) * capex;
   const annualAmortization = capex / inputs.amortizationYears;
-  const annualTotalCost = annualPowerCost + annualOpex + annualAmortization;
+  const annualFixedOverhead = inputs.fixedAnnualOverheadM * 1e6;
+  const annualTotalCost = annualPowerCost + annualOpex + annualAmortization + annualFixedOverhead;
   const annualProfit = annualRevenue - annualTotalCost;
   const roic = (annualProfit / capex) * 100;
   const paybackMonths = annualProfit > 0 ? (capex / annualProfit) * 12 : Infinity;
+  const grossMarginPct = annualRevenue > 0
+    ? ((annualRevenue - annualPowerCost - annualOpex - annualFixedOverhead) / annualRevenue) * 100 : 0;
 
   return {
     capex,
@@ -392,12 +400,144 @@ export function calcROIC(inputs: ROICInputs) {
     annualPowerCost,
     annualOpex,
     annualAmortization,
+    annualFixedOverhead,
     annualTotalCost,
     annualProfit,
     roic,
     paybackMonths,
     annualTokensB: annualTokens / 1e9,
-    grossMarginPct: ((annualRevenue - annualPowerCost - annualOpex) / annualRevenue) * 100,
+    grossMarginPct,
+  };
+}
+
+// ─── Hardware Refresh Sensitivity ────────────────────────────────────────────
+
+export interface RefreshInputs {
+  gen0Hardware: string;
+  gen1Hardware: string;
+  numGPUs: number;
+  utilizationPct: number;
+  revenuePerMTokensY0: number;
+  tokenPriceDecayPctPerYr: number;
+  powerCostPerKWh: number;
+  pue: number;
+  opexPctCapex: number;
+  refreshCycleYears: number;
+  resalePct: number;
+  analysisPeriodYears: number;
+}
+
+export interface RefreshYearData {
+  year: number;
+  hardware: string;
+  capexOut: number;
+  saleProceeds: number;
+  revenue: number;
+  opex: number;
+  fcf: number;
+  cumFCF: number;
+  tokensB: number;
+  tokenPrice: number;
+}
+
+export interface RefreshScenario {
+  id: string;
+  label: string;
+  color: string;
+  years: RefreshYearData[];
+  totalCapex: number;
+  totalSaleProceeds: number;
+  netCapex: number;
+  totalRevenue: number;
+  totalOpex: number;
+  totalFCF: number;
+}
+
+export const defaultRefreshInputs: RefreshInputs = {
+  gen0Hardware: 'B200',
+  gen1Hardware: 'VERA RUBIN',
+  numGPUs: 512,
+  utilizationPct: 82,
+  revenuePerMTokensY0: 1.75,
+  tokenPriceDecayPctPerYr: 20,
+  powerCostPerKWh: 0.04,
+  pue: 1.20,
+  opexPctCapex: 10,
+  refreshCycleYears: 3,
+  resalePct: 25,
+  analysisPeriodYears: 6,
+};
+
+export function calcRefreshCycle(inputs: RefreshInputs): {
+  noRefresh: RefreshScenario;
+  refreshRetire: RefreshScenario;
+  refreshResale: RefreshScenario;
+} {
+  const d0 = hardwareDefaults[inputs.gen0Hardware] ?? {};
+  const d1 = hardwareDefaults[inputs.gen1Hardware] ?? {};
+  const costG0 = d0.costPerGPU ?? 55000;
+  const costG1 = d1.costPerGPU ?? 105000;
+  const thrG0  = d0.tokensPerGPUPerSec ?? 860;
+  const thrG1  = d1.tokensPerGPUPerSec ?? 2800;
+  const pwrG0  = d0.powerW ?? 1000;
+  const pwrG1  = d1.powerW ?? 1500;
+  const capexG0 = inputs.numGPUs * costG0;
+  const capexG1 = inputs.numGPUs * costG1;
+  const util = inputs.utilizationPct / 100;
+  const secPerYear = 86400 * 365;
+
+  function build(id: string, label: string, color: string, withRefresh: boolean, withResale: boolean): RefreshScenario {
+    const years: RefreshYearData[] = [];
+    let cumFCF = -capexG0;
+
+    years.push({
+      year: 0, hardware: inputs.gen0Hardware,
+      capexOut: capexG0, saleProceeds: 0, revenue: 0, opex: 0,
+      fcf: -capexG0, cumFCF,
+      tokensB: 0, tokenPrice: inputs.revenuePerMTokensY0,
+    });
+
+    for (let y = 1; y <= inputs.analysisPeriodYears; y++) {
+      const refreshed     = withRefresh && y > inputs.refreshCycleYears;
+      const isRefreshYear = withRefresh && y === inputs.refreshCycleYears + 1;
+
+      const hw   = refreshed ? inputs.gen1Hardware : inputs.gen0Hardware;
+      const thr  = refreshed ? thrG1 : thrG0;
+      const pwr  = refreshed ? pwrG1 : pwrG0;
+      const base = refreshed ? capexG1 : capexG0;
+
+      const tokenPrice   = inputs.revenuePerMTokensY0 * Math.pow(1 - inputs.tokenPriceDecayPctPerYr / 100, y - 1);
+      const revenue      = (inputs.numGPUs * thr * secPerYear * util / 1e6) * tokenPrice;
+      const powerCost    = (inputs.numGPUs * pwr / 1000) * 24 * 365 * inputs.powerCostPerKWh * inputs.pue;
+      const otherOpex    = (inputs.opexPctCapex / 100) * base;
+      const opex         = powerCost + otherOpex;
+      const capexOut     = isRefreshYear ? capexG1 : 0;
+      const saleProceeds = isRefreshYear && withResale ? capexG0 * (inputs.resalePct / 100) : 0;
+      const fcf          = revenue - opex - capexOut + saleProceeds;
+      cumFCF += fcf;
+
+      years.push({
+        year: y, hardware: hw, capexOut, saleProceeds,
+        revenue, opex, fcf, cumFCF,
+        tokensB: inputs.numGPUs * thr * secPerYear * util / 1e9,
+        tokenPrice,
+      });
+    }
+
+    const totalCapex       = capexG0 + (withRefresh ? capexG1 : 0);
+    const totalSaleProceeds = withRefresh && withResale ? capexG0 * (inputs.resalePct / 100) : 0;
+    const netCapex         = totalCapex - totalSaleProceeds;
+    const totalRevenue     = years.reduce((s, r) => s + r.revenue, 0);
+    const totalOpex        = years.reduce((s, r) => s + r.opex, 0);
+    const totalFCF         = totalRevenue - totalOpex - netCapex;
+
+    return { id, label, color, years, totalCapex, totalSaleProceeds, netCapex, totalRevenue, totalOpex, totalFCF };
+  }
+
+  return {
+    noRefresh:     build('no-refresh',     'No Refresh',       '#64748b', false, false),
+    refreshRetire: build('refresh-retire', 'Refresh + Retire', '#f97316', true,  false),
+    refreshResale: build('refresh-resale', 'Refresh + Resale', '#10b981', true,  true),
   };
 }
 
