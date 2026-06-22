@@ -13,6 +13,29 @@ export interface CapExInfo {
   source: string | null;
 }
 
+export interface GPURentalInfo {
+  lambdaPerHour: number | null;
+  azurePerHour: number | null;
+  lowestPerHour: number | null;
+  sources: string[];
+}
+
+export interface ModelPricingEntry {
+  inputPerM: number;
+  outputPerM: number;
+  provider: string;
+  displayName: string;
+  contextK?: number;
+}
+
+export interface NvdaFinancials {
+  latestQuarterRevenue: number | null;   // $M
+  prevQuarterRevenue: number | null;     // $M
+  qoqGrowthPct: number | null;
+  periodEnd: string | null;
+  period: string | null;
+}
+
 export interface LiveData {
   lastUpdated: string | null;
   sources: Record<string, string>;
@@ -22,7 +45,10 @@ export interface LiveData {
     lambdaH100PerHour: number | null;
   };
   capex: Record<string, CapExInfo | null>;
-  modelPricing: Record<string, { inputPerM: number; outputPerM: number }>;
+  modelPricing: Record<string, ModelPricingEntry>;
+  gpuRentalPrices: Record<string, GPURentalInfo | string[]>;
+  nvdaFinancials: NvdaFinancials | null;
+  corewaveFinancials: NvdaFinancials | null;
 }
 
 const EMPTY: LiveData = {
@@ -32,6 +58,9 @@ const EMPTY: LiveData = {
   gpuCloud: { azureH100PerHour: null, lambdaH100PerHour: null },
   capex: {},
   modelPricing: {},
+  gpuRentalPrices: {},
+  nvdaFinancials: null,
+  corewaveFinancials: null,
 };
 
 export function useLiveData() {

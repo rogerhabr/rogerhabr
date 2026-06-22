@@ -1,11 +1,14 @@
 /**
  * fetch-live-data.mjs
  * Live data pipeline — runs on GitHub Actions (ubuntu-latest) daily at 06:00 UTC.
- * Fetches from three real external APIs:
+ * Fetches from multiple real external APIs:
  *   1. Yahoo Finance v8/v11  — stock prices + market caps
  *   2. SEC EDGAR XBRL API   — annual CapEx from 10-K filings
- *   3. Azure Retail Prices  — H100 cloud VM hourly cost
- *   4. Lambda Labs API      — H100 GPU rental price
+ *   3. Lambda Labs API       — ALL GPU rental prices (multi-GPU catalog)
+ *   4. Azure Retail Prices   — ALL GPU VM prices (multi-GPU catalog)
+ *   5. LiteLLM GitHub        — live model API pricing (auto-discovered)
+ *   6. SEC EDGAR             — NVDA quarterly financials (10-Q)
+ *   7. SEC EDGAR             — CoreWeave quarterly financials (10-Q)
  * All fetches are logged verbosely so GitHub Actions logs prove every HTTP call.
  */
 
@@ -171,70 +174,429 @@ async function fetchSECCapex(company, cik) {
   return result;
 }
 
-// ── Azure GPU cloud pricing ───────────────────────────────────────────────────
+// ── GPU catalog — canonical names and regex matchers ─────────────────────────
 
-async function fetchAzureGPUPrice() {
-  log(`\n── Azure H100 VM price ──`);
-  // Filter: NC-series H100 VMs, Consumption pricing, USD, not spot/low-priority
-  // NC40ads_H100_v5 = 1x H100 SXM5 80GB; NC80adis_H100_v5 = 2x H100
-  // We want the per-VM price (not per-vCPU), so filter for SKUs with GPU counts
-  const queries = [
-    `serviceName eq 'Virtual Machines' and contains(skuName,'NC') and contains(skuName,'H100') and priceType eq 'Consumption' and currencyCode eq 'USD'`,
-    `serviceName eq 'Virtual Machines' and contains(skuName,'H100') and priceType eq 'Consumption' and currencyCode eq 'USD'`,
-  ];
-  for (const filter of queries) {
-    const url = `https://prices.azure.com/api/retail/prices?$filter=${encodeURIComponent(filter)}`;
-    const res = await fetchWithRetry(url, {}, 2);
-    if (!res) continue;
-    try {
-      const d = await res.json();
-      log(`  Azure returned ${d.Items?.length ?? 0} items for filter`);
-      // Log all matching SKUs so we can see exactly what we got
-      (d.Items ?? []).slice(0, 10).forEach(i =>
-        log(`    SKU: ${i.skuName} | $${i.retailPrice}/hr | region: ${i.armRegionName} | type: ${i.type}`)
-      );
-      // Exclude Spot/LowPriority, keep only pay-as-you-go > $5/hr (true GPU VMs cost >$10/hr)
-      const items = (d.Items ?? []).filter(i =>
-        i.retailPrice > 5 &&
-        !i.skuName?.toLowerCase().includes('spot') &&
-        !i.skuName?.toLowerCase().includes('low priority') &&
-        i.type !== 'DevTest'
-      );
-      if (items.length > 0) {
-        items.sort((a, b) => a.retailPrice - b.retailPrice);
-        const item = items[0];
-        log(`  Azure H100 (selected): $${item.retailPrice}/hr (SKU: ${item.skuName}, region: ${item.armRegionName})`);
-        log(`  Source URL: https://prices.azure.com/api/retail/prices`);
-        return { perHour: item.retailPrice, sku: item.skuName, source: 'Azure Retail Prices API' };
-      }
-    } catch (e) { logE(`  Parse error: ${e.message}`); }
+const GPU_CATALOG = [
+  { name: 'H100 SXM5',   patterns: [/h100[._-]?sxm/i] },
+  { name: 'H200 SXM5',   patterns: [/h200/i] },
+  { name: 'B200 SXM',    patterns: [/\bb200\b/i] },
+  { name: 'GB200 NVL72', patterns: [/gb200/i, /nvl72/i] },
+  { name: 'VERA RUBIN',  patterns: [/vera.?rubin/i, /r100\b/i] },
+  { name: 'A100 SXM4',   patterns: [/a100[._-]?(sxm|80gb)/i] },
+  { name: 'A100 PCIe',   patterns: [/a100[._-]?pcie/i] },
+  { name: 'A10',         patterns: [/\ba10g?\b/i] },
+  { name: 'L40S',        patterns: [/\bl40s\b/i] },
+  { name: 'L4',          patterns: [/\bl4\b/i] },
+  { name: 'RTX 4090',    patterns: [/4090/i] },
+  { name: 'MI300X',      patterns: [/mi300x/i] },
+  { name: 'MI350X',      patterns: [/mi350x/i] },
+];
+
+function matchGPUCatalog(text) {
+  for (const entry of GPU_CATALOG) {
+    for (const pat of entry.patterns) {
+      if (pat.test(text)) return entry.name;
+    }
   }
-  logE('  Azure H100: no matching SKU found with price > $5/hr');
   return null;
 }
 
-// ── Lambda Labs GPU pricing ───────────────────────────────────────────────────
+// ── Lambda Labs — all GPU rental prices ──────────────────────────────────────
 
-async function fetchLambdaGPUPrice() {
-  log(`\n── Lambda Labs H100 price ──`);
+async function fetchLambdaAllGPUs() {
+  log(`\n── Lambda Labs — all GPU instance types ──`);
   const url = 'https://cloud.lambdalabs.com/api/v1/instance-types';
   const res = await fetchWithRetry(url, {}, 2);
-  if (!res) { logE('  Lambda Labs: no response'); return null; }
-  try {
-    const d = await res.json();
-    const instances = Object.values(d.data ?? {});
-    const h100 = instances
-      .filter(i => i.instance_type?.name?.toLowerCase().includes('h100'))
-      .map(i => ({ name: i.instance_type.name, perHour: i.instance_type.price_cents_per_hour / 100 }))
-      .sort((a, b) => a.perHour - b.perHour);
-    if (h100.length > 0) {
-      log(`  Lambda H100: $${h100[0].perHour}/hr (instance: ${h100[0].name})`);
-      log(`  Source URL: https://cloud.lambdalabs.com/api/v1/instance-types`);
-      return { perHour: h100[0].perHour, sku: h100[0].name, source: 'Lambda Labs API' };
+  if (!res) { logE('  Lambda Labs: no response'); return { prices: {}, discovered: [] }; }
+
+  let d;
+  try { d = await res.json(); } catch (e) { logE(`  Lambda Labs parse error: ${e.message}`); return { prices: {}, discovered: [] }; }
+
+  const instances = Object.values(d.data ?? {});
+  log(`  Lambda Labs: ${instances.length} total instance types`);
+
+  // Only single-GPU instances
+  const singleGPU = instances.filter(i => {
+    const specs = i.instance_type?.specs;
+    const name = i.instance_type?.name ?? '';
+    return (specs?.gpus === 1) || /_1x_/i.test(name);
+  });
+  log(`  Lambda Labs: ${singleGPU.length} single-GPU instances`);
+
+  const prices = {};    // canonical GPU name → lowest $/hr
+  const discovered = [];
+
+  for (const inst of singleGPU) {
+    const it = inst.instance_type ?? {};
+    const name = it.name ?? '';
+    const description = it.description ?? '';
+    const pricePerHour = (it.price_cents_per_hour ?? 0) / 100;
+    if (pricePerHour <= 0) continue;
+
+    const searchText = `${name} ${description}`;
+    const canonical = matchGPUCatalog(searchText);
+
+    if (canonical) {
+      if (prices[canonical] === undefined || pricePerHour < prices[canonical]) {
+        prices[canonical] = pricePerHour;
+        log(`  Lambda: ${canonical} → $${pricePerHour}/hr (instance: ${name})`);
+      }
+    } else {
+      if (!discovered.includes(name)) {
+        discovered.push(name);
+        log(`  Lambda auto-discovered unknown GPU: ${name}`);
+      }
     }
-  } catch (e) { logE(`  Parse error: ${e.message}`); }
-  logE('  Lambda Labs: no H100 instances found');
-  return null;
+  }
+
+  log(`  Lambda Labs: matched ${Object.keys(prices).length} canonical GPUs, ${discovered.length} auto-discovered`);
+  return { prices, discovered };
+}
+
+// ── Azure — all GPU VM prices ─────────────────────────────────────────────────
+
+// Azure SKU GPU count hints for multi-GPU VMs
+const AZURE_GPU_COUNTS = {
+  'NC40ads':  1,
+  'NC80adis': 2,
+  'ND96':     8,
+  'ND48':     4,
+  'NC24ads':  1,
+};
+
+function getAzureGPUCount(skuName) {
+  if (!skuName) return 1;
+  for (const [prefix, count] of Object.entries(AZURE_GPU_COUNTS)) {
+    if (skuName.includes(prefix)) return count;
+  }
+  return 1;
+}
+
+async function fetchAzureAllGPUs() {
+  log(`\n── Azure — all GPU VM prices ──`);
+  const filter = `serviceName eq 'Virtual Machines' and (contains(skuName,'H100') or contains(skuName,'H200') or contains(skuName,'B200') or contains(skuName,'A100') or contains(skuName,'MI300') or contains(skuName,'ND') or contains(skuName,'NC')) and priceType eq 'Consumption' and currencyCode eq 'USD'`;
+  const url = `https://prices.azure.com/api/retail/prices?$filter=${encodeURIComponent(filter)}`;
+
+  const res = await fetchWithRetry(url, {}, 2);
+  if (!res) { logE('  Azure: no response'); return { prices: {}, discovered: [] }; }
+
+  let d;
+  try { d = await res.json(); } catch (e) { logE(`  Azure parse error: ${e.message}`); return { prices: {}, discovered: [] }; }
+
+  const items = (d.Items ?? []).filter(i => {
+    const sku = (i.skuName ?? '').toLowerCase();
+    return (
+      i.retailPrice > 0 &&
+      !sku.includes('spot') &&
+      !sku.includes('low priority') &&
+      i.type !== 'DevTest'
+    );
+  });
+
+  log(`  Azure: ${d.Items?.length ?? 0} total items, ${items.length} after filtering`);
+
+  const prices = {};    // canonical GPU name → lowest per-GPU $/hr
+  const discovered = [];
+
+  for (const item of items) {
+    const skuName = item.skuName ?? '';
+    const gpuCount = getAzureGPUCount(skuName);
+    const perGpuPrice = item.retailPrice / gpuCount;
+
+    const canonical = matchGPUCatalog(skuName);
+
+    if (canonical) {
+      if (prices[canonical] === undefined || perGpuPrice < prices[canonical]) {
+        prices[canonical] = perGpuPrice;
+        log(`  Azure: ${canonical} → $${perGpuPrice.toFixed(2)}/hr per GPU (SKU: ${skuName}, GPUs: ${gpuCount}, region: ${item.armRegionName})`);
+      }
+    } else {
+      if (!discovered.includes(skuName)) {
+        discovered.push(skuName);
+        log(`  Azure auto-discovered unknown GPU SKU: ${skuName}`);
+      }
+    }
+  }
+
+  log(`  Azure: matched ${Object.keys(prices).length} canonical GPUs, ${discovered.length} auto-discovered`);
+  return { prices, discovered };
+}
+
+// ── Merge Lambda + Azure into the rental matrix ───────────────────────────────
+
+function buildGPURentalMatrix(lambdaResult, azureResult) {
+  const lambdaPrices = lambdaResult.prices ?? {};
+  const azurePrices = azureResult.prices ?? {};
+  const lambdaDiscovered = lambdaResult.discovered ?? [];
+  const azureDiscovered = azureResult.discovered ?? [];
+
+  const allCanonical = new Set([...Object.keys(lambdaPrices), ...Object.keys(azurePrices)]);
+  const matrix = {};
+
+  for (const gpu of allCanonical) {
+    const lambdaPerHour = lambdaPrices[gpu] ?? null;
+    const azurePerHour = azurePrices[gpu] ?? null;
+
+    const candidates = [lambdaPerHour, azurePerHour].filter(v => v !== null);
+    const lowestPerHour = candidates.length > 0 ? Math.min(...candidates) : null;
+
+    const sources = [];
+    if (lambdaPerHour !== null) sources.push('Lambda Labs');
+    if (azurePerHour !== null) sources.push('Azure');
+
+    matrix[gpu] = { lambdaPerHour, azurePerHour, lowestPerHour, sources };
+  }
+
+  // Merge discovered lists (deduplicated)
+  const allDiscovered = [...new Set([...lambdaDiscovered, ...azureDiscovered])];
+  if (allDiscovered.length > 0) {
+    matrix['_discovered'] = allDiscovered;
+  }
+
+  return matrix;
+}
+
+// ── Model API pricing from LiteLLM ───────────────────────────────────────────
+
+const PROVIDER_NAMES = {
+  anthropic:  'Anthropic',
+  openai:     'OpenAI',
+  google:     'Google',
+  vertex_ai:  'Google',
+  deepseek:   'DeepSeek',
+  xai:        'xAI',
+  mistral:    'Mistral AI',
+  meta_llama: 'Meta',
+  cohere:     'Cohere',
+  moonshot:   'Moonshot',
+};
+
+const ALLOWED_PROVIDERS = new Set(Object.keys(PROVIDER_NAMES));
+
+const LEGACY_NOISE_PATTERN = /^(text-|ft:|davinci|babbage|curie|ada-|whisper|dall-e|tts-|claude-[12]-|gpt-3|gpt-4-(?!o))/i;
+
+const DISPLAY_NAME_MAP = {
+  'claude-opus-4-8':                'Claude Opus 4.8',
+  'claude-opus-4-5':                'Claude Opus 4.5',
+  'claude-sonnet-4-6':              'Claude Sonnet 4.6',
+  'claude-sonnet-4-5':              'Claude Sonnet 4.5',
+  'claude-haiku-4-5-20251001':      'Claude Haiku 4.5',
+  'claude-fable-5':                 'Claude Fable 5',
+  'gpt-4o':                         'GPT-4o',
+  'gpt-4o-mini':                    'GPT-4o mini',
+  'gpt-5':                          'GPT-5',
+  'o1':                             'OpenAI o1',
+  'o1-mini':                        'OpenAI o1-mini',
+  'o3':                             'OpenAI o3',
+  'o3-mini':                        'OpenAI o3-mini',
+  'o4-mini':                        'OpenAI o4-mini',
+  'gemini-2.5-pro-preview-05-06':   'Gemini 2.5 Pro',
+  'gemini-2.5-flash':               'Gemini 2.5 Flash',
+  'gemini-2.5-flash-preview-05-20': 'Gemini 2.5 Flash',
+  'deepseek-chat':                  'DeepSeek V3',
+  'deepseek-reasoner':              'DeepSeek R1',
+  'grok-3':                         'Grok 3',
+  'mistral-large-2411':             'Mistral Large 2',
+};
+
+function cleanModelId(modelId) {
+  // Strip trailing date suffix (e.g., -20251001) then convert hyphens to spaces, then title-case
+  const cleaned = modelId
+    .replace(/-(\d{8})$/, '')
+    .replace(/-/g, ' ');
+  return cleaned.replace(/\b\w/g, c => c.toUpperCase());
+}
+
+async function fetchModelPricing() {
+  log(`\n── Model API pricing (LiteLLM) ──`);
+  const url = 'https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json';
+  const res = await fetchWithRetry(url, {}, 3);
+  if (!res) { logE('  LiteLLM: no response'); return {}; }
+
+  let raw;
+  try { raw = await res.json(); } catch (e) { logE(`  LiteLLM parse error: ${e.message}`); return {}; }
+
+  log(`  LiteLLM: ${Object.keys(raw).length} total model entries`);
+
+  const result = {};
+
+  for (const [modelId, entry] of Object.entries(raw)) {
+    // Only chat-mode models
+    if (entry.mode !== 'chat') continue;
+    // Must have positive cost fields
+    if (!entry.input_cost_per_token || !entry.output_cost_per_token) continue;
+    if (entry.input_cost_per_token <= 0 || entry.output_cost_per_token <= 0) continue;
+    // Only allowed providers
+    if (!ALLOWED_PROVIDERS.has(entry.litellm_provider)) continue;
+    // Filter out legacy noise
+    if (LEGACY_NOISE_PATTERN.test(modelId)) continue;
+
+    const inputPerM  = entry.input_cost_per_token  * 1_000_000;
+    const outputPerM = entry.output_cost_per_token * 1_000_000;
+    const provider   = PROVIDER_NAMES[entry.litellm_provider] ?? entry.litellm_provider;
+    const displayName = DISPLAY_NAME_MAP[modelId] ?? cleanModelId(modelId);
+
+    const pricingEntry = { inputPerM, outputPerM, provider, displayName };
+    if (entry.max_input_tokens) {
+      pricingEntry.contextK = Math.round(entry.max_input_tokens / 1000);
+    }
+
+    result[modelId] = pricingEntry;
+  }
+
+  log(`  LiteLLM: ${Object.keys(result).length} models after filtering`);
+  return result;
+}
+
+// ── NVDA quarterly financials from SEC EDGAR ─────────────────────────────────
+
+async function fetchNVDAFinancials() {
+  log(`\n── NVDA quarterly financials (SEC EDGAR) ──`);
+  const cik = 1045810;
+  const padded = String(cik).padStart(10, '0');
+  const url = `https://data.sec.gov/api/xbrl/companyfacts/CIK${padded}.json`;
+  const headers = {
+    'User-Agent': 'AI-Tokenomics-Model rogerhabr71@gmail.com',
+    'Accept': 'application/json',
+  };
+
+  const res = await fetchWithRetry(url, { headers }, 2);
+  if (!res) { logE('  NVDA: no response from SEC EDGAR'); return null; }
+
+  let d;
+  try { d = await res.json(); } catch (e) { logE(`  NVDA: JSON parse failed: ${e.message}`); return null; }
+
+  const usGaap = d.facts?.['us-gaap'];
+  if (!usGaap) { logE('  NVDA: no us-gaap facts'); return null; }
+
+  const revenueFields = [
+    'RevenueFromContractWithCustomerExcludingAssessedTax',
+    'Revenues',
+    'NetRevenues',
+  ];
+
+  let quarterlyEntries = [];
+  for (const field of revenueFields) {
+    const data = usGaap[field];
+    if (!data?.units?.USD?.length) continue;
+    const entries = data.units.USD.filter(i => i.form === '10-Q' && i.val > 0);
+    if (entries.length > 0) {
+      log(`  NVDA: found ${entries.length} 10-Q entries in field: ${field}`);
+      quarterlyEntries = entries;
+      break;
+    }
+  }
+
+  if (quarterlyEntries.length === 0) {
+    logE('  NVDA: no 10-Q revenue entries found');
+    return null;
+  }
+
+  // Sort by end date descending
+  quarterlyEntries.sort((a, b) => b.end.localeCompare(a.end));
+
+  const latest = quarterlyEntries[0];
+  const prev   = quarterlyEntries[1] ?? null;
+
+  const latestRevM = +(latest.val / 1e6).toFixed(1);
+  const prevRevM   = prev ? +(prev.val / 1e6).toFixed(1) : null;
+  const qoqGrowth  = (prev && prev.val > 0)
+    ? +((latest.val - prev.val) / prev.val * 100).toFixed(1)
+    : null;
+
+  log(`  NVDA: latest 10-Q revenue $${latestRevM}M (period: ${latest.end})`);
+  if (prevRevM !== null) log(`  NVDA: prev 10-Q revenue $${prevRevM}M, QoQ growth: ${qoqGrowth}%`);
+
+  return {
+    latestQuarterRevenue: latestRevM,
+    prevQuarterRevenue:   prevRevM,
+    qoqGrowthPct:         qoqGrowth,
+    periodEnd:            latest.end,
+    period:               '10-Q',
+  };
+}
+
+// ── CoreWeave quarterly financials from SEC EDGAR ─────────────────────────────
+
+async function fetchCorewaveFinancials() {
+  log(`\n── CoreWeave quarterly financials (SEC EDGAR) ──`);
+
+  // Step 1: Find CoreWeave's CIK via full-text search
+  const searchUrl = 'https://efts.sec.gov/LATEST/search-index?q=%22CoreWeave%22&forms=10-K,10-Q&dateRange=custom&startdt=2025-01-01&enddt=2027-12-31';
+  const headers = {
+    'User-Agent': 'AI-Tokenomics-Model rogerhabr71@gmail.com',
+    'Accept': 'application/json',
+  };
+
+  const searchRes = await fetchWithRetry(searchUrl, { headers }, 2);
+  if (!searchRes) { logE('  CoreWeave: EDGAR search returned no response'); return null; }
+
+  let searchData;
+  try { searchData = await searchRes.json(); } catch (e) { logE(`  CoreWeave: EDGAR search parse failed: ${e.message}`); return null; }
+
+  const hit = searchData?.hits?.hits?.[0];
+  if (!hit) { logE('  CoreWeave: no hits in EDGAR search — likely not yet filed 10-K/10-Q'); return null; }
+
+  const entityId = hit._source?.entity_id ?? hit._source?.file_num ?? null;
+  if (!entityId) { logE('  CoreWeave: could not extract entity_id from search hit'); return null; }
+
+  log(`  CoreWeave: found entity_id ${entityId}`);
+
+  // entity_id is the CIK (padded or raw)
+  const cikNum = parseInt(String(entityId).replace(/\D/g, ''), 10);
+  if (!cikNum) { logE('  CoreWeave: could not parse numeric CIK from entity_id'); return null; }
+
+  const padded = String(cikNum).padStart(10, '0');
+  const factsUrl = `https://data.sec.gov/api/xbrl/companyfacts/CIK${padded}.json`;
+
+  const factsRes = await fetchWithRetry(factsUrl, { headers }, 2);
+  if (!factsRes) { logE(`  CoreWeave: no response from EDGAR facts API (CIK: ${padded})`); return null; }
+
+  let d;
+  try { d = await factsRes.json(); } catch (e) { logE(`  CoreWeave: facts JSON parse failed: ${e.message}`); return null; }
+
+  const usGaap = d.facts?.['us-gaap'];
+  if (!usGaap) { logE('  CoreWeave: no us-gaap facts found'); return null; }
+
+  const revenueFields = ['Revenues', 'RevenueFromContractWithCustomerExcludingAssessedTax', 'NetRevenues'];
+  let quarterlyEntries = [];
+  for (const field of revenueFields) {
+    const data = usGaap[field];
+    if (!data?.units?.USD?.length) continue;
+    const entries = data.units.USD.filter(i => i.form === '10-Q' && i.val > 0);
+    if (entries.length > 0) {
+      log(`  CoreWeave: found ${entries.length} 10-Q entries in field: ${field}`);
+      quarterlyEntries = entries;
+      break;
+    }
+  }
+
+  if (quarterlyEntries.length === 0) {
+    logE('  CoreWeave: no 10-Q revenue entries found — may not have filed yet');
+    return null;
+  }
+
+  quarterlyEntries.sort((a, b) => b.end.localeCompare(a.end));
+
+  const latest = quarterlyEntries[0];
+  const prev   = quarterlyEntries[1] ?? null;
+
+  const latestRevM = +(latest.val / 1e6).toFixed(1);
+  const prevRevM   = prev ? +(prev.val / 1e6).toFixed(1) : null;
+  const qoqGrowth  = (prev && prev.val > 0)
+    ? +((latest.val - prev.val) / prev.val * 100).toFixed(1)
+    : null;
+
+  log(`  CoreWeave: latest 10-Q revenue $${latestRevM}M (period: ${latest.end})`);
+  if (prevRevM !== null) log(`  CoreWeave: prev 10-Q revenue $${prevRevM}M, QoQ growth: ${qoqGrowth}%`);
+
+  return {
+    latestQuarterRevenue: latestRevM,
+    prevQuarterRevenue:   prevRevM,
+    qoqGrowthPct:         qoqGrowth,
+    periodEnd:            latest.end,
+    period:               '10-Q',
+  };
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
@@ -249,38 +611,24 @@ async function main() {
   const result = {
     lastUpdated: new Date().toISOString(),
     sources: {
-      stocks:       'Yahoo Finance API (query1.finance.yahoo.com/v8/finance/chart/{symbol})',
-      capex:        'SEC EDGAR XBRL API (data.sec.gov/api/xbrl/companyfacts/CIK{n}.json) — PaymentsToAcquirePropertyPlantAndEquipment from 10-K',
-      gpuCloud:     'Azure Retail Prices API (prices.azure.com) + Lambda Labs API (cloud.lambdalabs.com)',
-      modelPricing: 'Public API documentation — manually curated, last reviewed 2026-06',
+      stocks:             'Yahoo Finance API',
+      capex:              'SEC EDGAR XBRL API — 10-K PaymentsToAcquirePropertyPlantAndEquipment',
+      gpuRentalPrices:    'Lambda Labs API + Azure Retail Prices API — auto-discovered GPU models',
+      modelPricing:       'LiteLLM model_prices_and_context_window.json (github.com/BerriAI/litellm) — auto-updated',
+      nvdaFinancials:     'SEC EDGAR XBRL API — NVDA 10-Q quarterly revenue',
+      corewaveFinancials: 'SEC EDGAR XBRL API — CRWV 10-Q quarterly revenue',
     },
-    stocks:   {},
+    stocks:             {},
+    capex:              { MSFT: null, GOOGL: null, AMZN: null, META: null, ORCL: null },
+    gpuRentalPrices:    {},   // { 'H100 SXM5': { lambdaPerHour, azurePerHour, lowestPerHour, sources }, '_discovered': [] }
+    modelPricing:       {},   // { modelId: { inputPerM, outputPerM, provider, displayName, contextK? } }
+    nvdaFinancials:     null,
+    corewaveFinancials: null,
+    // Legacy compatibility — kept so old code doesn't break
     gpuCloud: { azureH100PerHour: null, lambdaH100PerHour: null },
-    capex:    { MSFT: null, GOOGL: null, AMZN: null, META: null, ORCL: null },
-    modelPricing: {
-      // Prices from public API documentation — verified June 2026
-      // Anthropic: anthropic.com/pricing
-      'Claude Opus 4.8':  { inputPerM: 15.00, outputPerM: 75.00 },
-      'Claude Sonnet 4':  { inputPerM:  3.00, outputPerM: 15.00 },
-      'Claude Haiku 4.5': { inputPerM:  0.80, outputPerM:  4.00 },
-      // OpenAI: platform.openai.com/docs/pricing
-      'GPT-4o':           { inputPerM:  2.50, outputPerM: 10.00 },
-      'GPT-4o-mini':      { inputPerM:  0.15, outputPerM:  0.60 },
-      'GPT-5':            { inputPerM: 10.00, outputPerM: 40.00 },
-      // Google: ai.google.dev/pricing
-      'Gemini 2.5 Pro':   { inputPerM:  1.25, outputPerM: 10.00 },
-      'Gemini 2.5 Flash': { inputPerM: 0.075, outputPerM:  0.30 },
-      // DeepSeek: platform.deepseek.com
-      'DeepSeek V3':      { inputPerM:  0.07, outputPerM:  0.28 },
-      'DeepSeek R2':      { inputPerM:  0.80, outputPerM:  3.20 },
-      // Moonshot: platform.moonshot.cn
-      'Kimi K2':          { inputPerM:  0.15, outputPerM:  0.60 },
-      // Meta via cloud providers
-      'Llama 4 Maverick': { inputPerM:  0.19, outputPerM:  0.49 },
-    },
   };
 
-  // ── Stocks ────────────────────────────────────────────────────────────────
+  // ── Section 1: Stocks ─────────────────────────────────────────────────────
   log('\n════════════════════════════════════════');
   log(' SECTION 1: Stock Prices (Yahoo Finance)');
   log('════════════════════════════════════════');
@@ -290,7 +638,7 @@ async function main() {
     await new Promise(r => setTimeout(r, 600));
   }
 
-  // ── SEC EDGAR CapEx ────────────────────────────────────────────────────────
+  // ── Section 2: SEC EDGAR CapEx ────────────────────────────────────────────
   log('\n════════════════════════════════════════');
   log(' SECTION 2: CapEx from SEC EDGAR 10-K');
   log('════════════════════════════════════════');
@@ -306,13 +654,42 @@ async function main() {
     await new Promise(r => setTimeout(r, 800));
   }
 
-  // ── GPU Cloud Pricing ──────────────────────────────────────────────────────
+  // ── Section 3: GPU Rental Prices ──────────────────────────────────────────
   log('\n════════════════════════════════════════');
-  log(' SECTION 3: GPU Cloud Pricing');
+  log(' SECTION 3: GPU Cloud Rental Prices');
   log('════════════════════════════════════════');
-  const [azure, lambda] = await Promise.all([fetchAzureGPUPrice(), fetchLambdaGPUPrice()]);
-  result.gpuCloud.azureH100PerHour  = azure?.perHour  ?? null;
-  result.gpuCloud.lambdaH100PerHour = lambda?.perHour ?? null;
+  const [lambdaResult, azureResult] = await Promise.all([fetchLambdaAllGPUs(), fetchAzureAllGPUs()]);
+  result.gpuRentalPrices = buildGPURentalMatrix(lambdaResult, azureResult);
+
+  // Populate legacy gpuCloud from H100 SXM5 entry for backward compat
+  const h100Entry = result.gpuRentalPrices['H100 SXM5'];
+  if (h100Entry && typeof h100Entry === 'object' && !Array.isArray(h100Entry)) {
+    result.gpuCloud.lambdaH100PerHour = h100Entry.lambdaPerHour ?? null;
+    result.gpuCloud.azureH100PerHour  = h100Entry.azurePerHour  ?? null;
+  }
+
+  const gpuCount = Object.keys(result.gpuRentalPrices).filter(k => k !== '_discovered').length;
+  log(`\n  GPU rental matrix: ${gpuCount} canonical GPUs`);
+
+  // ── Section 4: Model API Pricing ──────────────────────────────────────────
+  log('\n════════════════════════════════════════');
+  log(' SECTION 4: Model API Pricing (LiteLLM)');
+  log('════════════════════════════════════════');
+  result.modelPricing = await fetchModelPricing();
+  const modelCount = Object.keys(result.modelPricing).length;
+  log(`\n  Model pricing: ${modelCount} models`);
+
+  // ── Section 5: NVDA Financials ────────────────────────────────────────────
+  log('\n════════════════════════════════════════');
+  log(' SECTION 5: NVDA Quarterly Financials');
+  log('════════════════════════════════════════');
+  result.nvdaFinancials = await fetchNVDAFinancials();
+
+  // ── Section 6: CoreWeave Financials ──────────────────────────────────────
+  log('\n════════════════════════════════════════');
+  log(' SECTION 6: CoreWeave Quarterly Financials');
+  log('════════════════════════════════════════');
+  result.corewaveFinancials = await fetchCorewaveFinancials();
 
   // ── Summary ────────────────────────────────────────────────────────────────
   log('\n════════════════════════════════════════');
@@ -324,24 +701,25 @@ async function main() {
   for (const [co, d] of Object.entries(result.capex)) {
     log(`  CapEx ${co}: ${d ? '$' + d.value + 'B (period: ' + d.period + ')' : 'NULL'}`);
   }
-  log(`  Azure H100: ${result.gpuCloud.azureH100PerHour ? '$' + result.gpuCloud.azureH100PerHour + '/hr' : 'NULL'}`);
-  log(`  Lambda H100: ${result.gpuCloud.lambdaH100PerHour ? '$' + result.gpuCloud.lambdaH100PerHour + '/hr' : 'NULL'}`);
+  log(`  GPU rental matrix: ${gpuCount} canonical GPU types`);
+  log(`  Models loaded: ${modelCount} from LiteLLM`);
+  log(`  NVDA financials: ${result.nvdaFinancials ? '$' + result.nvdaFinancials.latestQuarterRevenue + 'M (' + result.nvdaFinancials.periodEnd + ')' : 'NULL'}`);
+  log(`  CoreWeave financials: ${result.corewaveFinancials ? '$' + result.corewaveFinancials.latestQuarterRevenue + 'M (' + result.corewaveFinancials.periodEnd + ')' : 'NULL'}`);
+  log(`  Azure H100 (legacy): ${result.gpuCloud.azureH100PerHour ? '$' + result.gpuCloud.azureH100PerHour + '/hr' : 'NULL'}`);
+  log(`  Lambda H100 (legacy): ${result.gpuCloud.lambdaH100PerHour ? '$' + result.gpuCloud.lambdaH100PerHour + '/hr' : 'NULL'}`);
 
-  const nullCount = [
-    ...Object.values(result.stocks),
-    ...Object.values(result.capex),
-    result.gpuCloud.azureH100PerHour,
-    result.gpuCloud.lambdaH100PerHour,
-  ].filter(v => v === null).length;
-
-  const totalCount = Object.keys(result.stocks).length + Object.keys(result.capex).length + 2;
-  log(`\n  Fetched: ${totalCount - nullCount}/${totalCount} data points successfully`);
+  const stockNulls  = Object.values(result.stocks).filter(v => v === null).length;
+  const capexNulls  = Object.values(result.capex).filter(v => v === null).length;
+  const totalFetches = Object.keys(result.stocks).length + Object.keys(result.capex).length;
+  const successCount = totalFetches - stockNulls - capexNulls;
+  log(`\n  Core fetches: ${successCount}/${totalFetches} stock/capex data points`);
+  log(`  GPU types: ${gpuCount}, Models: ${modelCount}`);
   log(`  Finished: ${new Date().toISOString()}`);
 
   writeFileSync('public/live-data.json', JSON.stringify(result, null, 2));
   log('\n  Written to public/live-data.json');
 
-  if (nullCount === totalCount) {
+  if (successCount === 0 && gpuCount === 0 && modelCount === 0) {
     logE('\n  WARNING: All fetches returned null — check network and API availability');
     process.exit(1);
   }

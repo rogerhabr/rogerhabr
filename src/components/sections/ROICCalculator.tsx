@@ -207,14 +207,42 @@ export default function ROICCalculator() {
                 </p>
               );
             })()}
-            {liveLoaded && liveData.gpuCloud?.azureH100PerHour && (
-              <div className="mt-2 p-2 rounded bg-blue-900/20 border border-blue-800/40 text-xs">
-                <span className="text-blue-400 font-medium">Azure H100 cloud price: </span>
-                <span className="text-white">${liveData.gpuCloud.azureH100PerHour.toFixed(2)}/hr</span>
-                <span className="text-sa-muted"> = ${(liveData.gpuCloud.azureH100PerHour * 24 * 365 / 1000).toFixed(0)}k/yr at 100% util</span>
-                <span className="text-sa-muted block mt-0.5">Source: Azure Retail Prices API</span>
-              </div>
-            )}
+            {liveLoaded && (() => {
+              // Prefer the new per-hardware rental matrix; fall back to legacy gpuCloud for H100
+              const rentalEntry = liveData.gpuRentalPrices[inputs.hardware];
+              const rentalInfo = rentalEntry && !Array.isArray(rentalEntry) ? rentalEntry : null;
+
+              if (rentalInfo) {
+                return (
+                  <div className="mt-2 p-2 rounded bg-blue-900/20 border border-blue-800/40 text-xs">
+                    <span className="text-blue-400 font-medium">{inputs.hardware} cloud rental: </span>
+                    {rentalInfo.lowestPerHour !== null && (
+                      <span className="text-white font-semibold">${rentalInfo.lowestPerHour.toFixed(2)}/hr lowest</span>
+                    )}
+                    <span className="text-sa-muted block mt-0.5">
+                      {rentalInfo.lambdaPerHour !== null && `Lambda: $${rentalInfo.lambdaPerHour.toFixed(2)}/hr`}
+                      {rentalInfo.lambdaPerHour !== null && rentalInfo.azurePerHour !== null && '  ·  '}
+                      {rentalInfo.azurePerHour !== null && `Azure: $${rentalInfo.azurePerHour.toFixed(2)}/hr`}
+                    </span>
+                    <span className="text-sa-muted block mt-0.5">Sources: {rentalInfo.sources.join(', ')}</span>
+                  </div>
+                );
+              }
+
+              // Legacy fallback: show Azure H100 price if available
+              if (liveData.gpuCloud?.azureH100PerHour) {
+                return (
+                  <div className="mt-2 p-2 rounded bg-blue-900/20 border border-blue-800/40 text-xs">
+                    <span className="text-blue-400 font-medium">Azure H100 cloud price: </span>
+                    <span className="text-white">${liveData.gpuCloud.azureH100PerHour.toFixed(2)}/hr</span>
+                    <span className="text-sa-muted"> = ${(liveData.gpuCloud.azureH100PerHour * 24 * 365 / 1000).toFixed(0)}k/yr at 100% util</span>
+                    <span className="text-sa-muted block mt-0.5">Source: Azure Retail Prices API</span>
+                  </div>
+                );
+              }
+
+              return null;
+            })()}
           </div>
 
           <div className="space-y-4">
