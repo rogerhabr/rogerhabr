@@ -316,6 +316,10 @@ export default function ROICCalculator() {
               label="Amortization Period (yrs)" value={inputs.amortizationYears} min={1} max={5} step={0.5}
               onChange={update('amortizationYears')} format={v => `${v}yr`}
             />
+            <SliderInput
+              label="Fixed Overhead ($M/yr — staff, network, facility)" value={inputs.fixedAnnualOverheadM} min={0} max={20} step={0.5}
+              onChange={update('fixedAnnualOverheadM')} format={v => `$${v.toFixed(1)}M`}
+            />
           </div>
         </div>
 
@@ -331,6 +335,8 @@ export default function ROICCalculator() {
                   </p>
                   <p className="text-xs text-sa-muted mt-1">
                     Payback: {results.paybackMonths === Infinity ? 'Never' : `${results.paybackMonths.toFixed(0)} months`}
+                    &nbsp;·&nbsp;
+                    <span className="text-slate-500">Fixed OH ${inputs.fixedAnnualOverheadM.toFixed(1)}M/yr — larger clusters dilute this, improving ROIC</span>
                   </p>
                 </div>
                 <div className="text-right">
@@ -346,9 +352,9 @@ export default function ROICCalculator() {
 
             <MetricCard label="Total CapEx" value={`$${(results.capex / 1e6).toFixed(1)}M`} subtext={`${inputs.numGPUs} × $${(inputs.costPerGPU / 1e3).toFixed(0)}k`} />
             <MetricCard label="Annual Revenue" value={`$${(results.annualRevenue / 1e6).toFixed(1)}M`} subtext={`${inputs.utilizationPct}% utilization`} changePositive change={`${(results.annualRevenue / results.annualTotalCost * 100 - 100).toFixed(0)}% above costs`} />
-            <MetricCard label="Annual Power Cost" value={`$${(results.annualPowerCost / 1e6).toFixed(2)}M`} subtext={`${inputs.powerW}W × ${inputs.numGPUs} GPUs`} />
-            <MetricCard label="Annual Other OpEx" value={`$${(results.annualOpex / 1e6).toFixed(1)}M`} subtext={`${inputs.opexPctCapex}% of CapEx`} />
-            <MetricCard label="Annual Amortization" value={`$${(results.annualAmortization / 1e6).toFixed(1)}M`} subtext={`Over ${inputs.amortizationYears}yr`} />
+            <MetricCard label="Annual Power Cost" value={`$${(results.annualPowerCost / 1e6).toFixed(2)}M`} subtext={`${inputs.powerW}W × ${inputs.numGPUs} GPUs × PUE ${inputs.pue}`} />
+            <MetricCard label="Annual OpEx + Fixed OH" value={`$${((results.annualOpex + results.annualFixedOverhead) / 1e6).toFixed(1)}M`} subtext={`$${(results.annualOpex / 1e6).toFixed(1)}M var · $${inputs.fixedAnnualOverheadM.toFixed(1)}M fixed`} />
+            <MetricCard label="Annual Amortization" value={`$${(results.annualAmortization / 1e6).toFixed(1)}M`} subtext={`$${(inputs.costPerGPU / 1e3).toFixed(0)}k/GPU over ${inputs.amortizationYears}yr`} />
             <MetricCard
               label="Annual Profit"
               value={`${results.annualProfit > 0 ? '+' : ''}$${(results.annualProfit / 1e6).toFixed(1)}M`}
@@ -363,11 +369,12 @@ export default function ROICCalculator() {
             <ResponsiveContainer width="100%" height={180}>
               <BarChart
                 data={[
-                  { name: 'Revenue', value: parseFloat((results.annualRevenue / 1e6).toFixed(2)), fill: '#10b981' },
-                  { name: 'Power', value: -parseFloat((results.annualPowerCost / 1e6).toFixed(2)), fill: '#ef4444' },
-                  { name: 'OpEx', value: -parseFloat((results.annualOpex / 1e6).toFixed(2)), fill: '#f97316' },
-                  { name: 'Amort.', value: -parseFloat((results.annualAmortization / 1e6).toFixed(2)), fill: '#8b5cf6' },
-                  { name: 'Profit', value: parseFloat((results.annualProfit / 1e6).toFixed(2)), fill: roicColor },
+                  { name: 'Revenue',   value:  parseFloat((results.annualRevenue / 1e6).toFixed(2)),        fill: '#10b981' },
+                  { name: 'Power',     value: -parseFloat((results.annualPowerCost / 1e6).toFixed(2)),      fill: '#ef4444' },
+                  { name: 'Var OpEx',  value: -parseFloat((results.annualOpex / 1e6).toFixed(2)),           fill: '#f97316' },
+                  { name: 'Fixed OH',  value: -parseFloat((results.annualFixedOverhead / 1e6).toFixed(2)),  fill: '#ec4899' },
+                  { name: 'Amort.',    value: -parseFloat((results.annualAmortization / 1e6).toFixed(2)),   fill: '#8b5cf6' },
+                  { name: 'Profit',    value:  parseFloat((results.annualProfit / 1e6).toFixed(2)),         fill: roicColor },
                 ]}
                 margin={{ top: 5, right: 10, bottom: 0, left: 0 }}
               >

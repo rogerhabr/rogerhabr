@@ -353,6 +353,7 @@ export interface ROICInputs {
   pue: number;
   opexPctCapex: number;
   amortizationYears: number;
+  fixedAnnualOverheadM: number; // staff + networking + facility costs not proportional to GPU count
 }
 
 export const defaultROICInputs: ROICInputs = {
@@ -367,6 +368,7 @@ export const defaultROICInputs: ROICInputs = {
   pue: 1.20,
   opexPctCapex: 10,
   amortizationYears: 3,
+  fixedAnnualOverheadM: 0.5,
 };
 
 export const hardwareDefaults: Record<string, Partial<ROICInputs>> = {
@@ -383,21 +385,30 @@ export const hardwareDefaults: Record<string, Partial<ROICInputs>> = {
 
 export function calcROIC(inputs: ROICInputs) {
   const capex = inputs.numGPUs * inputs.costPerGPU;
-  const secPerDay = 86400;
-  const tokensPerGPUPerDay = inputs.tokensPerGPUPerSec * secPerDay;
-  const totalTokensPerDay = inputs.numGPUs * tokensPerGPUPerDay * (inputs.utilizationPct / 100);
-  const annualTokens = totalTokensPerDay * 365;
+  const secPerYear = 86400 * 365;
+
+  // Revenue: GPU count × throughput × utilization × price per M tokens
+  const annualTokens = inputs.numGPUs * inputs.tokensPerGPUPerSec * secPerYear * (inputs.utilizationPct / 100);
   const annualRevenue = (annualTokens / 1e6) * inputs.revenuePerMTokens;
 
-  const totalPowerW = inputs.numGPUs * inputs.powerW * inputs.pue;
-  const annualPowerKWh = (totalPowerW / 1000) * 24 * 365;
-  const annualPowerCost = annualPowerKWh * inputs.powerCostPerKWh;
-  const annualOpex = (inputs.opexPctCapex / 100) * capex;
-  const annualAmortization = capex / inputs.amortizationYears;
-  const annualTotalCost = annualPowerCost + annualOpex + annualAmortization;
+  // Costs: variable (scale with GPUs) + fixed overhead (does not scale with GPUs)
+  const annualPowerCost = (inputs.numGPUs * inputs.powerW * inputs.pue / 1000) * 24 * 365 * inputs.powerCostPerKWh;
+  const annualOpex = (inputs.opexPctCapex / 100) * capex;         // % of CapEx per year
+  const annualAmortization = capex / inputs.amortizationYears;    // straight-line depreciation
+  const annualFixedOverhead = inputs.fixedAnnualOverheadM * 1e6;  // staff, networking, facility — breaks scale invariance
+
+  const annualTotalCost = annualPowerCost + annualOpex + annualAmortization + annualFixedOverhead;
   const annualProfit = annualRevenue - annualTotalCost;
+
+  // ROIC: annualProfit / total invested capital. Fixed overhead breaks scale invariance —
+  // larger clusters spread fixed costs over more GPUs, improving ROIC%.
   const roic = (annualProfit / capex) * 100;
   const paybackMonths = annualProfit > 0 ? (capex / annualProfit) * 12 : Infinity;
+
+  // Gross margin excludes amortization (capital cost) but includes all operating costs
+  const grossMarginPct = annualRevenue > 0
+    ? ((annualRevenue - annualPowerCost - annualOpex - annualFixedOverhead) / annualRevenue) * 100
+    : 0;
 
   return {
     capex,
@@ -405,12 +416,13 @@ export function calcROIC(inputs: ROICInputs) {
     annualPowerCost,
     annualOpex,
     annualAmortization,
+    annualFixedOverhead,
     annualTotalCost,
     annualProfit,
     roic,
     paybackMonths,
     annualTokensB: annualTokens / 1e9,
-    grossMarginPct: ((annualRevenue - annualPowerCost - annualOpex) / annualRevenue) * 100,
+    grossMarginPct,
   };
 }
 
