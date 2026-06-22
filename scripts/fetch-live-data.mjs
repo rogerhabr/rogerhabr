@@ -181,7 +181,7 @@ const GPU_CATALOG = [
   { name: 'H200',        patterns: [/h200/i] },
   { name: 'B200',        patterns: [/\bb200\b/i] },
   { name: 'GB200 NVL72', patterns: [/gb200/i, /nvl72/i] },
-  { name: 'VERA RUBIN',  patterns: [/vera.?rubin/i, /r100\b/i] },
+  { name: 'VR200 NVL144', patterns: [/vera.?rubin/i, /vr200/i, /r100\b/i] },
   { name: 'A100 SXM4',   patterns: [/a100[._-]?(sxm|80gb)/i] },
   { name: 'A100 PCIe',   patterns: [/a100[._-]?pcie/i] },
   { name: 'A10',         patterns: [/\ba10g?\b/i] },
