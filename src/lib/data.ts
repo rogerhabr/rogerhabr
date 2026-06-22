@@ -96,7 +96,7 @@ export const hardwareSpecs: HardwareSpec[] = [
   { name: 'B200 SXM',        vendor: 'NVIDIA', chip: 'B200',    fp8TFLOPS: 4500,  hbmTB: 0.192, hbmBWTBs:  8.00, powerW:  1000,  b200Equiv: 1.00, releaseYear: 2025 },
   { name: 'B300 SXM',        vendor: 'NVIDIA', chip: 'B300',    fp8TFLOPS: 6750,  hbmTB: 0.288, hbmBWTBs: 10.00, powerW:  1200,  b200Equiv: 1.50, releaseYear: 2026 },
   { name: 'GB200 NVL72',     vendor: 'NVIDIA', chip: 'GB200',   fp8TFLOPS:13900,  hbmTB: 8.064, hbmBWTBs:576.00, powerW: 120000, b200Equiv:12.50, releaseYear: 2025 },
-  { name: 'R100 SXM',        vendor: 'NVIDIA', chip: 'R100',    fp8TFLOPS:14400,  hbmTB: 0.288, hbmBWTBs: 12.00, powerW:  1500,  b200Equiv: 3.20, releaseYear: 2026 }, // Vera Rubin — GTC 2025 est., 3.2× B200, HBM4
+  { name: 'VERA RUBIN',      vendor: 'NVIDIA', chip: 'R100',    fp8TFLOPS:14400,  hbmTB: 0.288, hbmBWTBs: 12.00, powerW:  1500,  b200Equiv: 3.20, releaseYear: 2026 }, // Vera Rubin R100 SXM — GTC 2025 est., 3.2× B200, HBM4
   { name: 'TPU v5p',         vendor: 'Google', chip: 'TPUv5p',  fp8TFLOPS:  459,  hbmTB: 0.095, hbmBWTBs:  2.76, powerW:   175,  b200Equiv: 0.28, releaseYear: 2023 },
   { name: 'TPU v7 Ironwood', vendor: 'Google', chip: 'TPUv7',   fp8TFLOPS: 4614,  hbmTB: 0.192, hbmBWTBs:  7.37, powerW:   200,  b200Equiv: 1.41, releaseYear: 2025 },
   { name: 'Trainium 2',      vendor: 'Amazon', chip: 'Trn2',    fp8TFLOPS: 2832,  hbmTB: 0.096, hbmBWTBs:  5.12, powerW:   700,  b200Equiv: 0.47, releaseYear: 2024 },
@@ -122,6 +122,7 @@ export const modelSpecs: ModelSpec[] = [
   { name: 'GPT-5',           provider: 'OpenAI',    params: 500,  activeParams: 500, contextK: 200, type: 'dense', released: '2025-02' },
   { name: 'Claude Sonnet 4', provider: 'Anthropic', params: 70,   activeParams: 70,  contextK: 200, type: 'dense', released: '2025-02' },
   { name: 'Claude Opus 4.8', provider: 'Anthropic', params: 200,  activeParams: 200, contextK: 200, type: 'dense', released: '2025-06' },
+  { name: 'Fable 5',         provider: 'Anthropic', params: 250,  activeParams: 250, contextK: 200, type: 'dense', released: '2026-03' },
   { name: 'DeepSeek V3',     provider: 'DeepSeek',  params: 671,  activeParams: 37,  contextK: 128, type: 'moe',   released: '2024-12' },
   { name: 'DeepSeek R2',     provider: 'DeepSeek',  params: 800,  activeParams: 40,  contextK: 128, type: 'moe',   released: '2025-06' },
   { name: 'Kimi K2',         provider: 'Moonshot',  params: 1000, activeParams: 32,  contextK: 128, type: 'moe',   released: '2025-07' },
@@ -133,17 +134,17 @@ export const modelSpecs: ModelSpec[] = [
 // Tokens/second per chip for inference (output tokens, batchsize ~32, fp8)
 
 export const throughputMatrix: Record<string, Record<string, number>> = {
-  'H100 SXM5':       { 'GPT-4o': 320, 'GPT-5': 88,  'Claude Sonnet 4': 385, 'DeepSeek V3': 430, 'Kimi K2': 400, 'Gemini 2.5 Pro': 260 },
-  'H200 SXM5':       { 'GPT-4o': 460, 'GPT-5': 125, 'Claude Sonnet 4': 555, 'DeepSeek V3': 620, 'Kimi K2': 575, 'Gemini 2.5 Pro': 375 },
-  'B200 SXM':        { 'GPT-4o': 780, 'GPT-5': 210, 'Claude Sonnet 4': 940, 'DeepSeek V3':1050, 'Kimi K2': 970, 'Gemini 2.5 Pro': 635 },
-  'GB200 NVL72':     { 'GPT-4o':1850, 'GPT-5': 495, 'Claude Sonnet 4':2230, 'DeepSeek V3':2490, 'Kimi K2':2300, 'Gemini 2.5 Pro':1510 },
-  'R100 SXM':        { 'GPT-4o':2500, 'GPT-5': 670, 'Claude Sonnet 4':3010, 'DeepSeek V3':3360, 'Kimi K2':3100, 'Gemini 2.5 Pro':2030 }, // 3.2× B200 scaling
-  'TPU v5p':         { 'GPT-4o': 290, 'GPT-5': 79,  'Claude Sonnet 4': 350, 'DeepSeek V3': 390, 'Kimi K2': 360, 'Gemini 2.5 Pro': 235 },
-  'TPU v7 Ironwood': { 'GPT-4o': 640, 'GPT-5': 172, 'Claude Sonnet 4': 770, 'DeepSeek V3': 860, 'Kimi K2': 795, 'Gemini 2.5 Pro': 520 },
-  'Trainium 2':      { 'GPT-4o': 280, 'GPT-5': 76,  'Claude Sonnet 4': 340, 'DeepSeek V3': 375, 'Kimi K2': 348, 'Gemini 2.5 Pro': 228 },
-  'Trainium 3':      { 'GPT-4o': 525, 'GPT-5': 141, 'Claude Sonnet 4': 635, 'DeepSeek V3': 705, 'Kimi K2': 655, 'Gemini 2.5 Pro': 428 },
-  'MI300X':          { 'GPT-4o': 410, 'GPT-5': 110, 'Claude Sonnet 4': 495, 'DeepSeek V3': 555, 'Kimi K2': 513, 'Gemini 2.5 Pro': 334 },
-  'MI350X':          { 'GPT-4o': 720, 'GPT-5': 193, 'Claude Sonnet 4': 870, 'DeepSeek V3': 970, 'Kimi K2': 898, 'Gemini 2.5 Pro': 586 },
+  'H100 SXM5':       { 'GPT-4o': 320, 'GPT-5': 88,  'Claude Sonnet 4': 385, 'Claude Opus 4.8': 135, 'Fable 5': 108, 'DeepSeek V3': 430, 'Kimi K2': 400, 'Gemini 2.5 Pro': 260 },
+  'H200 SXM5':       { 'GPT-4o': 460, 'GPT-5': 125, 'Claude Sonnet 4': 555, 'Claude Opus 4.8': 195, 'Fable 5': 155, 'DeepSeek V3': 620, 'Kimi K2': 575, 'Gemini 2.5 Pro': 375 },
+  'B200 SXM':        { 'GPT-4o': 780, 'GPT-5': 210, 'Claude Sonnet 4': 940, 'Claude Opus 4.8': 330, 'Fable 5': 263, 'DeepSeek V3':1050, 'Kimi K2': 970, 'Gemini 2.5 Pro': 635 },
+  'GB200 NVL72':     { 'GPT-4o':1850, 'GPT-5': 495, 'Claude Sonnet 4':2230, 'Claude Opus 4.8': 780, 'Fable 5': 624, 'DeepSeek V3':2490, 'Kimi K2':2300, 'Gemini 2.5 Pro':1510 },
+  'VERA RUBIN':      { 'GPT-4o':2500, 'GPT-5': 670, 'Claude Sonnet 4':3010, 'Claude Opus 4.8':1055, 'Fable 5': 843, 'DeepSeek V3':3360, 'Kimi K2':3100, 'Gemini 2.5 Pro':2030 }, // R100 SXM, 3.2× B200
+  'TPU v5p':         { 'GPT-4o': 290, 'GPT-5': 79,  'Claude Sonnet 4': 350, 'Claude Opus 4.8': 123, 'Fable 5': 98,  'DeepSeek V3': 390, 'Kimi K2': 360, 'Gemini 2.5 Pro': 235 },
+  'TPU v7 Ironwood': { 'GPT-4o': 640, 'GPT-5': 172, 'Claude Sonnet 4': 770, 'Claude Opus 4.8': 270, 'Fable 5': 216, 'DeepSeek V3': 860, 'Kimi K2': 795, 'Gemini 2.5 Pro': 520 },
+  'Trainium 2':      { 'GPT-4o': 280, 'GPT-5': 76,  'Claude Sonnet 4': 340, 'Claude Opus 4.8': 119, 'Fable 5': 95,  'DeepSeek V3': 375, 'Kimi K2': 348, 'Gemini 2.5 Pro': 228 },
+  'Trainium 3':      { 'GPT-4o': 525, 'GPT-5': 141, 'Claude Sonnet 4': 635, 'Claude Opus 4.8': 222, 'Fable 5': 178, 'DeepSeek V3': 705, 'Kimi K2': 655, 'Gemini 2.5 Pro': 428 },
+  'MI300X':          { 'GPT-4o': 410, 'GPT-5': 110, 'Claude Sonnet 4': 495, 'Claude Opus 4.8': 173, 'Fable 5': 139, 'DeepSeek V3': 555, 'Kimi K2': 513, 'Gemini 2.5 Pro': 334 },
+  'MI350X':          { 'GPT-4o': 720, 'GPT-5': 193, 'Claude Sonnet 4': 870, 'Claude Opus 4.8': 305, 'Fable 5': 244, 'DeepSeek V3': 970, 'Kimi K2': 898, 'Gemini 2.5 Pro': 586 },
 };
 
 // ─── Workload Characteristics ────────────────────────────────────────────────
@@ -371,7 +372,7 @@ export const hardwareDefaults: Record<string, Partial<ROICInputs>> = {
   'H200 SXM5':       { costPerGPU: 40000, tokensPerGPUPerSec: 510, powerW: 700,    revenuePerMTokens: 2.00 },
   'B200 SXM':        { costPerGPU: 55000, tokensPerGPUPerSec: 860, powerW: 1000,   revenuePerMTokens: 1.75 },
   'GB200 NVL72':     { costPerGPU: 65000, tokensPerGPUPerSec: 800, powerW: 1667,   revenuePerMTokens: 1.50 },
-  'R100 SXM':        { costPerGPU: 105000, tokensPerGPUPerSec: 2800, powerW: 1500, revenuePerMTokens: 1.25 }, // Vera Rubin — $7.6M NVL72 rack ÷ 72 GPUs; +3D NAND storage reaches ~$122k
+  'VERA RUBIN':      { costPerGPU: 105000, tokensPerGPUPerSec: 2800, powerW: 1500, revenuePerMTokens: 1.25 }, // Vera Rubin R100 SXM — $7.6M NVL72 rack ÷ 72 GPUs; +3D NAND storage reaches ~$122k
   'TPU v7 Ironwood': { costPerGPU: 35000, tokensPerGPUPerSec: 700, powerW: 200,    revenuePerMTokens: 2.00 },
   'Trainium 3':      { costPerGPU: 30000, tokensPerGPUPerSec: 580, powerW: 700,    revenuePerMTokens: 2.20 },
   'MI300X':          { costPerGPU: 25000, tokensPerGPUPerSec: 460, powerW: 750,    revenuePerMTokens: 2.80 },
