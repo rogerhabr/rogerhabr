@@ -371,7 +371,7 @@ export const hardwareDefaults: Record<string, Partial<ROICInputs>> = {
   'H200 SXM5':       { costPerGPU: 40000, tokensPerGPUPerSec: 510, powerW: 700,    revenuePerMTokens: 2.00 },
   'B200 SXM':        { costPerGPU: 55000, tokensPerGPUPerSec: 860, powerW: 1000,   revenuePerMTokens: 1.75 },
   'GB200 NVL72':     { costPerGPU: 65000, tokensPerGPUPerSec: 800, powerW: 1667,   revenuePerMTokens: 1.50 },
-  'R100 SXM':        { costPerGPU: 120000, tokensPerGPUPerSec: 2800, powerW: 1500, revenuePerMTokens: 1.25 }, // Vera Rubin — cost/price est. for 2026E
+  'R100 SXM':        { costPerGPU: 105000, tokensPerGPUPerSec: 2800, powerW: 1500, revenuePerMTokens: 1.25 }, // Vera Rubin — $7.6M NVL72 rack ÷ 72 GPUs; +3D NAND storage reaches ~$122k
   'TPU v7 Ironwood': { costPerGPU: 35000, tokensPerGPUPerSec: 700, powerW: 200,    revenuePerMTokens: 2.00 },
   'Trainium 3':      { costPerGPU: 30000, tokensPerGPUPerSec: 580, powerW: 700,    revenuePerMTokens: 2.20 },
   'MI300X':          { costPerGPU: 25000, tokensPerGPUPerSec: 460, powerW: 750,    revenuePerMTokens: 2.80 },

@@ -26,7 +26,7 @@ export const DATA_SOURCES: Record<string, DataSource> = {
     sourceType: 'actual',
     primarySource: 'NVIDIA, AMD, Google, Amazon — official product datasheets',
     sourceURL: 'https://www.nvidia.com/en-us/data-center/products/hopper-gpu/',
-    notes: 'B200-equivalent normalization uses FP8 TFLOPS ratio: B200 SXM = 4,500 TFLOPS baseline. R100 SXM (Vera Rubin): estimated from NVIDIA GTC 2025 system-level claim of ~3.3× GB200 NVL72; individual chip FP8 TFLOPS not yet officially disclosed — treated as 3.2× B200 (14,400 TFLOPS). HBM4 specs estimated. Cost ~$120k/chip estimated. All Vera Rubin figures are 2026E forecasts.',
+    notes: 'B200-equivalent normalization uses FP8 TFLOPS ratio: B200 SXM = 4,500 TFLOPS baseline. R100 SXM (Vera Rubin): estimated from NVIDIA GTC 2025 system-level claim of ~3.3× GB200 NVL72; individual chip FP8 TFLOPS not yet officially disclosed — treated as 3.2× B200 (14,400 TFLOPS). HBM4 specs estimated. Cost ~$105k/GPU derived from NVL72 rack price (~$7.6M ÷ 72 GPUs); +3D NAND storage config reaches ~$122k/GPU. All Vera Rubin figures are 2026E forecasts.',
   },
 
   throughputMatrix: {
