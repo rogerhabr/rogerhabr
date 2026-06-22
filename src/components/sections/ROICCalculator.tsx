@@ -7,7 +7,24 @@ import {
 } from 'recharts';
 import SectionHeader from '../SectionHeader';
 import MetricCard from '../MetricCard';
-import { defaultROICInputs, hardwareDefaults, calcROIC, roicByEntity } from '@/lib/data';
+import { defaultROICInputs, hardwareDefaults, calcROIC, roicByEntity, throughputMatrix } from '@/lib/data';
+
+// Maps live model pricing keys → throughput matrix model names
+const MODEL_TO_THROUGHPUT_KEY: Record<string, string> = {
+  'gpt-4o':                          'GPT-4o',
+  'gpt-4o-mini':                     'GPT-4o',
+  'gpt-5':                           'GPT-5',
+  'claude-sonnet-4-5':               'Claude Sonnet 4',
+  'claude-sonnet-4-6':               'Claude Sonnet 4',
+  'claude-opus-4-5':                 'Claude Opus 4.8',
+  'claude-opus-4-8':                 'Claude Opus 4.8',
+  'claude-fable-5':                  'Fable 5',
+  'deepseek-chat':                   'DeepSeek V3',
+  'deepseek-reasoner':               'DeepSeek V3',
+  'gemini-2.5-pro-preview-05-06':    'Gemini 2.5 Pro',
+  'gemini-2.5-flash':                'Gemini 2.5 Pro',
+  'gemini-2.5-flash-preview-05-20':  'Gemini 2.5 Pro',
+};
 import { useGlobalParams } from '@/contexts/ParamsContext';
 import { useLiveData } from '@/hooks/useLiveData';
 
@@ -79,20 +96,33 @@ export default function ROICCalculator() {
     setActivePreset(null);
   };
 
+  const getModelThroughput = (modelKey: string, hw: string) => {
+    const matrixKey = MODEL_TO_THROUGHPUT_KEY[modelKey];
+    return matrixKey ? (throughputMatrix[hw]?.[matrixKey] ?? null) : null;
+  };
+
   const handleHardwareChange = (hw: string) => {
     const defaults = hardwareDefaults[hw] || {};
-    setInputs(prev => ({ ...prev, hardware: hw, ...defaults }));
+    const updates: Partial<typeof inputs> = { hardware: hw, ...defaults };
+    // Keep model-specific throughput if a mapped model is selected
+    const modelThroughput = getModelThroughput(selectedPricingModel, hw);
+    if (modelThroughput !== null) updates.tokensPerGPUPerSec = modelThroughput;
+    setInputs(prev => ({ ...prev, ...updates }));
     setActivePreset(null);
-    setSelectedPricingModel('');
   };
 
   const handleModelPricingSelect = (modelName: string) => {
     setSelectedPricingModel(modelName);
+    const updates: Partial<typeof inputs> = {};
     if (modelName && liveData.modelPricing[modelName]) {
       const p = liveData.modelPricing[modelName];
       // Blended rate: 3:1 input-to-output token ratio (typical chat/API workload)
-      const blended = parseFloat(((p.inputPerM * 3 + p.outputPerM) / 4).toFixed(3));
-      setInputs(prev => ({ ...prev, revenuePerMTokens: blended }));
+      updates.revenuePerMTokens = parseFloat(((p.inputPerM * 3 + p.outputPerM) / 4).toFixed(3));
+    }
+    const modelThroughput = getModelThroughput(modelName, inputs.hardware);
+    if (modelThroughput !== null) updates.tokensPerGPUPerSec = modelThroughput;
+    if (Object.keys(updates).length > 0) {
+      setInputs(prev => ({ ...prev, ...updates }));
       setActivePreset(null);
     }
   };
@@ -263,7 +293,8 @@ export default function ROICCalculator() {
               onChange={update('revenuePerMTokens')} format={v => `$${v.toFixed(2)}`}
             />
             <SliderInput
-              label="Throughput (tok/s/GPU)" value={inputs.tokensPerGPUPerSec} min={50} max={3000} step={50}
+              label={`Throughput (tok/s/GPU)${MODEL_TO_THROUGHPUT_KEY[selectedPricingModel] ? ` · ${MODEL_TO_THROUGHPUT_KEY[selectedPricingModel]}` : ''}`}
+              value={inputs.tokensPerGPUPerSec} min={50} max={3000} step={50}
               onChange={update('tokensPerGPUPerSec')} format={v => `${v}`}
             />
             <SliderInput
