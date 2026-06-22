@@ -139,7 +139,7 @@ export const throughputMatrix: Record<string, Record<string, number>> = {
   'B200':            { 'GPT-4o': 780, 'GPT-5': 210, 'Claude Sonnet 4': 940, 'Claude Opus 4.8': 330, 'Fable 5': 263, 'DeepSeek V3':1050, 'Kimi K2': 970, 'Gemini 2.5 Pro': 635 },
   'B300':            { 'GPT-4o':1170, 'GPT-5': 315, 'Claude Sonnet 4':1410, 'Claude Opus 4.8': 495, 'Fable 5': 395, 'DeepSeek V3':1575, 'Kimi K2':1455, 'Gemini 2.5 Pro': 955 }, // 1.5× B200
   'GB200':     { 'GPT-4o':1850, 'GPT-5': 495, 'Claude Sonnet 4':2230, 'Claude Opus 4.8': 780, 'Fable 5': 624, 'DeepSeek V3':2490, 'Kimi K2':2300, 'Gemini 2.5 Pro':1510 },
-  'GB300':     { 'GPT-4o':2775, 'GPT-5': 745, 'Claude Sonnet 4':3345, 'Claude Opus 4.8':1170, 'Fable 5': 940, 'DeepSeek V3':3735, 'Kimi K2':3450, 'Gemini 2.5 Pro':2265 }, // 1.5× GB200 NVL72
+  'GB300':     { 'GPT-4o':2775, 'GPT-5': 745, 'Claude Sonnet 4':3345, 'Claude Opus 4.8':1170, 'Fable 5': 940, 'DeepSeek V3':3735, 'Kimi K2':3450, 'Gemini 2.5 Pro':2265 }, // 1.5× GB200
   'VR200':    { 'GPT-4o':2500, 'GPT-5': 670, 'Claude Sonnet 4':3010, 'Claude Opus 4.8':1055, 'Fable 5': 843, 'DeepSeek V3':3360, 'Kimi K2':3100, 'Gemini 2.5 Pro':2030 }, // Vera+Rubin rack: 144 R100 GPUs, 3.2× B200 per chip
   'TPU v5p':         { 'GPT-4o': 290, 'GPT-5': 79,  'Claude Sonnet 4': 350, 'Claude Opus 4.8': 123, 'Fable 5': 98,  'DeepSeek V3': 390, 'Kimi K2': 360, 'Gemini 2.5 Pro': 235 },
   'TPU v7 Ironwood': { 'GPT-4o': 640, 'GPT-5': 172, 'Claude Sonnet 4': 770, 'Claude Opus 4.8': 270, 'Fable 5': 216, 'DeepSeek V3': 860, 'Kimi K2': 795, 'Gemini 2.5 Pro': 520 },

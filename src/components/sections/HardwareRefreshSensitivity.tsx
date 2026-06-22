@@ -388,7 +388,7 @@ export default function HardwareRefreshSensitivity() {
         <p className="text-xs text-sa-muted mt-2">
           At PUE {inp.pue.toFixed(2)} and {(inp.powerCostPerKWh * 100).toFixed(1)}¢/kWh, annual facility power cost: <span className="text-white font-semibold">
             ${((inp.numGPUs * (hardwareDefaults[inp.gen1Hardware]?.powerW ?? 1500) * inp.pue / 1000) * 24 * 365 * inp.powerCostPerKWh / 1e6).toFixed(2)}M/yr
-          </span> (Gen 1 fleet, post-refresh). High-energy environments erode refresh advantage — <span className="text-orange-400">VERA RUBIN's lower per-token energy cost</span> partially compensates.
+          </span> (Gen 1 fleet, post-refresh). High-energy environments erode refresh advantage — <span className="text-orange-400">VR200's lower per-token energy cost</span> partially compensates.
         </p>
       </div>
     </div>
