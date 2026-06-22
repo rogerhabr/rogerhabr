@@ -64,7 +64,6 @@ export default function Overview() {
   };
   const rev2025Total = sumRev('2025');
   const rev2024Total = sumRev('2024');
-  const rev2028Total = sumRev('2028E');
 
   // ROIC by entity
   const roic2025 = roicByEntity.find(d => d.year === '2025')!;
@@ -106,6 +105,9 @@ export default function Overview() {
 
   const latest2025 = tamTotal.find(d => d.year === '2025')!;
   const latest2027 = tamTotal.find(d => d.year === '2027E')!;
+
+  const adj2028 = adjustedRevenue.find(d => d.year === '2028E')!;
+  const rev2028Total = adj2028 ? adj2028.rental + adj2028.model + adj2028.software : 0;
 
   return (
     <div>

@@ -12,17 +12,20 @@ import ParamControl from '../ParamControl';
 import { supplyDemand, supplyByType } from '@/lib/data';
 import { useGlobalParams } from '@/contexts/ParamsContext';
 
-const supplyDemandForChart = supplyDemand.map(d => ({
-  ...d,
-  totalSupply: d.inferenceSupply + d.trainingSupply,
-  totalDemand: d.inferenceDemand + d.trainingDemand,
-  gap: (d.inferenceSupply + d.trainingSupply) - (d.inferenceDemand + d.trainingDemand),
-}));
-
 export default function ComputeSupplyDemand() {
-  const { params } = useGlobalParams();
+  const { params, mult } = useGlobalParams();
   const [utilizationLevel, setUtilizationLevel] = useState('base');
   const [demandView, setDemandView] = useState('all');
+
+  const supplyDemandForChart = supplyDemand.map(d => {
+    const isForecast = (d.year as string).endsWith('E');
+    const demandFactor = (isForecast && params.scenario !== 'base') ? mult.gpuDemand : 1;
+    const inferenceDemand = +(d.inferenceDemand * demandFactor).toFixed(1);
+    const trainingDemand  = +(d.trainingDemand  * demandFactor).toFixed(1);
+    const totalSupply = d.inferenceSupply + d.trainingSupply;
+    const totalDemand = inferenceDemand + trainingDemand;
+    return { ...d, inferenceDemand, trainingDemand, totalSupply, totalDemand, gap: totalSupply - totalDemand };
+  });
 
   const utilizationMap: Record<string, number> = {
     low: 65,
