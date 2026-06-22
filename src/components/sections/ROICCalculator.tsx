@@ -8,8 +8,9 @@ import {
 import SectionHeader from '../SectionHeader';
 import MetricCard from '../MetricCard';
 import { defaultROICInputs, hardwareDefaults, calcROIC, roicByEntity, throughputMatrix } from '@/lib/data';
+import { useGlobalParams } from '@/contexts/ParamsContext';
+import { useLiveData } from '@/hooks/useLiveData';
 
-// Maps live model pricing keys → throughput matrix model names
 const MODEL_TO_THROUGHPUT_KEY: Record<string, string> = {
   'gpt-4o':                          'GPT-4o',
   'gpt-4o-mini':                     'GPT-4o',
@@ -25,8 +26,6 @@ const MODEL_TO_THROUGHPUT_KEY: Record<string, string> = {
   'gemini-2.5-flash':                'Gemini 2.5 Pro',
   'gemini-2.5-flash-preview-05-20':  'Gemini 2.5 Pro',
 };
-import { useGlobalParams } from '@/contexts/ParamsContext';
-import { useLiveData } from '@/hooks/useLiveData';
 
 const HARDWARE_OPTIONS = Object.keys(hardwareDefaults);
 const ENERGY_COSTS = [0.050, 0.075, 0.100, 0.125, 0.150];
