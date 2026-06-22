@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-22T14:37:02.795Z",
+  "lastUpdated": "2026-06-22T17:36:40.807Z",
   "sources": {
     "stocks": "Yahoo Finance API",
     "capex": "SEC EDGAR XBRL API — 10-K PaymentsToAcquirePropertyPlantAndEquipment",
@@ -10,45 +10,45 @@
   },
   "stocks": {
     "NVDA": {
-      "price": 209.97,
+      "price": 208.63,
       "prevClose": 205.19,
-      "changePct": 2.33,
+      "changePct": 1.68,
       "marketCap": null
     },
     "MSFT": {
-      "price": 373.58,
+      "price": 368.79,
       "prevClose": 390.74,
-      "changePct": -4.39,
+      "changePct": -5.62,
       "marketCap": null
     },
     "GOOGL": {
-      "price": 348.69,
+      "price": 346.441,
       "prevClose": 359.68,
-      "changePct": -3.06,
+      "changePct": -3.68,
       "marketCap": null
     },
     "AMZN": {
-      "price": 235.88,
+      "price": 233.17,
       "prevClose": 238.55,
-      "changePct": -1.12,
+      "changePct": -2.26,
       "marketCap": null
     },
     "META": {
-      "price": 566.88,
+      "price": 561.55,
       "prevClose": 566.98,
-      "changePct": -0.02,
+      "changePct": -0.96,
       "marketCap": null
     },
     "AMD": {
-      "price": 544.462,
+      "price": 542.935,
       "prevClose": 511.57,
-      "changePct": 6.43,
+      "changePct": 6.13,
       "marketCap": null
     },
     "ORCL": {
-      "price": 180.478,
+      "price": 174.79,
       "prevClose": 184.13,
-      "changePct": -1.98,
+      "changePct": -5.07,
       "marketCap": null
     }
   },
@@ -76,7 +76,7 @@
     }
   },
   "gpuRentalPrices": {
-    "H200 SXM5": {
+    "H200": {
       "lambdaPerHour": null,
       "azurePerHour": 10.6,
       "lowestPerHour": 10.6,
@@ -92,7 +92,7 @@
         "Azure"
       ]
     },
-    "GB200 NVL72": {
+    "GB200": {
       "lambdaPerHour": null,
       "azurePerHour": 108.16,
       "lowestPerHour": 108.16,
