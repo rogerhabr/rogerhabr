@@ -56,7 +56,6 @@ export default function SaasDisruption() {
     (s, d) => s + (d.revenue2024B * d.revenueAtRiskPct) / 100, 0
   );
 
-  // Summary aggregates over the full coverage universe (independent of the active threat filter)
   const totalAtRiskAll = saasDisruptions.reduce(
     (s, d) => s + (d.revenue2024B * d.revenueAtRiskPct) / 100, 0
   );

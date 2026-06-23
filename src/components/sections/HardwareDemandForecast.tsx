@@ -17,13 +17,14 @@ export default function HardwareDemandForecast() {
   const [demandType, setDemandType] = useState('total');
   const [vendor, setVendor] = useState('all');
 
+  const demand2023 = hardwareDemandForecast.find(d => d.year === '2023')!;
   const demand2024 = hardwareDemandForecast.find(d => d.year === '2024')!;
-  const demand2025 = hardwareDemandForecast.find(d => d.year === '2025E')!;
+  const demand2025 = hardwareDemandForecast.find(d => d.year === '2025')!;
   const demand2027 = hardwareDemandForecast.find(d => d.year === '2027E')!;
   const demand2028 = hardwareDemandForecast.find(d => d.year === '2028E')!;
 
   const adjustedForecast = hardwareDemandForecast.map(d => {
-    const isHistorical = d.year === '2022' || d.year === '2023' || d.year === '2024';
+    const isHistorical = !d.year.endsWith('E');
     const factor = (!isHistorical && params.scenario !== 'base') ? mult.gpuDemand : 1;
     return {
       ...d,
@@ -58,10 +59,9 @@ export default function HardwareDemandForecast() {
   });
 
   const inferenceShare2025 = ((demand2025.inferenceGPUs / demand2025.total) * 100).toFixed(0);
-  const demand2023 = hardwareDemandForecast.find(d => d.year === '2023');
   const inferenceShare2023 = demand2023 ? ((demand2023.inferenceGPUs / demand2023.total) * 100).toFixed(0) : null;
 
-  const demand2025Adj = adjustedForecast.find(d => d.year === '2025E')!;
+  const demand2025Adj = adjustedForecast.find(d => d.year === '2025')!;
   const demand2027Adj = adjustedForecast.find(d => d.year === '2027E')!;
 
   const tableData = adjustedForecast.map((d, i) => ({

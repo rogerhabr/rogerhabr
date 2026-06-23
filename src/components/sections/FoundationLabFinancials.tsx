@@ -58,13 +58,13 @@ export default function FoundationLabFinancials() {
     totalFunding[r.company] = (totalFunding[r.company] || 0) + r.amountB;
   });
 
-  // Headline figures derived from the lab data arrays (single source of truth)
   const rev2024 = labRevenue.find(r => r.year === '2024');
-  const rev2025 = labRevenue.find(r => r.year === '2025E');
+  const rev2025 = labRevenue.find(r => r.year === '2025');
   const val2024 = labValuations.find(r => r.year === '2024');
-  const val2025 = labValuations.find(r => r.year === '2025E');
-  const yoy = (curr?: number, prev?: number) => (curr != null && prev != null && prev !== 0)
-    ? `+${((curr / prev - 1) * 100).toFixed(0)}%` : '';
+  const val2025 = labValuations.find(r => r.year === '2025');
+  const yoy = (curr?: number, prev?: number) =>
+    curr != null && prev != null && prev !== 0
+      ? `+${((curr / prev - 1) * 100).toFixed(0)}%` : '';
 
   return (
     <div>
