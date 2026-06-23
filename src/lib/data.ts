@@ -92,9 +92,9 @@ export const hardwareSpecs: HardwareSpec[] = [
   { name: 'B300',          vendor: 'NVIDIA', chip: 'B300',  fp8TFLOPS:  6750, hbmTB: 0.288, hbmBWTBs:  10.00, powerW:   1200, b200Equiv:  1.50, releaseYear: 2026 },
   // ── Grace Blackwell NVL racks (fp8TFLOPS = NVL72 rack total; GB200=720 PFLOPS per NVIDIA spec) ─
   { name: 'GB200',          vendor: 'NVIDIA', chip: 'GB200', fp8TFLOPS: 720000, hbmTB: 8.064, hbmBWTBs: 576.00, powerW: 120000, b200Equiv: 12.50, releaseYear: 2025 },
-  { name: 'GB300',          vendor: 'NVIDIA', chip: 'GB300', fp8TFLOPS:1080000, hbmTB:12.096, hbmBWTBs: 864.00, powerW: 130000, b200Equiv: 18.75, releaseYear: 2026 },
-  // ── Vera Rubin NVL72 rack (72 GPU packages / 144 dies; 3.6 ExaFLOPS FP8; 190–230 kW actual) ──
-  { name: 'VR200',          vendor: 'NVIDIA', chip: 'R100',  fp8TFLOPS:3600000, hbmTB:24.192, hbmBWTBs:1728.00, powerW: 210000, b200Equiv: 80.00, releaseYear: 2027 },
+  { name: 'GB300',          vendor: 'NVIDIA', chip: 'GB300', fp8TFLOPS:1080000, hbmTB:12.096, hbmBWTBs: 576.00, powerW: 130000, b200Equiv: 18.75, releaseYear: 2026 },
+  // ── Vera Rubin NVL72 rack (72 R100 packages / 144 dies; FP8=1.2 EFLOPS, FP4=3.6 EFLOPS; 72×22 TB/s HBM4=1,584 TB/s; 72×288 GB=20.736 TB; 190–230 kW) ──
+  { name: 'VR200',          vendor: 'NVIDIA', chip: 'R100',  fp8TFLOPS:1200000, hbmTB:20.736, hbmBWTBs:1584.00, powerW: 210000, b200Equiv: 80.00, releaseYear: 2027 },
   // ── Google TPU ───────────────────────────────────────────────────────────────
   { name: 'TPU v5p',         vendor: 'Google', chip: 'TPUv5p', fp8TFLOPS:   459, hbmTB: 0.095, hbmBWTBs:   2.76, powerW:    175, b200Equiv:  0.28, releaseYear: 2023 },
   { name: 'TPU v7 Ironwood', vendor: 'Google', chip: 'TPUv7',  fp8TFLOPS:  4614, hbmTB: 0.192, hbmBWTBs:   7.37, powerW:    200, b200Equiv:  1.41, releaseYear: 2025 },
@@ -140,7 +140,7 @@ export const throughputMatrix: Record<string, Record<string, number>> = {
   'B300':            { 'GPT-4o':1170, 'GPT-5': 315, 'Claude Sonnet 4':1410, 'Claude Opus 4.8': 495, 'Fable 5': 395, 'DeepSeek V3':1575, 'Kimi K2':1455, 'Gemini 2.5 Pro': 955 }, // 1.5× B200
   'GB200':     { 'GPT-4o':1850, 'GPT-5': 495, 'Claude Sonnet 4':2230, 'Claude Opus 4.8': 780, 'Fable 5': 624, 'DeepSeek V3':2490, 'Kimi K2':2300, 'Gemini 2.5 Pro':1510 },
   'GB300':     { 'GPT-4o':2775, 'GPT-5': 745, 'Claude Sonnet 4':3345, 'Claude Opus 4.8':1170, 'Fable 5': 940, 'DeepSeek V3':3735, 'Kimi K2':3450, 'Gemini 2.5 Pro':2265 }, // 1.5× GB200
-  'VR200':    { 'GPT-4o':2500, 'GPT-5': 670, 'Claude Sonnet 4':3010, 'Claude Opus 4.8':1055, 'Fable 5': 843, 'DeepSeek V3':3360, 'Kimi K2':3100, 'Gemini 2.5 Pro':2030 }, // VR200 NVL72: 72 R100 GPU packages (144 dies); per-package throughput
+  'VR200':    { 'GPT-4o':5550, 'GPT-5':1485, 'Claude Sonnet 4':6690, 'Claude Opus 4.8':2340, 'Fable 5':1872, 'DeepSeek V3':7470, 'Kimi K2':6900, 'Gemini 2.5 Pro':4530 }, // 3× GB200; R100 22 TB/s HBM4 vs B200 8 TB/s (×2.75 BW) + NVLink 6; NVIDIA claims 5× Blackwell at rack level
   'TPU v5p':         { 'GPT-4o': 290, 'GPT-5': 79,  'Claude Sonnet 4': 350, 'Claude Opus 4.8': 123, 'Fable 5': 98,  'DeepSeek V3': 390, 'Kimi K2': 360, 'Gemini 2.5 Pro': 235 },
   'TPU v7 Ironwood': { 'GPT-4o': 640, 'GPT-5': 172, 'Claude Sonnet 4': 770, 'Claude Opus 4.8': 270, 'Fable 5': 216, 'DeepSeek V3': 860, 'Kimi K2': 795, 'Gemini 2.5 Pro': 520 },
   'Trainium 2':      { 'GPT-4o': 280, 'GPT-5': 76,  'Claude Sonnet 4': 340, 'Claude Opus 4.8': 119, 'Fable 5': 95,  'DeepSeek V3': 375, 'Kimi K2': 348, 'Gemini 2.5 Pro': 228 },
