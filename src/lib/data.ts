@@ -1,8 +1,8 @@
 // All data is illustrative and based on publicly available estimates and analyst forecasts.
 // Sources: Company filings, earnings calls, Omdia, IDC, and public analyst reports.
 
-export const YEARS = ['2022', '2023', '2024', '2025E', '2026E', '2027E', '2028E'];
-export const FORECAST_YEARS = ['2025E', '2026E', '2027E', '2028E'];
+export const YEARS = ['2022', '2023', '2024', '2025E', '2026E', '2027E', '2028E', '2029E', '2030E'];
+export const FORECAST_YEARS = ['2025E', '2026E', '2027E', '2028E', '2029E', '2030E'];
 
 // ─── Hardware Installed Base ────────────────────────────────────────────────
 // B200-equivalent GPU units (thousands), normalized by FP8 throughput vs B200
@@ -15,6 +15,8 @@ export const hyperscalerGPUs = [
   { year: '2026E',Microsoft: 431, Google: 513, Amazon: 341, Meta: 319, Oracle:106 },
   { year: '2027E',Microsoft: 613, Google: 725, Amazon: 488, Meta: 453, Oracle:159 },
   { year: '2028E',Microsoft: 828, Google: 969, Amazon: 650, Meta: 619, Oracle:225 },
+  { year: '2029E',Microsoft:1076, Google:1260, Amazon: 845, Meta: 805, Oracle:293 },
+  { year: '2030E',Microsoft:1345, Google:1575, Amazon:1056, Meta:1006, Oracle:366 },
 ];
 
 export const hyperscalerColors: Record<string, string> = {
@@ -32,6 +34,9 @@ export const foundationLabGPUs = [
   { year: '2025E',OpenAI: 59, Anthropic: 20, xAI:41,  DeepSeek: 44, 'Thinking Machines': 8 },
   { year: '2026E',OpenAI: 97, Anthropic: 39, xAI:78,  DeepSeek: 72, 'Thinking Machines':17 },
   { year: '2027E',OpenAI:138, Anthropic: 61, xAI:125, DeepSeek:106, 'Thinking Machines':28 },
+  { year: '2028E',OpenAI:200, Anthropic: 88, xAI:181, DeepSeek:154, 'Thinking Machines': 41 },
+  { year: '2029E',OpenAI:270, Anthropic:119, xAI:244, DeepSeek:208, 'Thinking Machines': 55 },
+  { year: '2030E',OpenAI:338, Anthropic:149, xAI:305, DeepSeek:260, 'Thinking Machines': 69 },
 ];
 
 export const foundationLabColors: Record<string, string> = {
@@ -49,6 +54,9 @@ export const neocloudGPUs = [
   { year: '2025E',CoreWeave:150, Nebius:23, Crusoe: 15, 'Lambda Labs': 27 },
   { year: '2026E',CoreWeave:244, Nebius:45, Crusoe: 31, 'Lambda Labs': 50 },
   { year: '2027E',CoreWeave:338, Nebius:75, Crusoe: 55, 'Lambda Labs': 81 },
+  { year: '2028E',CoreWeave:459, Nebius:102, Crusoe: 75, 'Lambda Labs':110 },
+  { year: '2029E',CoreWeave:597, Nebius:133, Crusoe: 98, 'Lambda Labs':143 },
+  { year: '2030E',CoreWeave:746, Nebius:166, Crusoe:122, 'Lambda Labs':179 },
 ];
 
 export const neocloudColors: Record<string, string> = {
@@ -67,6 +75,8 @@ export const hyperscalerCapex = [
   { year: '2026E',Microsoft:115, Google:108, Amazon:138, Meta: 92, Oracle: 50 },
   { year: '2027E',Microsoft:150, Google:143, Amazon:175, Meta:120, Oracle: 70 },
   { year: '2028E',Microsoft:190, Google:185, Amazon:215, Meta:155, Oracle: 90 },
+  { year: '2029E',Microsoft:228, Google:222, Amazon:258, Meta:186, Oracle:108 },
+  { year: '2030E',Microsoft:269, Google:262, Amazon:305, Meta:220, Oracle:127 },
 ];
 
 // ─── Hardware Specs ──────────────────────────────────────────────────────────
@@ -181,6 +191,8 @@ export const tokenEconomyTAM = [
   { year: '2026E',consumerApps: 36.0, apiInference:36.5, tokenSoftware:18.5 },
   { year: '2027E',consumerApps: 79.0, apiInference:82.0, tokenSoftware:40.0 },
   { year: '2028E',consumerApps:158.0, apiInference:165.0,tokenSoftware:80.0 },
+  { year: '2029E',consumerApps:240.0, apiInference:252.0, tokenSoftware:132.0 },
+  { year: '2030E',consumerApps:352.0, apiInference:372.0, tokenSoftware:200.0 },
 ];
 
 // Key consumer applications
@@ -268,6 +280,8 @@ export const supplyDemand = [
   { year: '2026E',inferenceSupply:10.63, trainingSupply: 4.69, inferenceDemand:10.16, trainingDemand: 5.78 },
   { year: '2027E',inferenceSupply:20.00, trainingSupply: 8.44, inferenceDemand:19.06, trainingDemand:10.00 },
   { year: '2028E',inferenceSupply:35.94, trainingSupply:15.00, inferenceDemand:35.00, trainingDemand:16.25 },
+  { year: '2029E',inferenceSupply:57.50, trainingSupply:24.06, inferenceDemand:56.25, trainingDemand:26.00 },
+  { year: '2030E',inferenceSupply:89.69, trainingSupply:37.50, inferenceDemand:87.50, trainingDemand:40.63 },
 ];
 
 // Supply breakdown by provider type
@@ -279,6 +293,8 @@ export const supplyByType = [
   { year: '2026E',hyperscalers:11.56, foundationLabs: 2.81, neoclouds: 0.94 },
   { year: '2027E',hyperscalers:21.88, foundationLabs: 4.69, neoclouds: 1.88 },
   { year: '2028E',hyperscalers:39.38, foundationLabs: 8.13, neoclouds: 3.44 },
+  { year: '2029E',hyperscalers:63.13, foundationLabs:13.00, neoclouds: 5.50 },
+  { year: '2030E',hyperscalers:98.44, foundationLabs:20.31, neoclouds: 8.75 },
 ];
 
 // ─── ROIC Data ───────────────────────────────────────────────────────────────
@@ -291,6 +307,8 @@ export const roicByEntity = [
   { year: '2026E',hyperscalers: 26,  foundationLabs:   4, neoclouds: 30 },
   { year: '2027E',hyperscalers: 29,  foundationLabs:  17, neoclouds: 34 },
   { year: '2028E',hyperscalers: 31,  foundationLabs:  25, neoclouds: 36 },
+  { year: '2029E',hyperscalers: 33,  foundationLabs:  30, neoclouds: 37 },
+  { year: '2030E',hyperscalers: 35,  foundationLabs:  34, neoclouds: 38 },
 ];
 
 // ─── Revenue & Profit ────────────────────────────────────────────────────────
@@ -304,6 +322,8 @@ export const revenueByModel = [
   { year: '2026E',rental: 95,   model: 70,  software: 130  },
   { year: '2027E',rental: 175,  model: 145, software: 280  },
   { year: '2028E',rental: 300,  model: 280, software: 520  },
+  { year: '2029E',rental: 415,  model: 448, software:  837 },
+  { year: '2030E',rental: 560,  model: 672, software: 1268 },
 ];
 
 // Operating margins by revenue type (%)
@@ -315,6 +335,8 @@ export const marginsByModel = [
   { year: '2026E',rental: 40, model:  18, software: 48 },
   { year: '2027E',rental: 42, model:  28, software: 52 },
   { year: '2028E',rental: 43, model:  35, software: 56 },
+  { year: '2029E',rental: 44, model:  40, software: 58 },
+  { year: '2030E',rental: 45, model:  44, software: 60 },
 ];
 
 // ─── Hardware Demand Forecast ─────────────────────────────────────────────────
@@ -328,6 +350,8 @@ export const hardwareDemandForecast = [
   { year: '2026E',inferenceGPUs: 1938, trainingGPUs:  719, total: 2656 },
   { year: '2027E',inferenceGPUs: 3594, trainingGPUs: 1094, total: 4688 },
   { year: '2028E',inferenceGPUs: 6094, trainingGPUs: 1563, total: 7656 },
+  { year: '2029E',inferenceGPUs: 9453, trainingGPUs: 2188, total:11641 },
+  { year: '2030E',inferenceGPUs:13974, trainingGPUs: 2953, total:16927 },
 ];
 
 // By accelerator vendor market share (%)
@@ -339,6 +363,8 @@ export const vendorMarketShare = [
   { year: '2026E',NVIDIA: 75, AMD:12, Google: 7, Amazon: 4, Other: 2 },
   { year: '2027E',NVIDIA: 70, AMD:14, Google: 9, Amazon: 5, Other: 2 },
   { year: '2028E',NVIDIA: 65, AMD:16, Google:11, Amazon: 6, Other: 2 },
+  { year: '2029E',NVIDIA: 60, AMD:18, Google:13, Amazon: 7, Other: 2 },
+  { year: '2030E',NVIDIA: 56, AMD:20, Google:15, Amazon: 8, Other: 1 },
 ];
 
 // ─── ROIC Calculator Defaults ─────────────────────────────────────────────────
@@ -637,6 +663,9 @@ export const labRevenue = [
   { year: '2025E',OpenAI: 11.6, Anthropic: 3.0,  xAI: 1.00, DeepSeek: 0.30 },
   { year: '2026E',OpenAI: 28.0, Anthropic: 8.0,  xAI: 3.00, DeepSeek: 1.00 },
   { year: '2027E',OpenAI: 58.0, Anthropic: 18.0, xAI: 7.00, DeepSeek: 3.00 },
+  { year: '2028E',OpenAI:110, Anthropic: 38, xAI:14, DeepSeek: 6 },
+  { year: '2029E',OpenAI:198, Anthropic: 72, xAI:26, DeepSeek:12 },
+  { year: '2030E',OpenAI:340, Anthropic:130, xAI:46, DeepSeek:22 },
 ];
 
 export const labOperatingIncome = [
@@ -646,6 +675,9 @@ export const labOperatingIncome = [
   { year: '2025E',OpenAI: -2.00, Anthropic: -0.50, xAI: -0.80, DeepSeek: -0.40 },
   { year: '2026E',OpenAI:  2.00, Anthropic:  0.50, xAI: -0.50, DeepSeek: -0.20 },
   { year: '2027E',OpenAI: 12.00, Anthropic:  3.50, xAI:  0.50, DeepSeek:  0.20 },
+  { year: '2028E',OpenAI: 28.00, Anthropic:  9.00, xAI: 2.00, DeepSeek: 0.80 },
+  { year: '2029E',OpenAI: 58.00, Anthropic: 20.00, xAI: 5.00, DeepSeek: 2.00 },
+  { year: '2030E',OpenAI:110.00, Anthropic: 40.00, xAI:10.00, DeepSeek: 5.00 },
 ];
 
 export interface FundingRound {
@@ -678,6 +710,9 @@ export const labValuations = [
   { year: '2025E',OpenAI: 340, Anthropic: 62,  xAI: 120, DeepSeek: 30  },
   { year: '2026E',OpenAI: 600, Anthropic: 140, xAI: 200, DeepSeek: 80  },
   { year: '2027E',OpenAI: 1100,Anthropic: 300, xAI: 380, DeepSeek: 200 },
+  { year: '2028E',OpenAI:1800, Anthropic: 550, xAI: 650, DeepSeek:350 },
+  { year: '2029E',OpenAI:2800, Anthropic: 900, xAI:1000, DeepSeek:550 },
+  { year: '2030E',OpenAI:4200, Anthropic:1450, xAI:1550, DeepSeek:850 },
 ];
 
 export const labHeadcount = [
@@ -686,5 +721,9 @@ export const labHeadcount = [
   { year: '2024', OpenAI: 1800, Anthropic: 900,  xAI: 800,  DeepSeek: 300  },
   { year: '2025E',OpenAI: 3500, Anthropic: 1600, xAI: 2000, DeepSeek: 500  },
   { year: '2026E',OpenAI: 6000, Anthropic: 2800, xAI: 3500, DeepSeek: 900  },
+  { year: '2027E',OpenAI: 9000, Anthropic: 4500, xAI: 6500, DeepSeek:1500 },
+  { year: '2028E',OpenAI:13000, Anthropic: 7000, xAI:10000, DeepSeek:2200 },
+  { year: '2029E',OpenAI:17000, Anthropic: 9500, xAI:14000, DeepSeek:3000 },
+  { year: '2030E',OpenAI:21000, Anthropic:12500, xAI:18500, DeepSeek:4000 },
 ];
 

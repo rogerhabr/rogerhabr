@@ -1,13 +1,19 @@
 'use client';
 
+import { useState } from 'react';
 import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend,
 } from 'recharts';
 import MetricCard from '../MetricCard';
 import SectionHeader from '../SectionHeader';
-import { tokenEconomyTAM, revenueByModel, roicByEntity } from '@/lib/data';
+import {
+  tokenEconomyTAM, revenueByModel, roicByEntity,
+  hyperscalerGPUs, foundationLabGPUs, neocloudGPUs, hyperscalerCapex,
+} from '@/lib/data';
 import { useGlobalParams } from '@/contexts/ParamsContext';
+
+const DISPLAY_YEARS = ['2025E', '2026E', '2027E', '2028E', '2029E', '2030E'];
 
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number; color: string }[]; label?: string }) => {
   if (!active || !payload?.length) return null;
@@ -25,10 +31,29 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
   );
 };
 
+// Pre-compute GPU base and CapEx totals per year
+function buildGPUBase() {
+  const m: Record<string, number> = {};
+  hyperscalerGPUs.forEach(r => { m[r.year] = (m[r.year] || 0) + r.Microsoft + r.Google + r.Amazon + r.Meta + r.Oracle; });
+  foundationLabGPUs.forEach(r => { m[r.year] = (m[r.year] || 0) + r.OpenAI + r.Anthropic + r.xAI + r.DeepSeek + (r['Thinking Machines'] || 0); });
+  neocloudGPUs.forEach(r => { m[r.year] = (m[r.year] || 0) + r.CoreWeave + r.Nebius + r.Crusoe + r['Lambda Labs']; });
+  return m;
+}
+
+function buildCapEx() {
+  const m: Record<string, number> = {};
+  hyperscalerCapex.forEach(r => { m[r.year] = r.Microsoft + r.Google + r.Amazon + r.Meta + r.Oracle; });
+  return m;
+}
+
+const GPU_BASE = buildGPUBase();
+const CAPEX_TOTAL = buildCapEx();
+
 export default function Overview() {
   const { mult, params, navigate } = useGlobalParams();
+  const [selectedYear, setSelectedYear] = useState('2025E');
 
-  const tamTotal = tokenEconomyTAM.map(d => {
+  const tamData = tokenEconomyTAM.map(d => {
     const isForecast = d.year !== '2024';
     const factor = isForecast ? mult.tam : 1;
     return {
@@ -40,7 +65,7 @@ export default function Overview() {
     };
   });
 
-  const adjustedRevenue = revenueByModel.map(d => {
+  const revenueData = revenueByModel.map(d => {
     const isForecast = d.year !== '2024';
     const factor = isForecast ? mult.revenue : 1;
     return {
@@ -48,10 +73,11 @@ export default function Overview() {
       rental: +(d.rental * factor).toFixed(1),
       model: +(d.model * factor).toFixed(1),
       software: +(d.software * factor).toFixed(1),
+      total: +((d.rental + d.model + d.software) * factor).toFixed(1),
     };
   });
 
-  const adjustedROIC = roicByEntity.map(d => {
+  const roicData = roicByEntity.map(d => {
     const isForecast = d.year !== '2024';
     const offset = isForecast ? mult.roicOffset : 0;
     return {
@@ -62,13 +88,25 @@ export default function Overview() {
     };
   });
 
-  const latest2025 = tamTotal.find(d => d.year === '2025E')!;
-  const latest2027 = tamTotal.find(d => d.year === '2027E')!;
+  const prevYear = DISPLAY_YEARS[DISPLAY_YEARS.indexOf(selectedYear) - 1] ?? '2024';
 
-  const rev2024 = adjustedRevenue.find(d => d.year === '2024');
-  const rev2025e = adjustedRevenue.find(d => d.year === '2025E');
-  const rev2024Total = rev2024 ? +(rev2024.rental + rev2024.model + rev2024.software).toFixed(1) : 54.1;
-  const rev2025eTotal = rev2025e ? +(rev2025e.rental + rev2025e.model + rev2025e.software).toFixed(1) : 133;
+  const tam = tamData.find(d => d.year === selectedYear);
+  const tamPrev = tamData.find(d => d.year === prevYear);
+  const rev = revenueData.find(d => d.year === selectedYear);
+  const revPrev = revenueData.find(d => d.year === prevYear);
+  const roic = roicData.find(d => d.year === selectedYear);
+
+  const tamTotal = tam ? tam.total : 0;
+  const tamPrevTotal = tamPrev ? tamPrev.total : 0;
+  const revTotal = rev ? rev.total : 0;
+  const revPrevTotal = revPrev ? revPrev.total : 0;
+  const gpuBase = GPU_BASE[selectedYear] || 0;
+  const gpuBasePrev = GPU_BASE[prevYear] || 0;
+  const capex = CAPEX_TOTAL[selectedYear] || 0;
+  const capexPrev = CAPEX_TOTAL[prevYear] || 0;
+
+  const fmtPct = (curr: number, prev: number) => prev > 0 ? `+${((curr / prev - 1) * 100).toFixed(0)}% YoY` : '';
+  const fmtGPU = (n: number) => n >= 1000 ? `~${(n / 1000).toFixed(2)}M` : `${n}k`;
 
   return (
     <div>
@@ -88,22 +126,90 @@ export default function Overview() {
         </div>
       )}
 
+      {/* Year selector */}
+      <div className="flex gap-2 mb-5 flex-wrap">
+        {DISPLAY_YEARS.map(y => (
+          <button
+            key={y}
+            onClick={() => setSelectedYear(y)}
+            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              selectedYear === y
+                ? 'bg-sa-accent text-white'
+                : 'bg-sa-card border border-sa-border text-slate-400 hover:text-white'
+            }`}
+          >
+            {y}
+          </button>
+        ))}
+      </div>
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="Token Economy TAM 2025E" value={`$${latest2025?.total?.toFixed(1) ?? '35.5'}B`} change="+196% YoY" changePositive subtext="Consumer + API + Software" accent icon="💰" onClick={() => navigate('addressable-market')} />
-        <MetricCard label="Token Economy TAM 2027E" value={`$${latest2027?.total?.toFixed(0) ?? '201'}B`} change="+465% vs 2025E" changePositive subtext="3-year CAGR: 138%" icon="📈" onClick={() => navigate('addressable-market')} />
-        <MetricCard label="Total AI CapEx 2025E" value="$355B" change="+64% YoY" changePositive subtext="Big 5 hyperscalers + labs" icon="🏗️" onClick={() => navigate('hardware-base')} />
-        <MetricCard label="GPU Installed Base 2025E" value="~1.48M" change="+102% YoY" changePositive subtext="B200-eq units (all players)" icon="⚡" onClick={() => navigate('hardware-base')} />
-        <MetricCard label="Avg Hyperscaler ROIC 2025E" value="19%" change="+10pp vs 2024" changePositive subtext="vs. -12% for foundation labs" icon="📊" onClick={() => navigate('roic-calculator')} />
-        <MetricCard label="Neocloud ROIC 2025E" value="26%" change="+4pp YoY" changePositive subtext="CoreWeave, Nebius, Crusoe" icon="☁️" onClick={() => navigate('roic-calculator')} />
-        <MetricCard label="AI Revenue 2025E" value={`$${rev2025eTotal}B`} change={rev2024Total > 0 ? `+${((rev2025eTotal / rev2024Total - 1) * 100).toFixed(0)}% YoY` : '+166% YoY'} changePositive subtext="Rental + Model + Software" icon="💎" onClick={() => navigate('revenue-profit')} />
-        <MetricCard label="AI Revenue 2028E" value="$1.1T" change="+725% vs 2025E" changePositive subtext="3-year CAGR: 101%" icon="🚀" onClick={() => navigate('revenue-profit')} />
+        <MetricCard
+          label={`Token Economy TAM ${selectedYear}`}
+          value={tamTotal >= 1000 ? `$${(tamTotal / 1000).toFixed(2)}T` : `$${tamTotal.toFixed(1)}B`}
+          change={fmtPct(tamTotal, tamPrevTotal)} changePositive
+          subtext="Consumer + API + Software" accent icon="💰"
+          onClick={() => navigate('addressable-market')}
+        />
+        <MetricCard
+          label={`AI Revenue ${selectedYear}`}
+          value={revTotal >= 1000 ? `$${(revTotal / 1000).toFixed(2)}T` : `$${revTotal.toFixed(0)}B`}
+          change={fmtPct(revTotal, revPrevTotal)} changePositive
+          subtext="Rental + Model + Software" icon="💎"
+          onClick={() => navigate('revenue-profit')}
+        />
+        <MetricCard
+          label={`Total AI CapEx ${selectedYear}`}
+          value={`$${capex}B`}
+          change={fmtPct(capex, capexPrev)} changePositive
+          subtext="Big 5 hyperscalers" icon="🏗️"
+          onClick={() => navigate('hardware-base')}
+        />
+        <MetricCard
+          label={`GPU Installed Base ${selectedYear}`}
+          value={fmtGPU(gpuBase)}
+          change={fmtPct(gpuBase, gpuBasePrev)} changePositive
+          subtext="B200-eq units (all players)" icon="⚡"
+          onClick={() => navigate('hardware-base')}
+        />
+        <MetricCard
+          label={`Hyperscaler ROIC ${selectedYear}`}
+          value={`${roic?.hyperscalers ?? 0}%`}
+          change={roic && roicData.find(d => d.year === prevYear) ? `${roic.hyperscalers - (roicData.find(d => d.year === prevYear)?.hyperscalers ?? 0) >= 0 ? '+' : ''}${roic.hyperscalers - (roicData.find(d => d.year === prevYear)?.hyperscalers ?? 0)}pp YoY` : ''}
+          changePositive={roic ? roic.hyperscalers > (roicData.find(d => d.year === prevYear)?.hyperscalers ?? 0) : false}
+          subtext="AI-dedicated compute" icon="📊"
+          onClick={() => navigate('roic-calculator')}
+        />
+        <MetricCard
+          label={`Foundation Lab ROIC ${selectedYear}`}
+          value={`${roic?.foundationLabs ?? 0}%`}
+          change={roic && roicData.find(d => d.year === prevYear) ? `${roic.foundationLabs - (roicData.find(d => d.year === prevYear)?.foundationLabs ?? 0) >= 0 ? '+' : ''}${roic.foundationLabs - (roicData.find(d => d.year === prevYear)?.foundationLabs ?? 0)}pp YoY` : ''}
+          changePositive={roic ? roic.foundationLabs > (roicData.find(d => d.year === prevYear)?.foundationLabs ?? 0) : false}
+          subtext="OpenAI, Anthropic, xAI" icon="🧠"
+          onClick={() => navigate('roic-calculator')}
+        />
+        <MetricCard
+          label={`Neocloud ROIC ${selectedYear}`}
+          value={`${roic?.neoclouds ?? 0}%`}
+          change={roic && roicData.find(d => d.year === prevYear) ? `${roic.neoclouds - (roicData.find(d => d.year === prevYear)?.neoclouds ?? 0) >= 0 ? '+' : ''}${roic.neoclouds - (roicData.find(d => d.year === prevYear)?.neoclouds ?? 0)}pp YoY` : ''}
+          changePositive={roic ? roic.neoclouds > (roicData.find(d => d.year === prevYear)?.neoclouds ?? 0) : false}
+          subtext="CoreWeave, Nebius, Crusoe" icon="☁️"
+          onClick={() => navigate('roic-calculator')}
+        />
+        <MetricCard
+          label="AI Revenue 2030E"
+          value="$2.5T"
+          change="+19× vs 2025E" changePositive
+          subtext="5-yr CAGR: 80%" icon="🚀"
+          onClick={() => navigate('revenue-profit')}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
         <div className="bg-sa-card rounded-xl border border-sa-border p-4">
           <h3 className="text-sm font-semibold text-white mb-4">Token Economy TAM ($B)</h3>
           <ResponsiveContainer width="100%" height={240}>
-            <AreaChart data={tamTotal} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
+            <AreaChart data={tamData} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
               <defs>
                 {[['Consumer Apps', '#f97316'], ['API Inference', '#3b82f6'], ['Token Software', '#10b981']].map(([name, color]) => (
                   <linearGradient key={name} id={`grad-${name}`} x1="0" y1="0" x2="0" y2="1">
@@ -127,7 +233,7 @@ export default function Overview() {
         <div className="bg-sa-card rounded-xl border border-sa-border p-4">
           <h3 className="text-sm font-semibold text-white mb-4">AI Revenue by Business Model ($B)</h3>
           <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={adjustedRevenue} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
+            <BarChart data={revenueData} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e2a42" />
               <XAxis dataKey="year" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}B`} />
@@ -144,7 +250,7 @@ export default function Overview() {
       <div className="bg-sa-card rounded-xl border border-sa-border p-4">
         <h3 className="text-sm font-semibold text-white mb-4">ROIC by Entity Type (%)</h3>
         <ResponsiveContainer width="100%" height={200}>
-          <AreaChart data={adjustedROIC} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
+          <AreaChart data={roicData} margin={{ top: 0, right: 10, bottom: 0, left: 0 }}>
             <defs>
               {[['hyper', '#3b82f6'], ['found', '#f97316'], ['neo', '#10b981']].map(([id, color]) => (
                 <linearGradient key={id} id={`roic-${id}`} x1="0" y1="0" x2="0" y2="1">
