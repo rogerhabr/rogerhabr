@@ -86,11 +86,13 @@ export default function AddressableMarket() {
 
   const latest2024 = adjustedTAM.find(d => d.year === '2024')!;
   const latest2025 = adjustedTAM.find(d => d.year === '2025E')!;
+  const latest2026 = adjustedTAM.find(d => d.year === '2026E')!;
   const latest2027 = adjustedTAM.find(d => d.year === '2027E')!;
   const latest2028 = adjustedTAM.find(d => d.year === '2028E')!;
 
   const total2024 = latest2024.consumerApps + latest2024.apiInference + latest2024.tokenSoftware;
   const total2025 = latest2025.consumerApps + latest2025.apiInference + latest2025.tokenSoftware;
+  const total2026 = latest2026.consumerApps + latest2026.apiInference + latest2026.tokenSoftware;
   const total2027 = latest2027.consumerApps + latest2027.apiInference + latest2027.tokenSoftware;
   const total2028 = latest2028.consumerApps + latest2028.apiInference + latest2028.tokenSoftware;
 
@@ -108,29 +110,30 @@ export default function AddressableMarket() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <MetricCard
-          label="Token Economy TAM 2025" value={`$${total2025.toFixed(1)}B`}
+          label="Token Economy TAM 2025E" value={`$${total2025.toFixed(1)}B`}
           change={`+${((total2025 / total2024 - 1) * 100).toFixed(0)}% YoY`}
           changePositive accent icon="💰"
-          onClick={() => setSelectedYear('2025')}
+          onClick={() => setSelectedYear('2025E')}
+        />
+        <MetricCard
+          label="Token Economy TAM 2026E" value={`$${total2026.toFixed(0)}B`}
+          change={`+${((total2026 / total2025 - 1) * 100).toFixed(0)}% YoY`}
+          subtext={`Software: $${latest2026.tokenSoftware.toFixed(0)}B (+${((latest2026.tokenSoftware / latest2025.tokenSoftware - 1) * 100).toFixed(0)}% YoY)`}
+          changePositive icon="📈"
+          onClick={() => setSelectedYear('2026E')}
         />
         <MetricCard
           label="Token Economy TAM 2027E" value={`$${total2027.toFixed(0)}B`}
-          change={`+${((total2027 / total2025 - 1) * 100).toFixed(0)}% vs 2025`}
-          subtext={`2-yr CAGR: ${((Math.sqrt(total2027 / total2025) - 1) * 100).toFixed(0)}%/yr`}
-          changePositive icon="📈"
+          change={`+${((total2027 / total2026 - 1) * 100).toFixed(0)}% YoY`}
+          subtext={`2-yr CAGR from 2025: ${((Math.sqrt(total2027 / total2025) - 1) * 100).toFixed(0)}%/yr`}
+          changePositive icon="🚀"
           onClick={() => setSelectedYear('2027E')}
         />
         <MetricCard
           label="Token Economy TAM 2028E" value={`$${total2028.toFixed(0)}B`}
           change={`+${((total2028 / total2027 - 1) * 100).toFixed(0)}% vs 2027E`}
-          changePositive icon="🚀"
+          changePositive icon="🌐"
           onClick={() => setSelectedYear('2028E')}
-        />
-        <MetricCard
-          label="Largest Segment 2025" value="Consumer"
-          subtext={`$${latest2025.consumerApps.toFixed(1)}B (${Math.round(latest2025.consumerApps / total2025 * 100)}% share)`}
-          icon="👤"
-          onClick={() => setSelectedYear('2025')}
         />
       </div>
 
