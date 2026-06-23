@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Legend, LineChart, Line,
+  ResponsiveContainer, Legend, LineChart, Line, LabelList,
 } from 'recharts';
 import SectionHeader from '../SectionHeader';
 import MetricCard from '../MetricCard';
@@ -65,9 +65,9 @@ export default function TokenThroughput() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="GB200 Peak Throughput" value="2,230 t/s" subtext="Claude Sonnet 4 per chip" accent icon="⚡" />
-        <MetricCard label="MoE Advantage" value="~5x" subtext="DeepSeek V3 vs GPT-5 on same HW" icon="🔮" />
-        <MetricCard label="TPU v7 vs H100" value="2.0x" subtext="Throughput per chip (MoE models)" icon="📊" />
+        <MetricCard label="GB200 Peak Throughput" value="2,230 t/s" subtext="Claude Sonnet 4 per chip" accent icon="⚡" onClick={() => { setSelectedHardware('GB200'); setSelectedModel('Claude Sonnet 4'); }} />
+        <MetricCard label="MoE Advantage" value="~5x" subtext="DeepSeek V3 vs GPT-5 on same HW" icon="🔮" onClick={() => setSelectedModel('DeepSeek V3')} />
+        <MetricCard label="TPU v7 vs H100" value="2.0x" subtext="Throughput per chip (MoE models)" icon="📊" onClick={() => setSelectedHardware('TPU v7 Ironwood')} />
         <MetricCard label="Total Tokens/Day 2025" value="~850T" subtext="Global AI inference demand" icon="🌍" />
       </div>
 
@@ -79,8 +79,8 @@ export default function TokenThroughput() {
               {MODEL_KEYS.map(m => <option key={m} value={m}>{m}</option>)}
             </select>
           </div>
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={hwChartData} layout="vertical" margin={{ top: 0, right: 30, bottom: 0, left: 80 }}>
+          <ResponsiveContainer width="100%" height={340}>
+            <BarChart data={hwChartData} layout="vertical" margin={{ top: 0, right: 65, bottom: 0, left: 80 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e2a42" horizontal={false} />
               <XAxis type="number" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `${v}`} />
               <YAxis type="category" dataKey="name" tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false} width={80} />
@@ -88,7 +88,9 @@ export default function TokenThroughput() {
                 formatter={(v: number) => [`${v} tok/s`]}
                 contentStyle={{ background: '#141b2d', border: '1px solid #1e2a42', borderRadius: 8, fontSize: 12 }}
               />
-              <Bar dataKey="tokPerSec" name="Tokens/sec" fill="#f97316" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="tokPerSec" name="Tokens/sec" fill="#f97316" radius={[0, 4, 4, 0]}>
+                <LabelList dataKey="tokPerSec" position="right" fill="#94a3b8" fontSize={10} formatter={(v: number) => v.toLocaleString()} />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -100,8 +102,8 @@ export default function TokenThroughput() {
               {HARDWARE_KEYS.map(h => <option key={h} value={h}>{h}</option>)}
             </select>
           </div>
-          <ResponsiveContainer width="100%" height={240}>
-            <BarChart data={modelChartData} layout="vertical" margin={{ top: 0, right: 30, bottom: 0, left: 80 }}>
+          <ResponsiveContainer width="100%" height={340}>
+            <BarChart data={modelChartData} layout="vertical" margin={{ top: 0, right: 65, bottom: 0, left: 80 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#1e2a42" horizontal={false} />
               <XAxis type="number" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} />
               <YAxis type="category" dataKey="name" tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={false} tickLine={false} width={80} />
@@ -109,7 +111,9 @@ export default function TokenThroughput() {
                 formatter={(v: number) => [`${v} tok/s`]}
                 contentStyle={{ background: '#141b2d', border: '1px solid #1e2a42', borderRadius: 8, fontSize: 12 }}
               />
-              <Bar dataKey="tokPerSec" name="Tokens/sec" fill="#3b82f6" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="tokPerSec" name="Tokens/sec" fill="#3b82f6" radius={[0, 4, 4, 0]}>
+                <LabelList dataKey="tokPerSec" position="right" fill="#94a3b8" fontSize={10} formatter={(v: number) => v.toLocaleString()} />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
