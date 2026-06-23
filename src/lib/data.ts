@@ -85,24 +85,24 @@ export interface HardwareSpec {
 
 export const hardwareSpecs: HardwareSpec[] = [
   // ── Hopper (single chip) ──────────────────────────────────────────────────────
-  { name: 'H100',          vendor: 'NVIDIA', chip: 'H100',  fp8TFLOPS:  1979, hbmTB: 0.080, hbmBWTBs:   3.35, powerW:    700, b200Equiv:  0.31, releaseYear: 2022 },
-  { name: 'H200',          vendor: 'NVIDIA', chip: 'H200',  fp8TFLOPS:  1979, hbmTB: 0.141, hbmBWTBs:   4.80, powerW:    700, b200Equiv:  0.44, releaseYear: 2024 },
+  { name: 'H100',          vendor: 'NVIDIA', chip: 'H100',  fp8TFLOPS:  3958, hbmTB: 0.080, hbmBWTBs:   3.35, powerW:    700, b200Equiv:  0.31, releaseYear: 2022 },
+  { name: 'H200',          vendor: 'NVIDIA', chip: 'H200',  fp8TFLOPS:  3958, hbmTB: 0.141, hbmBWTBs:   4.80, powerW:    700, b200Equiv:  0.44, releaseYear: 2024 },
   // ── Blackwell (single chip) ───────────────────────────────────────────────────
   { name: 'B200',          vendor: 'NVIDIA', chip: 'B200',  fp8TFLOPS:  4500, hbmTB: 0.192, hbmBWTBs:   8.00, powerW:   1000, b200Equiv:  1.00, releaseYear: 2025 },
-  { name: 'B300',          vendor: 'NVIDIA', chip: 'B300',  fp8TFLOPS:  6750, hbmTB: 0.288, hbmBWTBs:  10.00, powerW:   1200, b200Equiv:  1.50, releaseYear: 2026 },
+  { name: 'B300',          vendor: 'NVIDIA', chip: 'B300',  fp8TFLOPS:  6750, hbmTB: 0.288, hbmBWTBs:   8.00, powerW:   1200, b200Equiv:  1.50, releaseYear: 2026 },
   // ── Grace Blackwell NVL racks (fp8TFLOPS = NVL72 rack total; GB200=720 PFLOPS per NVIDIA spec) ─
-  { name: 'GB200',          vendor: 'NVIDIA', chip: 'GB200', fp8TFLOPS: 720000, hbmTB: 8.064, hbmBWTBs: 576.00, powerW: 120000, b200Equiv: 12.50, releaseYear: 2025 },
-  { name: 'GB300',          vendor: 'NVIDIA', chip: 'GB300', fp8TFLOPS:1080000, hbmTB:12.096, hbmBWTBs: 576.00, powerW: 130000, b200Equiv: 18.75, releaseYear: 2026 },
+  { name: 'GB200',          vendor: 'NVIDIA', chip: 'GB200', fp8TFLOPS: 720000, hbmTB:13.824, hbmBWTBs: 576.00, powerW: 120000, b200Equiv: 12.50, releaseYear: 2025 },
+  { name: 'GB300',          vendor: 'NVIDIA', chip: 'GB300', fp8TFLOPS:1080000, hbmTB:20.736, hbmBWTBs: 576.00, powerW: 130000, b200Equiv: 18.75, releaseYear: 2026 },
   // ── Vera Rubin NVL72 rack (72 R100 packages / 144 dies; FP8=1.2 EFLOPS, FP4=3.6 EFLOPS; 72×22 TB/s HBM4=1,584 TB/s; 72×288 GB=20.736 TB; 190–230 kW) ──
   { name: 'VR200',          vendor: 'NVIDIA', chip: 'R100',  fp8TFLOPS:1200000, hbmTB:20.736, hbmBWTBs:1584.00, powerW: 210000, b200Equiv: 80.00, releaseYear: 2027 },
   // ── Google TPU ───────────────────────────────────────────────────────────────
   { name: 'TPU v5p',         vendor: 'Google', chip: 'TPUv5p', fp8TFLOPS:   459, hbmTB: 0.095, hbmBWTBs:   2.76, powerW:    175, b200Equiv:  0.28, releaseYear: 2023 },
   { name: 'TPU v7 Ironwood', vendor: 'Google', chip: 'TPUv7',  fp8TFLOPS:  4614, hbmTB: 0.192, hbmBWTBs:   7.37, powerW:    200, b200Equiv:  1.41, releaseYear: 2025 },
   // ── Amazon Trainium ───────────────────────────────────────────────────────────
-  { name: 'Trainium 2',      vendor: 'Amazon', chip: 'Trn2',   fp8TFLOPS:  2832, hbmTB: 0.096, hbmBWTBs:   5.12, powerW:    700, b200Equiv:  0.47, releaseYear: 2024 },
+  { name: 'Trainium 2',      vendor: 'Amazon', chip: 'Trn2',   fp8TFLOPS:  2832, hbmTB: 0.096, hbmBWTBs:   2.90, powerW:    700, b200Equiv:  0.47, releaseYear: 2024 },
   { name: 'Trainium 3',      vendor: 'Amazon', chip: 'Trn3',   fp8TFLOPS:  5664, hbmTB: 0.192, hbmBWTBs:   9.60, powerW:    700, b200Equiv:  0.94, releaseYear: 2026 },
   // ── AMD Instinct ──────────────────────────────────────────────────────────────
-  { name: 'MI300X',          vendor: 'AMD',    chip: 'MI300X', fp8TFLOPS:  2610, hbmTB: 0.192, hbmBWTBs:   5.30, powerW:    750, b200Equiv:  0.56, releaseYear: 2024 },
+  { name: 'MI300X',          vendor: 'AMD',    chip: 'MI300X', fp8TFLOPS:  2614, hbmTB: 0.192, hbmBWTBs:   5.30, powerW:    750, b200Equiv:  0.56, releaseYear: 2024 },
   { name: 'MI350X',          vendor: 'AMD',    chip: 'MI350X', fp8TFLOPS:  5220, hbmTB: 0.288, hbmBWTBs:   9.60, powerW:    750, b200Equiv:  1.09, releaseYear: 2025 },
 ];
 
