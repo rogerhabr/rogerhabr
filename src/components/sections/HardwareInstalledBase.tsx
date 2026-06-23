@@ -39,9 +39,9 @@ const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?:
 type View = 'hyperscalers' | 'foundationLabs' | 'neoclouds' | 'capex';
 
 const TIME_RANGE_YEARS: Record<string, string[]> = {
-  '2022-2025': ['2022', '2023', '2024', '2025E'],
-  '2022-2026': ['2022', '2023', '2024', '2025E', '2026E'],
-  '2022-2028': ['2022', '2023', '2024', '2025E', '2026E', '2027E', '2028E'],
+  '2022-2025': ['2022', '2023', '2024', '2025'],
+  '2022-2026': ['2022', '2023', '2024', '2025', '2026E'],
+  '2022-2028': ['2022', '2023', '2024', '2025', '2026E', '2027E', '2028E'],
 };
 
 export default function HardwareInstalledBase() {
@@ -91,15 +91,15 @@ export default function HardwareInstalledBase() {
   const hyperKeys = ['Microsoft', 'Google', 'Amazon', 'Meta', 'Oracle'];
   const labKeys = ['OpenAI', 'Anthropic', 'xAI', 'DeepSeek', 'Thinking Machines'];
   const neoKeys = ['CoreWeave', 'Nebius', 'Crusoe', 'Lambda Labs'];
-  const hyper2025 = sumRow(hyperscalerGPUs, '2025E', hyperKeys);
+  const hyper2025 = sumRow(hyperscalerGPUs, '2025', hyperKeys);
   const hyper2024 = sumRow(hyperscalerGPUs, '2024', hyperKeys);
-  const lab2025 = sumRow(foundationLabGPUs, '2025E', labKeys);
+  const lab2025 = sumRow(foundationLabGPUs, '2025', labKeys);
   const lab2024 = sumRow(foundationLabGPUs, '2024', labKeys);
-  const neo2025 = sumRow(neocloudGPUs, '2025E', neoKeys);
+  const neo2025 = sumRow(neocloudGPUs, '2025', neoKeys);
   const neo2024 = sumRow(neocloudGPUs, '2024', neoKeys);
-  const capex2025 = sumRow(hyperscalerCapex, '2025E', hyperKeys);
+  const capex2025 = sumRow(hyperscalerCapex, '2025', hyperKeys);
   const capex2024 = sumRow(hyperscalerCapex, '2024', hyperKeys);
-  const neo2025Row = neocloudGPUs.find(r => r.year === '2025E');
+  const neo2025Row = neocloudGPUs.find(r => r.year === '2025');
   const neoLeader = neo2025Row
     ? neoKeys.map(k => ({ name: k, units: (neo2025Row as unknown as Record<string, number>)[k] || 0 })).sort((a, b) => b.units - a.units)[0]
     : { name: 'CoreWeave', units: 0 };
@@ -113,10 +113,10 @@ export default function HardwareInstalledBase() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="Hyperscaler GPUs 2025E" value={fmtK(hyper2025)} change={yoyStr(hyper2025, hyper2024)} changePositive subtext={`B200-eq units (${hyperKeys.length} players)`} accent icon="🖥️" onClick={() => setView('hyperscalers')} />
-        <MetricCard label="Foundation Lab GPUs 2025E" value={fmtK(lab2025)} change={yoyStr(lab2025, lab2024)} changePositive subtext="OpenAI, Anthropic, xAI, DeepSeek" icon="🧠" onClick={() => setView('foundationLabs')} />
-        <MetricCard label="Neocloud GPUs 2025E" value={fmtK(neo2025)} change={yoyStr(neo2025, neo2024)} changePositive subtext={`${neoLeader.name} leads at ${fmtK(neoLeader.units)}`} icon="☁️" onClick={() => setView('neoclouds')} />
-        <MetricCard label="Total AI CapEx 2025E" value={`$${capex2025}B`} change={yoyStr(capex2025, capex2024)} changePositive subtext={`Big ${hyperKeys.length} hyperscalers combined`} icon="💵" onClick={() => setView('capex')} />
+        <MetricCard label="Hyperscaler GPUs 2025" value={fmtK(hyper2025)} change={yoyStr(hyper2025, hyper2024)} changePositive subtext={`B200-eq units (${hyperKeys.length} players)`} accent icon="🖥️" onClick={() => setView('hyperscalers')} />
+        <MetricCard label="Foundation Lab GPUs 2025" value={fmtK(lab2025)} change={yoyStr(lab2025, lab2024)} changePositive subtext="OpenAI, Anthropic, xAI, DeepSeek" icon="🧠" onClick={() => setView('foundationLabs')} />
+        <MetricCard label="Neocloud GPUs 2025" value={fmtK(neo2025)} change={yoyStr(neo2025, neo2024)} changePositive subtext={`${neoLeader.name} leads at ${fmtK(neoLeader.units)}`} icon="☁️" onClick={() => setView('neoclouds')} />
+        <MetricCard label="Total AI CapEx 2025" value={`$${capex2025}B`} change={yoyStr(capex2025, capex2024)} changePositive subtext={`Big ${hyperKeys.length} hyperscalers combined`} icon="💵" onClick={() => setView('capex')} />
       </div>
 
       <div className="flex gap-2 mb-4 flex-wrap">

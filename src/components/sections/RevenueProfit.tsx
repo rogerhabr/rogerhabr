@@ -64,7 +64,7 @@ export default function RevenueProfit() {
   });
 
   const r2024 = combinedData.find(d => d.year === '2024')!;
-  const r2025 = combinedData.find(d => d.year === '2025E')!;
+  const r2025 = combinedData.find(d => d.year === '2025')!;
   const r2026 = combinedData.find(d => d.year === '2026E')!;
   const r2027 = combinedData.find(d => d.year === '2027E')!;
   const r2028 = combinedData.find(d => d.year === '2028E')!;
@@ -173,7 +173,7 @@ export default function RevenueProfit() {
           <div className="grid grid-cols-4 gap-3">
             {[
               { year: '2024', rental: Math.round((r2024.rental / r2024.total) * 100), model: Math.round((r2024.model / r2024.total) * 100), software: Math.round((r2024.software / r2024.total) * 100), total: r2024.total },
-              { year: '2025E', rental: Math.round((r2025.rental / r2025.total) * 100), model: Math.round((r2025.model / r2025.total) * 100), software: Math.round((r2025.software / r2025.total) * 100), total: r2025.total },
+              { year: '2025', rental: Math.round((r2025.rental / r2025.total) * 100), model: Math.round((r2025.model / r2025.total) * 100), software: Math.round((r2025.software / r2025.total) * 100), total: r2025.total },
               { year: '2026E', rental: Math.round((r2026.rental / r2026.total) * 100), model: Math.round((r2026.model / r2026.total) * 100), software: Math.round((r2026.software / r2026.total) * 100), total: r2026.total },
               { year: '2027E', rental: Math.round((r2027.rental / r2027.total) * 100), model: Math.round((r2027.model / r2027.total) * 100), software: Math.round((r2027.software / r2027.total) * 100), total: r2027.total },
             ].map(d => (

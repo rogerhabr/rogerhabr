@@ -35,7 +35,7 @@ export default function ComputeSupplyDemand() {
   const displayUtilization = utilizationMap[utilizationLevel];
 
   const sd2024 = supplyDemandForChart.find(d => d.year === '2024');
-  const sd2025 = supplyDemandForChart.find(d => d.year === '2025E');
+  const sd2025 = supplyDemandForChart.find(d => d.year === '2025');
   const sd2027 = supplyDemandForChart.find(d => d.year === '2027E');
   const supply2025 = sd2025?.totalSupply ?? 0;
   const demand2025 = sd2025?.totalDemand ?? 0;

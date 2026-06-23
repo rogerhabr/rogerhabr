@@ -28,7 +28,7 @@ type SegmentFilter = 'all' | 'consumer' | 'api' | 'software';
 
 export default function AddressableMarket() {
   const { mult, params } = useGlobalParams();
-  const [selectedYear, setSelectedYear] = useState('2025E');
+  const [selectedYear, setSelectedYear] = useState('2025');
   const [segmentFilter, setSegmentFilter] = useState<SegmentFilter>('all');
 
   const adjustedTAM = tokenEconomyTAM.map(d => {
@@ -85,7 +85,7 @@ export default function AddressableMarket() {
   const TYPE_COLORS: Record<string, string> = { consumer: '#f97316', api: '#3b82f6', software: '#10b981' };
 
   const latest2024 = adjustedTAM.find(d => d.year === '2024')!;
-  const latest2025 = adjustedTAM.find(d => d.year === '2025E')!;
+  const latest2025 = adjustedTAM.find(d => d.year === '2025')!;
   const latest2026 = adjustedTAM.find(d => d.year === '2026E')!;
   const latest2027 = adjustedTAM.find(d => d.year === '2027E')!;
   const latest2028 = adjustedTAM.find(d => d.year === '2028E')!;
@@ -110,10 +110,10 @@ export default function AddressableMarket() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <MetricCard
-          label="Token Economy TAM 2025E" value={`$${total2025.toFixed(1)}B`}
+          label="Token Economy TAM 2025" value={`$${total2025.toFixed(1)}B`}
           change={`+${((total2025 / total2024 - 1) * 100).toFixed(0)}% YoY`}
           changePositive accent icon="💰"
-          onClick={() => setSelectedYear('2025E')}
+          onClick={() => setSelectedYear('2025')}
         />
         <MetricCard
           label="Token Economy TAM 2026E" value={`$${total2026.toFixed(0)}B`}

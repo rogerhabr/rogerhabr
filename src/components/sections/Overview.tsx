@@ -13,7 +13,7 @@ import {
 } from '@/lib/data';
 import { useGlobalParams } from '@/contexts/ParamsContext';
 
-const DISPLAY_YEARS = ['2025E', '2026E', '2027E', '2028E', '2029E', '2030E'];
+const DISPLAY_YEARS = ['2025', '2026E', '2027E', '2028E', '2029E', '2030E'];
 
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number; color: string }[]; label?: string }) => {
   if (!active || !payload?.length) return null;
@@ -51,10 +51,10 @@ const CAPEX_TOTAL = buildCapEx();
 
 export default function Overview() {
   const { mult, params, navigate } = useGlobalParams();
-  const [selectedYear, setSelectedYear] = useState('2025E');
+  const [selectedYear, setSelectedYear] = useState('2025');
 
   const tamData = tokenEconomyTAM.map(d => {
-    const isForecast = d.year !== '2024';
+    const isForecast = d.year.endsWith('E');
     const factor = isForecast ? mult.tam : 1;
     return {
       year: d.year,
@@ -66,7 +66,7 @@ export default function Overview() {
   });
 
   const revenueData = revenueByModel.map(d => {
-    const isForecast = d.year !== '2024';
+    const isForecast = d.year.endsWith('E');
     const factor = isForecast ? mult.revenue : 1;
     return {
       year: d.year,
@@ -78,7 +78,7 @@ export default function Overview() {
   });
 
   const roicData = roicByEntity.map(d => {
-    const isForecast = d.year !== '2024';
+    const isForecast = d.year.endsWith('E');
     const offset = isForecast ? mult.roicOffset : 0;
     return {
       year: d.year,
@@ -89,7 +89,7 @@ export default function Overview() {
   });
 
   const rev2030 = revenueData.find(d => d.year === '2030E');
-  const rev2025base = revenueData.find(d => d.year === '2025E');
+  const rev2025base = revenueData.find(d => d.year === '2025');
   const rev2030Total = rev2030?.total ?? 0;
   const rev2025Total = rev2025base?.total ?? 0;
   const rev2030Mult = rev2025Total > 0 ? rev2030Total / rev2025Total : 0;
@@ -207,7 +207,7 @@ export default function Overview() {
         <MetricCard
           label="AI Revenue 2030E"
           value={fmtMoney(rev2030Total)}
-          change={rev2025Total > 0 ? `+${rev2030Mult.toFixed(0)}× vs 2025E` : ''} changePositive
+          change={rev2025Total > 0 ? `+${rev2030Mult.toFixed(0)}× vs 2025` : ''} changePositive
           subtext={rev2025Total > 0 ? `5-yr CAGR: ${rev2030Cagr.toFixed(0)}%` : ''} icon="🚀"
           onClick={() => navigate('revenue-profit')}
         />
