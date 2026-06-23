@@ -56,6 +56,15 @@ export default function SaasDisruption() {
     (s, d) => s + (d.revenue2024B * d.revenueAtRiskPct) / 100, 0
   );
 
+  // Summary aggregates over the full coverage universe (independent of the active threat filter)
+  const totalAtRiskAll = saasDisruptions.reduce(
+    (s, d) => s + (d.revenue2024B * d.revenueAtRiskPct) / 100, 0
+  );
+  const criticalCompanies = saasDisruptions.filter(d => d.threatLevel === 'Critical');
+  const avgRiskPct = saasDisruptions.reduce((s, d) => s + d.revenueAtRiskPct, 0) / saasDisruptions.length;
+  const emergingArrB = tokenConsumers.reduce((s, c) => s + c.arr2025M, 0) / 1000;
+  const emergingAvgGrowth = tokenConsumers.reduce((s, c) => s + c.growthPctYoY, 0) / tokenConsumers.length;
+
   return (
     <div>
       <SectionHeader
@@ -69,10 +78,10 @@ export default function SaasDisruption() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="Traditional SAAS Revenue at Risk" value="$107B" change="Across 8 companies tracked" accent icon="⚠️" />
-        <MetricCard label="Critical Threat Companies" value="3" subtext="Adobe, Atlassian, ServiceNow" icon="🔴" />
-        <MetricCard label="Avg. Seat Revenue at Risk" value="36%" subtext="Weighted average across coverage" icon="📊" />
-        <MetricCard label="Emerging Token Co. ARR" value="$1.3B+" change="+320% YoY avg growth" changePositive subtext="8 tracked companies" icon="🚀" />
+        <MetricCard label="Traditional SAAS Revenue at Risk" value={`$${totalAtRiskAll.toFixed(0)}B`} change={`Across ${saasDisruptions.length} companies tracked`} accent icon="⚠️" />
+        <MetricCard label="Critical Threat Companies" value={`${criticalCompanies.length}`} subtext={criticalCompanies.map(d => d.company).join(', ')} icon="🔴" />
+        <MetricCard label="Avg. Seat Revenue at Risk" value={`${avgRiskPct.toFixed(0)}%`} subtext="Simple average across coverage" icon="📊" />
+        <MetricCard label="Emerging Token Co. ARR" value={`$${emergingArrB.toFixed(1)}B+`} change={`+${emergingAvgGrowth.toFixed(0)}% YoY avg growth`} changePositive subtext={`${tokenConsumers.length} tracked companies`} icon="🚀" />
       </div>
 
       <div className="flex gap-2 mb-4 flex-wrap">

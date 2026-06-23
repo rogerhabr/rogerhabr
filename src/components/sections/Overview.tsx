@@ -105,7 +105,16 @@ export default function Overview() {
   const capex = CAPEX_TOTAL[selectedYear] || 0;
   const capexPrev = CAPEX_TOTAL[prevYear] || 0;
 
+  // 2030E anchor card — derived from the same (scenario-adjusted) revenue series, vs 2025E
+  const rev2030 = revenueData.find(d => d.year === '2030E');
+  const rev2025 = revenueData.find(d => d.year === '2025E');
+  const rev2030Total = rev2030 ? rev2030.total : 0;
+  const rev2025Total = rev2025 ? rev2025.total : 0;
+  const rev2030Mult = rev2025Total > 0 ? rev2030Total / rev2025Total : 0;
+  const rev2030Cagr = rev2025Total > 0 ? (Math.pow(rev2030Total / rev2025Total, 1 / 5) - 1) * 100 : 0;
+
   const fmtPct = (curr: number, prev: number) => prev > 0 ? `+${((curr / prev - 1) * 100).toFixed(0)}% YoY` : '';
+  const fmtMoney = (b: number) => b >= 1000 ? `$${(b / 1000).toFixed(2)}T` : `$${b.toFixed(0)}B`;
   const fmtGPU = (n: number) => n >= 1000 ? `~${(n / 1000).toFixed(2)}M` : `${n}k`;
 
   return (
@@ -198,9 +207,9 @@ export default function Overview() {
         />
         <MetricCard
           label="AI Revenue 2030E"
-          value="$2.5T"
-          change="+19× vs 2025E" changePositive
-          subtext="5-yr CAGR: 80%" icon="🚀"
+          value={fmtMoney(rev2030Total)}
+          change={`+${rev2030Mult.toFixed(0)}× vs 2025E`} changePositive
+          subtext={`5-yr CAGR: ${rev2030Cagr.toFixed(0)}%`} icon="🚀"
           onClick={() => navigate('revenue-profit')}
         />
       </div>

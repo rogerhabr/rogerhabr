@@ -34,6 +34,16 @@ export default function ComputeSupplyDemand() {
   };
   const displayUtilization = utilizationMap[utilizationLevel];
 
+  // Headline metrics derived from the (scenario-adjusted) supply/demand series
+  const sd2024 = supplyDemandForChart.find(d => d.year === '2024');
+  const sd2025 = supplyDemandForChart.find(d => d.year === '2025E');
+  const sd2027 = supplyDemandForChart.find(d => d.year === '2027E');
+  const supply2025 = sd2025?.totalSupply ?? 0;
+  const demand2025 = sd2025?.totalDemand ?? 0;
+  const supplyYoY = sd2024 && sd2025 ? (sd2025.totalSupply / sd2024.totalSupply - 1) * 100 : 0;
+  const demandYoY = sd2024 && sd2025 ? (sd2025.totalDemand / sd2024.totalDemand - 1) * 100 : 0;
+  const demandCAGR = sd2024 && sd2027 ? (Math.pow(sd2027.totalDemand / sd2024.totalDemand, 1 / 3) - 1) * 100 : 0;
+
   const filteredSupplyByType = supplyByType.map(d => {
     if (demandView === 'hyperscalers') return { year: d.year, hyperscalers: d.hyperscalers, foundationLabs: 0, neoclouds: 0 };
     if (demandView === 'neoclouds') return { year: d.year, hyperscalers: 0, foundationLabs: 0, neoclouds: d.neoclouds };
@@ -65,10 +75,10 @@ export default function ComputeSupplyDemand() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="Total Supply 2025" value="7.5M EFLOPS" change="+144% YoY" changePositive subtext="B200-eq annualized" accent icon="⚡" />
-        <MetricCard label="Total Demand 2025" value="7.5M EFLOPS" change="+128% YoY" changePositive subtext="Inference + Training" icon="📊" />
-        <MetricCard label="Supply Utilization" value={`${displayUtilization}%`} change="+5pp YoY" changePositive subtext="Near tight markets" icon="📈" />
-        <MetricCard label="Demand CAGR 2024-27" value="~115%" subtext="Inference growing faster than training" icon="🚀" />
+        <MetricCard label="Total Supply 2025" value={`${supply2025.toFixed(1)}M EFLOPS`} change={`+${supplyYoY.toFixed(0)}% YoY`} changePositive subtext="B200-eq annualized" accent icon="⚡" />
+        <MetricCard label="Total Demand 2025" value={`${demand2025.toFixed(1)}M EFLOPS`} change={`+${demandYoY.toFixed(0)}% YoY`} changePositive subtext="Inference + Training" icon="📊" />
+        <MetricCard label="Supply Utilization" value={`${displayUtilization}%`} subtext="Near tight markets" icon="📈" />
+        <MetricCard label="Demand CAGR 2024-27" value={`~${demandCAGR.toFixed(0)}%`} subtext="Inference growing faster than training" icon="🚀" />
       </div>
 
       <div className="flex items-center gap-4 mb-4 flex-wrap">

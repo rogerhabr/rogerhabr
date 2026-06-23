@@ -58,6 +58,14 @@ export default function FoundationLabFinancials() {
     totalFunding[r.company] = (totalFunding[r.company] || 0) + r.amountB;
   });
 
+  // Headline figures derived from the lab data arrays (single source of truth)
+  const rev2024 = labRevenue.find(r => r.year === '2024');
+  const rev2025 = labRevenue.find(r => r.year === '2025E');
+  const val2024 = labValuations.find(r => r.year === '2024');
+  const val2025 = labValuations.find(r => r.year === '2025E');
+  const yoy = (curr?: number, prev?: number) => (curr != null && prev != null && prev !== 0)
+    ? `+${((curr / prev - 1) * 100).toFixed(0)}%` : '';
+
   return (
     <div>
       <SectionHeader
@@ -71,10 +79,10 @@ export default function FoundationLabFinancials() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="OpenAI Revenue 2025" value="$11.6B" change="+213% YoY" changePositive subtext="Largest foundation lab by revenue" accent={tab === 'revenue'} icon="🟢" onClick={() => setTab('revenue')} />
-        <MetricCard label="Anthropic Revenue 2025" value="$3.0B" change="+200% YoY" changePositive subtext="API + Claude.ai + enterprise" accent={tab === 'profitability'} icon="🟠" onClick={() => setTab('profitability')} />
+        <MetricCard label="OpenAI Revenue 2025" value={`$${rev2025?.OpenAI ?? 11.6}B`} change={`${yoy(rev2025?.OpenAI, rev2024?.OpenAI)} YoY`} changePositive subtext="Largest foundation lab by revenue" accent={tab === 'revenue'} icon="🟢" onClick={() => setTab('revenue')} />
+        <MetricCard label="Anthropic Revenue 2025" value={`$${rev2025?.Anthropic ?? 3.0}B`} change={`${yoy(rev2025?.Anthropic, rev2024?.Anthropic)} YoY`} changePositive subtext="API + Claude.ai + enterprise" accent={tab === 'profitability'} icon="🟠" onClick={() => setTab('profitability')} />
         <MetricCard label="Total Lab Funding Raised" value={`$${Object.values(totalFunding).reduce((a, b) => a + b, 0).toFixed(0)}B+`} subtext="OpenAI, Anthropic, xAI combined" accent={tab === 'funding'} icon="💰" onClick={() => setTab('funding')} />
-        <MetricCard label="OpenAI Valuation 2025" value="$340B" change="+116% vs 2024" changePositive subtext="SoftBank strategic round" accent={tab === 'valuation'} icon="🦄" onClick={() => setTab('valuation')} />
+        <MetricCard label="OpenAI Valuation 2025" value={`$${val2025?.OpenAI ?? 340}B`} change={`${yoy(val2025?.OpenAI, val2024?.OpenAI)} vs 2024`} changePositive subtext="SoftBank strategic round" accent={tab === 'valuation'} icon="🦄" onClick={() => setTab('valuation')} />
       </div>
 
       <div className="flex gap-2 mb-5">

@@ -58,6 +58,8 @@ export default function HardwareDemandForecast() {
   });
 
   const inferenceShare2025 = ((demand2025.inferenceGPUs / demand2025.total) * 100).toFixed(0);
+  const demand2023 = hardwareDemandForecast.find(d => d.year === '2023');
+  const inferenceShare2023 = demand2023 ? ((demand2023.inferenceGPUs / demand2023.total) * 100).toFixed(0) : null;
 
   const demand2025Adj = adjustedForecast.find(d => d.year === '2025E')!;
   const demand2027Adj = adjustedForecast.find(d => d.year === '2027E')!;
@@ -100,7 +102,7 @@ export default function HardwareDemandForecast() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <MetricCard label="Total GPU Demand 2025" value={`${(demand2025Adj.total / 1000).toFixed(1)}M`} change={`+${((demand2025Adj.total / demand2024.total - 1) * 100).toFixed(0)}% YoY`} changePositive subtext="B200-eq units shipped" accent icon="📦" />
-        <MetricCard label="Inference Share 2025" value={`${inferenceShare2025}%`} change="vs 65% in 2023" changePositive subtext="Inference growing faster" icon="⚡" />
+        <MetricCard label="Inference Share 2025" value={`${inferenceShare2025}%`} change={inferenceShare2023 ? `vs ${inferenceShare2023}% in 2023` : ''} changePositive subtext="Inference growing faster" icon="⚡" />
         <MetricCard label="GPU Demand 2027E" value={`${(demand2027Adj.total / 1000).toFixed(1)}M`} change={`+${((demand2027Adj.total / demand2025Adj.total - 1) * 100).toFixed(0)}% vs 2025`} changePositive subtext={`CAGR 2024–27: ${((Math.pow(demand2027Adj.total / demand2024.total, 1/3) - 1) * 100).toFixed(0)}%`} icon="📈" />
         <MetricCard label="NVIDIA Market Share 2027E" value={`${adjustedVendorShare.find(d => d.year === '2027E')?.NVIDIA ?? 70}%`} change={`${params.nvidiaSharePct}% in 2025`} subtext="AMD/Google/Amazon gaining" changePositive={false} icon="🎯" />
       </div>
