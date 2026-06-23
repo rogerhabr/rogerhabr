@@ -91,10 +91,10 @@ export default function HardwareInstalledBase() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="Hyperscaler GPUs 2025E" value="1.09M" change="+88% YoY" changePositive subtext="B200-eq units (5 players)" accent icon="🖥️" />
-        <MetricCard label="Foundation Lab GPUs 2025E" value="172k" change="+121% YoY" changePositive subtext="OpenAI, Anthropic, xAI, DeepSeek" icon="🧠" />
-        <MetricCard label="Neocloud GPUs 2025E" value="215k" change="+145% YoY" changePositive subtext="CoreWeave leads at 150k" icon="☁️" />
-        <MetricCard label="Total AI CapEx 2025E" value="$355B" change="+64% YoY" changePositive subtext="Big 5 hyperscalers combined" icon="💵" />
+        <MetricCard label="Hyperscaler GPUs 2025E" value="1.09M" change="+88% YoY" changePositive subtext="B200-eq units (5 players)" accent icon="🖥️" onClick={() => setView('hyperscalers')} />
+        <MetricCard label="Foundation Lab GPUs 2025E" value="172k" change="+121% YoY" changePositive subtext="OpenAI, Anthropic, xAI, DeepSeek" icon="🧠" onClick={() => setView('foundationLabs')} />
+        <MetricCard label="Neocloud GPUs 2025E" value="215k" change="+145% YoY" changePositive subtext="CoreWeave leads at 150k" icon="☁️" onClick={() => setView('neoclouds')} />
+        <MetricCard label="Total AI CapEx 2025E" value="$355B" change="+64% YoY" changePositive subtext="Big 5 hyperscalers combined" icon="💵" onClick={() => setView('capex')} />
       </div>
 
       <div className="flex gap-2 mb-4 flex-wrap">
