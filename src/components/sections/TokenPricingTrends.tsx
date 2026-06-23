@@ -55,7 +55,13 @@ export default function TokenPricingTrends() {
 
   const cheapestNow = modelPricing.reduce((min, m) => m.inputPerM < min.inputPerM ? m : min);
   const mostExpensiveNow = [...modelPricing].filter(m => m.date >= '2025').reduce((max, m) => m.inputPerM > max.inputPerM ? m : max);
-  const priceDropSince2023 = ((30 - cheapestNow.inputPerM) / 30 * 100).toFixed(0);
+  const peakInput2023 = priceCompression[0].frontierInput;
+  const priceDropSince2023 = ((peakInput2023 - cheapestNow.inputPerM) / peakInput2023 * 100).toFixed(0);
+  const pcActual = priceCompression.filter(d => !d.quarter.endsWith('E'));
+  const tpdNow = pcActual[pcActual.length - 1].tokensPerDollar;
+  const tpdBase = priceCompression[0].tokensPerDollar;
+  const tpdImprovement = Math.round(tpdNow / tpdBase);
+  const fmtTokens = (n: number) => n >= 1e6 ? `${(n / 1e6).toFixed(0)}M` : n >= 1e3 ? `${(n / 1e3).toFixed(0)}k` : `${n}`;
 
   return (
     <div>
@@ -71,8 +77,8 @@ export default function TokenPricingTrends() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <MetricCard
           label="Peak Input Price (2023)"
-          value="$30/1M"
-          subtext="GPT-4 8K, March 2023"
+          value={`$${peakInput2023}/1M`}
+          subtext={`Frontier — ${priceCompression[0].quarter}`}
           icon="💸"
         />
         <MetricCard
@@ -92,10 +98,10 @@ export default function TokenPricingTrends() {
         />
         <MetricCard
           label="Tokens per $1 (cheapest)"
-          value="13M+"
-          change="vs 33k in Q1 2023"
+          value={`${fmtTokens(tpdNow)}+`}
+          change={`vs ${fmtTokens(tpdBase)} in ${priceCompression[0].quarter}`}
           changePositive
-          subtext="400× improvement in 2 years"
+          subtext={`${tpdImprovement}× improvement`}
           icon="⚡"
         />
       </div>

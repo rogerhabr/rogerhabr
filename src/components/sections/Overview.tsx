@@ -88,6 +88,14 @@ export default function Overview() {
     };
   });
 
+  const rev2030 = revenueData.find(d => d.year === '2030E');
+  const rev2025base = revenueData.find(d => d.year === '2025E');
+  const rev2030Total = rev2030?.total ?? 0;
+  const rev2025Total = rev2025base?.total ?? 0;
+  const rev2030Mult = rev2025Total > 0 ? rev2030Total / rev2025Total : 0;
+  const rev2030Cagr = rev2025Total > 0 ? (Math.pow(rev2030Total / rev2025Total, 1 / 5) - 1) * 100 : 0;
+  const fmtMoney = (b: number) => b >= 1000 ? `$${(b / 1000).toFixed(2)}T` : `$${b.toFixed(0)}B`;
+
   const prevYear = DISPLAY_YEARS[DISPLAY_YEARS.indexOf(selectedYear) - 1] ?? '2024';
 
   const tam = tamData.find(d => d.year === selectedYear);
@@ -198,9 +206,9 @@ export default function Overview() {
         />
         <MetricCard
           label="AI Revenue 2030E"
-          value="$2.5T"
-          change="+19× vs 2025E" changePositive
-          subtext="5-yr CAGR: 80%" icon="🚀"
+          value={fmtMoney(rev2030Total)}
+          change={rev2025Total > 0 ? `+${rev2030Mult.toFixed(0)}× vs 2025E` : ''} changePositive
+          subtext={rev2025Total > 0 ? `5-yr CAGR: ${rev2030Cagr.toFixed(0)}%` : ''} icon="🚀"
           onClick={() => navigate('revenue-profit')}
         />
       </div>

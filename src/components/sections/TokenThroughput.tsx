@@ -40,6 +40,16 @@ export default function TokenThroughput() {
     color: w.color,
   }));
 
+  // Headline throughput metrics — all derived from throughputMatrix (single source of truth)
+  const REF_MODEL = 'Claude Sonnet 4';
+  const gb200Ref = throughputMatrix['GB200']?.[REF_MODEL] ?? 0;
+  const moeAdvantage = (throughputMatrix['GB200']?.['DeepSeek V3'] ?? 0) / (throughputMatrix['GB200']?.['GPT-5'] ?? 1);
+  const vr200Ref = throughputMatrix['VR200']?.[REF_MODEL] ?? 0;
+  const vr200Gain = gb200Ref > 0 ? vr200Ref / gb200Ref : 0;
+  const fastestSystem = HARDWARE_KEYS
+    .map(hw => ({ name: hw, tokPerSec: throughputMatrix[hw]?.[REF_MODEL] ?? 0 }))
+    .sort((a, b) => b.tokPerSec - a.tokPerSec)[0];
+
   // Hardware spec table
   const hwSpecData = hardwareSpecs.map(h => ({
     Chip: h.name,
@@ -65,10 +75,10 @@ export default function TokenThroughput() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="GB200 Peak Throughput" value="2,230 t/s" subtext="Claude Sonnet 4 per chip" accent icon="⚡" onClick={() => { setSelectedHardware('GB200'); setSelectedModel('Claude Sonnet 4'); }} />
-        <MetricCard label="MoE Advantage" value="~5x" subtext="DeepSeek V3 vs GPT-5 on same HW" icon="🔮" onClick={() => setSelectedModel('DeepSeek V3')} />
-        <MetricCard label="TPU v7 vs H100" value="2.0x" subtext="Throughput per chip (MoE models)" icon="📊" onClick={() => setSelectedHardware('TPU v7 Ironwood')} />
-        <MetricCard label="Total Tokens/Day 2025" value="~850T" subtext="Global AI inference demand" icon="🌍" />
+        <MetricCard label="GB200 Peak Throughput" value={gb200Ref > 0 ? `${gb200Ref.toLocaleString()} t/s` : '—'} subtext={`${REF_MODEL} per chip`} accent icon="⚡" onClick={() => { setSelectedHardware('GB200'); setSelectedModel(REF_MODEL); }} />
+        <MetricCard label="MoE Advantage" value={`~${moeAdvantage.toFixed(0)}x`} subtext="DeepSeek V3 vs GPT-5 on same HW" icon="🔮" onClick={() => setSelectedModel('DeepSeek V3')} />
+        <MetricCard label="VR200 vs GB200" value={`${vr200Gain.toFixed(1)}x`} subtext={`${REF_MODEL} throughput gain`} icon="📊" onClick={() => setSelectedHardware('VR200')} />
+        <MetricCard label="Fastest System" value={fastestSystem ? `${fastestSystem.tokPerSec.toLocaleString()} t/s` : '—'} subtext={fastestSystem ? `${fastestSystem.name} · ${REF_MODEL}` : ''} icon="🌍" onClick={() => fastestSystem && setSelectedHardware(fastestSystem.name)} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">

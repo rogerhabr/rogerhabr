@@ -82,6 +82,28 @@ export default function HardwareInstalledBase() {
     { key: 'Total', label: 'Total', align: 'right' as const, highlight: true },
   ];
 
+  const sumRow = (rows: { year: string; [k: string]: unknown }[], year: string, ks: string[]) => {
+    const row = rows.find(r => r.year === year);
+    return row ? ks.reduce((s, k) => s + ((row[k] as number) || 0), 0) : 0;
+  };
+  const fmtK = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(2)}M` : `${Math.round(n).toLocaleString()}k`;
+  const yoyStr = (curr: number, prev: number) => prev > 0 ? `+${((curr / prev - 1) * 100).toFixed(0)}% YoY` : '';
+  const hyperKeys = ['Microsoft', 'Google', 'Amazon', 'Meta', 'Oracle'];
+  const labKeys = ['OpenAI', 'Anthropic', 'xAI', 'DeepSeek', 'Thinking Machines'];
+  const neoKeys = ['CoreWeave', 'Nebius', 'Crusoe', 'Lambda Labs'];
+  const hyper2025 = sumRow(hyperscalerGPUs, '2025E', hyperKeys);
+  const hyper2024 = sumRow(hyperscalerGPUs, '2024', hyperKeys);
+  const lab2025 = sumRow(foundationLabGPUs, '2025E', labKeys);
+  const lab2024 = sumRow(foundationLabGPUs, '2024', labKeys);
+  const neo2025 = sumRow(neocloudGPUs, '2025E', neoKeys);
+  const neo2024 = sumRow(neocloudGPUs, '2024', neoKeys);
+  const capex2025 = sumRow(hyperscalerCapex, '2025E', hyperKeys);
+  const capex2024 = sumRow(hyperscalerCapex, '2024', hyperKeys);
+  const neo2025Row = neocloudGPUs.find(r => r.year === '2025E');
+  const neoLeader = neo2025Row
+    ? neoKeys.map(k => ({ name: k, units: (neo2025Row as unknown as Record<string, number>)[k] || 0 })).sort((a, b) => b.units - a.units)[0]
+    : { name: 'CoreWeave', units: 0 };
+
   return (
     <div>
       <SectionHeader
@@ -91,10 +113,10 @@ export default function HardwareInstalledBase() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="Hyperscaler GPUs 2025E" value="1.09M" change="+88% YoY" changePositive subtext="B200-eq units (5 players)" accent icon="🖥️" onClick={() => setView('hyperscalers')} />
-        <MetricCard label="Foundation Lab GPUs 2025E" value="172k" change="+121% YoY" changePositive subtext="OpenAI, Anthropic, xAI, DeepSeek" icon="🧠" onClick={() => setView('foundationLabs')} />
-        <MetricCard label="Neocloud GPUs 2025E" value="215k" change="+145% YoY" changePositive subtext="CoreWeave leads at 150k" icon="☁️" onClick={() => setView('neoclouds')} />
-        <MetricCard label="Total AI CapEx 2025E" value="$355B" change="+64% YoY" changePositive subtext="Big 5 hyperscalers combined" icon="💵" onClick={() => setView('capex')} />
+        <MetricCard label="Hyperscaler GPUs 2025E" value={fmtK(hyper2025)} change={yoyStr(hyper2025, hyper2024)} changePositive subtext={`B200-eq units (${hyperKeys.length} players)`} accent icon="🖥️" onClick={() => setView('hyperscalers')} />
+        <MetricCard label="Foundation Lab GPUs 2025E" value={fmtK(lab2025)} change={yoyStr(lab2025, lab2024)} changePositive subtext="OpenAI, Anthropic, xAI, DeepSeek" icon="🧠" onClick={() => setView('foundationLabs')} />
+        <MetricCard label="Neocloud GPUs 2025E" value={fmtK(neo2025)} change={yoyStr(neo2025, neo2024)} changePositive subtext={`${neoLeader.name} leads at ${fmtK(neoLeader.units)}`} icon="☁️" onClick={() => setView('neoclouds')} />
+        <MetricCard label="Total AI CapEx 2025E" value={`$${capex2025}B`} change={yoyStr(capex2025, capex2024)} changePositive subtext={`Big ${hyperKeys.length} hyperscalers combined`} icon="💵" onClick={() => setView('capex')} />
       </div>
 
       <div className="flex gap-2 mb-4 flex-wrap">
