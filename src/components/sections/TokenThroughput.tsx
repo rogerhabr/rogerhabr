@@ -8,7 +8,7 @@ import {
 import SectionHeader from '../SectionHeader';
 import MetricCard from '../MetricCard';
 import DataTable from '../DataTable';
-import { hardwareSpecs, modelSpecs, throughputMatrix, workloads, CHART_COLORS } from '@/lib/data';
+import { hardwareSpecs, throughputMatrix, workloads } from '@/lib/data';
 
 const HARDWARE_KEYS = Object.keys(throughputMatrix);
 const MODEL_KEYS = Object.keys(throughputMatrix[HARDWARE_KEYS[0]] || {});
@@ -40,15 +40,6 @@ export default function TokenThroughput() {
     color: w.color,
   }));
 
-  // Throughput matrix table
-  const matrixTableData = HARDWARE_KEYS.map(hw => {
-    const row: Record<string, unknown> = { Hardware: hw };
-    MODEL_KEYS.forEach(m => {
-      row[m] = throughputMatrix[hw][m];
-    });
-    return row;
-  });
-
   // Hardware spec table
   const hwSpecData = hardwareSpecs.map(h => ({
     Chip: h.name,
@@ -75,7 +66,7 @@ export default function TokenThroughput() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <MetricCard label="GB200 Peak Throughput" value="2,230 t/s" subtext="Claude Sonnet 4 per chip" accent icon="⚡" />
-        <MetricCard label="MoE Advantage" value="~6x" subtext="DeepSeek V3 vs GPT-5 on same HW" icon="🔮" />
+        <MetricCard label="MoE Advantage" value="~5x" subtext="DeepSeek V3 vs GPT-5 on same HW" icon="🔮" />
         <MetricCard label="TPU v7 vs H100" value="2.0x" subtext="Throughput per chip (MoE models)" icon="📊" />
         <MetricCard label="Total Tokens/Day 2025" value="~850T" subtext="Global AI inference demand" icon="🌍" />
       </div>

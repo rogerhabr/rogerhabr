@@ -47,7 +47,6 @@ const TIME_RANGE_YEARS: Record<string, string[]> = {
 export default function HardwareInstalledBase() {
   const [view, setView] = useState<View>('hyperscalers');
   const [timeRange, setTimeRange] = useState('2022-2028');
-  const [gpuMetric, setGpuMetric] = useState('units');
 
   const tabs: { id: View; label: string }[] = [
     { id: 'hyperscalers', label: 'Hyperscalers' },
@@ -92,7 +91,7 @@ export default function HardwareInstalledBase() {
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <MetricCard label="Hyperscaler GPUs 2025E" value="1.40M" change="+86% YoY" changePositive subtext="B200-eq units (5 players)" accent icon="🖥️" />
+        <MetricCard label="Hyperscaler GPUs 2025E" value="1.09M" change="+88% YoY" changePositive subtext="B200-eq units (5 players)" accent icon="🖥️" />
         <MetricCard label="Foundation Lab GPUs 2025E" value="172k" change="+121% YoY" changePositive subtext="OpenAI, Anthropic, xAI, DeepSeek" icon="🧠" />
         <MetricCard label="Neocloud GPUs 2025E" value="215k" change="+145% YoY" changePositive subtext="CoreWeave leads at 150k" icon="☁️" />
         <MetricCard label="Total AI CapEx 2025E" value="$355B" change="+64% YoY" changePositive subtext="Big 5 hyperscalers combined" icon="💵" />
@@ -124,16 +123,6 @@ export default function HardwareInstalledBase() {
             { value: '2022-2028', label: '2022–2028E (full)' },
           ]}
           onChange={setTimeRange}
-        />
-        <ParamControl
-          label="GPU Metric"
-          value={gpuMetric}
-          options={[
-            { value: 'units', label: 'B200-eq Units' },
-            { value: 'tflops', label: 'Raw TFLOPS' },
-            { value: 'dollar-year', label: '$/Unit-Year' },
-          ]}
-          onChange={setGpuMetric}
         />
       </div>
 

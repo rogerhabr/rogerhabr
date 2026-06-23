@@ -18,7 +18,7 @@ export default function HardwareDemandForecast() {
   const [vendor, setVendor] = useState('all');
 
   const demand2024 = hardwareDemandForecast.find(d => d.year === '2024')!;
-  const demand2025 = hardwareDemandForecast.find(d => d.year === '2025')!;
+  const demand2025 = hardwareDemandForecast.find(d => d.year === '2025E')!;
   const demand2027 = hardwareDemandForecast.find(d => d.year === '2027E')!;
   const demand2028 = hardwareDemandForecast.find(d => d.year === '2028E')!;
 
@@ -59,7 +59,7 @@ export default function HardwareDemandForecast() {
 
   const inferenceShare2025 = ((demand2025.inferenceGPUs / demand2025.total) * 100).toFixed(0);
 
-  const demand2025Adj = adjustedForecast.find(d => d.year === '2025')!;
+  const demand2025Adj = adjustedForecast.find(d => d.year === '2025E')!;
   const demand2027Adj = adjustedForecast.find(d => d.year === '2027E')!;
 
   const tableData = adjustedForecast.map((d, i) => ({

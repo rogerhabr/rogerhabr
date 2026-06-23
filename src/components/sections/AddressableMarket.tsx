@@ -28,7 +28,7 @@ type SegmentFilter = 'all' | 'consumer' | 'api' | 'software';
 
 export default function AddressableMarket() {
   const { mult, params } = useGlobalParams();
-  const [selectedYear, setSelectedYear] = useState('2025');
+  const [selectedYear, setSelectedYear] = useState('2025E');
   const [segmentFilter, setSegmentFilter] = useState<SegmentFilter>('all');
 
   const adjustedTAM = tokenEconomyTAM.map(d => {
@@ -85,7 +85,7 @@ export default function AddressableMarket() {
   const TYPE_COLORS: Record<string, string> = { consumer: '#f97316', api: '#3b82f6', software: '#10b981' };
 
   const latest2024 = adjustedTAM.find(d => d.year === '2024')!;
-  const latest2025 = adjustedTAM.find(d => d.year === '2025')!;
+  const latest2025 = adjustedTAM.find(d => d.year === '2025E')!;
   const latest2027 = adjustedTAM.find(d => d.year === '2027E')!;
   const latest2028 = adjustedTAM.find(d => d.year === '2028E')!;
 
