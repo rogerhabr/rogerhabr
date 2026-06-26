@@ -1,7 +1,7 @@
 'use client';
 
 import { useGlobalParams } from '@/contexts/ParamsContext';
-import { useLiveData } from '@/hooks/useLiveData';
+import { useLiveData, StalenessSeverity } from '@/hooks/useLiveData';
 import { Scenario } from '@/lib/params';
 
 const SCENARIO_STYLES: Record<Scenario, { active: string; inactive: string; label: string }> = {
@@ -22,21 +22,33 @@ const SCENARIO_STYLES: Record<Scenario, { active: string; inactive: string; labe
   },
 };
 
+const SEVERITY_COLORS: Record<StalenessSeverity, string> = {
+  fresh:   'text-green-400',
+  aging:   'text-yellow-400',
+  stale:   'text-red-400',
+  unknown: 'text-slate-500',
+};
+
+const SEVERITY_DOT: Record<StalenessSeverity, string> = {
+  fresh:   'bg-green-400',
+  aging:   'bg-yellow-400',
+  stale:   'bg-red-400',
+  unknown: 'bg-slate-500',
+};
+
+function fmtAge(hours: number | null): string {
+  if (hours === null) return 'unknown';
+  if (hours < 1) return `${Math.round(hours * 60)}m ago`;
+  if (hours < 24) return `${Math.round(hours)}h ago`;
+  return `${Math.round(hours / 24)}d ago`;
+}
+
 export default function ScenarioBar() {
   const { params, setScenario } = useGlobalParams();
-  const { liveData, liveLoaded } = useLiveData();
+  const { liveData, liveLoaded, ageHours, severity } = useLiveData();
 
   const nvda = liveData.stocks['NVDA'];
   const scenarios: Scenario[] = ['bear', 'base', 'bull'];
-
-  const formatDate = (iso: string | null) => {
-    if (!iso) return null;
-    try {
-      return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    } catch {
-      return null;
-    }
-  };
 
   return (
     <div className="fixed top-14 left-64 right-0 h-10 bg-sa-surface border-b border-sa-border px-6 flex items-center gap-4 text-xs z-10">
@@ -75,10 +87,15 @@ export default function ScenarioBar() {
 
       <div className="ml-auto flex items-center gap-2">
         {!liveLoaded ? (
-          <span className="text-sa-muted">Live data: loading...</span>
+          <span className="text-sa-muted">Live data: loading…</span>
         ) : liveData.lastUpdated ? (
-          <span className="text-sa-muted">
-            Live data: <span className="text-slate-400">{formatDate(liveData.lastUpdated)}</span>
+          <span className="flex items-center gap-1.5">
+            <span className={`w-2 h-2 rounded-full ${liveLoaded ? SEVERITY_DOT[severity] : 'bg-slate-500'}`} />
+            <span className={`text-xs font-medium ${SEVERITY_COLORS[severity]}`}>
+              {fmtAge(ageHours)}
+              {severity === 'stale' && ' — stale'}
+            </span>
+            <span className="text-sa-muted text-xs">· refreshes 6AM UTC</span>
           </span>
         ) : (
           <span className="text-sa-muted">Live data: not yet fetched</span>

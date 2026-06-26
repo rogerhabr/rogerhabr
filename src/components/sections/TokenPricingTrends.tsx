@@ -9,21 +9,51 @@ import SectionHeader from '../SectionHeader';
 import MetricCard from '../MetricCard';
 import DataTable from '../DataTable';
 import { modelPricing, priceCompression } from '@/lib/data';
+import { useLiveData } from '@/hooks/useLiveData';
 
 const PROVIDER_COLORS: Record<string, string> = {
-  OpenAI:    '#10b981',
-  Anthropic: '#f97316',
-  Google:    '#4285f4',
-  DeepSeek:  '#3b82f6',
-  Meta:      '#0668e1',
-  Moonshot:  '#8b5cf6',
+  OpenAI:     '#10b981',
+  Anthropic:  '#f97316',
+  Google:     '#4285f4',
+  DeepSeek:   '#3b82f6',
+  Meta:       '#0668e1',
+  Moonshot:   '#8b5cf6',
+  'Mistral AI': '#ec4899',
+  xAI:        '#a855f7',
+  Cohere:     '#06b6d4',
+};
+
+type PricingRow = {
+  model: string;
+  provider: string;
+  inputPerM: number;
+  outputPerM: number;
+  contextK: number;
+  quarter: string;
+  date: string;
 };
 
 export default function TokenPricingTrends() {
   const [view, setView] = useState<'compression' | 'scatter' | 'table'>('compression');
+  const { liveData, liveLoaded, ageHours } = useLiveData();
+
+  // Live model pricing (preferred) vs static fallback
+  const livePricing: PricingRow[] = liveLoaded && Object.keys(liveData.modelPricing).length > 0
+    ? Object.entries(liveData.modelPricing).map(([, entry]) => ({
+        model:    entry.displayName,
+        provider: entry.provider,
+        inputPerM:  entry.inputPerM,
+        outputPerM: entry.outputPerM,
+        contextK:   entry.contextK ?? 128,
+        quarter: 'Live',
+        date: liveData.lastUpdated?.slice(0, 10) ?? '2026',
+      }))
+    : modelPricing;
+
+  const activePricing = livePricing.length > 0 ? livePricing : modelPricing;
 
   // Annotate each pricing point with a numeric x for scatter
-  const scatterData = modelPricing.map((m, i) => ({
+  const scatterData = activePricing.map((m, i) => ({
     ...m,
     blended: (m.inputPerM + m.outputPerM) / 2,
     ratio: m.outputPerM / m.inputPerM,
@@ -36,9 +66,13 @@ export default function TokenPricingTrends() {
     millionTokensPerDollar: 1 / d.cheapestInput,
   }));
 
-  // Latest snapshot for the table
-  const latestByModel = [...modelPricing].reverse().reduce<Record<string, typeof modelPricing[0]>>(
-    (acc, m) => { if (!acc[m.model]) acc[m.model] = m; return acc; }, {}
+  // Latest snapshot for the table: dedupe by model display name
+  const latestByModel = activePricing.reduce<Record<string, PricingRow>>(
+    (acc, m) => {
+      const key = m.model;
+      if (!acc[key] || m.inputPerM < acc[key].inputPerM) acc[key] = m;
+      return acc;
+    }, {}
   );
   const tableData = Object.values(latestByModel)
     .sort((a, b) => a.inputPerM - b.inputPerM)
@@ -48,13 +82,12 @@ export default function TokenPricingTrends() {
       'Context (K)': m.contextK,
       'Input $/1M': `$${m.inputPerM.toFixed(3)}`,
       'Output $/1M': `$${m.outputPerM.toFixed(2)}`,
-      'Output/Input Ratio': `${(m.outputPerM / m.inputPerM).toFixed(1)}x`,
+      'Out/In Ratio': `${(m.outputPerM / m.inputPerM).toFixed(1)}×`,
       'Blended $/1M': `$${((m.inputPerM + m.outputPerM) / 2).toFixed(2)}`,
       'As of': m.quarter,
     }));
 
-  const cheapestNow = modelPricing.reduce((min, m) => m.inputPerM < min.inputPerM ? m : min);
-  const mostExpensiveNow = [...modelPricing].filter(m => m.date >= '2025').reduce((max, m) => m.inputPerM > max.inputPerM ? m : max);
+  const cheapestNow = activePricing.reduce((min, m) => m.inputPerM < min.inputPerM ? m : min);
   const peakInput2023 = priceCompression[0].frontierInput;
   const priceDropSince2023 = ((peakInput2023 - cheapestNow.inputPerM) / peakInput2023 * 100).toFixed(0);
   const pcActual = priceCompression.filter(d => !d.quarter.endsWith('E'));
@@ -63,6 +96,11 @@ export default function TokenPricingTrends() {
   const tpdImprovement = Math.round(tpdNow / tpdBase);
   const fmtTokens = (n: number) => n >= 1e6 ? `${(n / 1e6).toFixed(0)}M` : n >= 1e3 ? `${(n / 1e3).toFixed(0)}k` : `${n}`;
 
+  const fmtAge = (h: number | null) => h === null ? '' : h < 1 ? `${Math.round(h * 60)}m ago` : h < 24 ? `${Math.round(h)}h ago` : `${Math.round(h / 24)}d ago`;
+  const pricingSource = liveLoaded && livePricing.length > 0
+    ? `${livePricing.length} live models · ${fmtAge(ageHours)}`
+    : 'static snapshot';
+
   return (
     <div>
       <SectionHeader
@@ -70,6 +108,7 @@ export default function TokenPricingTrends() {
         subtitle="Price compression in AI inference APIs — from $30/1M tokens in 2023 to sub-$0.10/1M for commodity models. Tracks input/output pricing across OpenAI, Anthropic, Google, DeepSeek, and Meta. Falling prices are the single biggest driver of AI adoption growth."
         badge="Pricing Model"
         sources={[
+          { type: 'actual', label: `Live: LiteLLM model registry (${pricingSource})` },
           { type: 'actual', label: 'API Docs: Anthropic / OpenAI / Google', url: 'https://www.anthropic.com/pricing' },
         ]}
       />
@@ -256,36 +295,29 @@ export default function TokenPricingTrends() {
           </div>
 
           <div className="bg-sa-card rounded-xl border border-sa-border p-4">
-            <h3 className="text-sm font-semibold text-white mb-4">Input Price by Provider ($/1M, current)</h3>
+            <h3 className="text-sm font-semibold text-white mb-4">Input Price by Model ($/1M, current top 14)</h3>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart
-                data={[...Object.values(
-                  modelPricing.reduce<Record<string, typeof modelPricing[0]>>((acc, m) => {
-                    if (!acc[m.model] || m.date > acc[m.model].date) acc[m.model] = m;
-                    return acc;
-                  }, {})
-                )].sort((a, b) => b.inputPerM - a.inputPerM).slice(0, 12)}
-                layout="vertical"
-                margin={{ top: 0, right: 40, bottom: 0, left: 120 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#1e2a42" horizontal={false} />
-                <XAxis type="number" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}`} />
-                <YAxis type="category" dataKey="model" tick={{ fill: '#94a3b8', fontSize: 10 }} axisLine={false} tickLine={false} width={120} />
-                <Tooltip
-                  formatter={(v: number) => [`$${v.toFixed(3)}/1M tokens`]}
-                  contentStyle={{ background: '#141b2d', border: '1px solid #1e2a42', borderRadius: 8, fontSize: 12 }}
-                />
-                <Bar dataKey="inputPerM" name="Input $/1M" radius={[0, 4, 4, 0]}>
-                  {[...Object.values(
-                    modelPricing.reduce<Record<string, typeof modelPricing[0]>>((acc, m) => {
-                      if (!acc[m.model] || m.date > acc[m.model].date) acc[m.model] = m;
-                      return acc;
-                    }, {})
-                  )].sort((a, b) => b.inputPerM - a.inputPerM).slice(0, 12).map((entry, i) => (
-                    <Cell key={i} fill={PROVIDER_COLORS[entry.provider] || '#64748b'} />
-                  ))}
-                </Bar>
-              </BarChart>
+              {(() => {
+                const top14 = Object.values(latestByModel)
+                  .sort((a, b) => b.inputPerM - a.inputPerM)
+                  .slice(0, 14);
+                return (
+                  <BarChart data={top14} layout="vertical" margin={{ top: 0, right: 40, bottom: 0, left: 120 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1e2a42" horizontal={false} />
+                    <XAxis type="number" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}`} />
+                    <YAxis type="category" dataKey="model" tick={{ fill: '#94a3b8', fontSize: 10 }} axisLine={false} tickLine={false} width={120} />
+                    <Tooltip
+                      formatter={(v: number) => [`$${v.toFixed(3)}/1M tokens`]}
+                      contentStyle={{ background: '#141b2d', border: '1px solid #1e2a42', borderRadius: 8, fontSize: 12 }}
+                    />
+                    <Bar dataKey="inputPerM" name="Input $/1M" radius={[0, 4, 4, 0]}>
+                      {top14.map((entry, i) => (
+                        <Cell key={i} fill={PROVIDER_COLORS[entry.provider] || '#64748b'} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                );
+              })()}
             </ResponsiveContainer>
           </div>
         </div>
@@ -293,14 +325,14 @@ export default function TokenPricingTrends() {
 
       {view === 'table' && (
         <DataTable
-          title="Current Model Pricing (most recent snapshot per model)"
+          title={`Current Model Pricing — ${Object.keys(latestByModel).length} models (${pricingSource})`}
           columns={[
             { key: 'Model', label: 'Model', align: 'left' },
             { key: 'Provider', label: 'Provider', align: 'left' },
             { key: 'Context (K)', label: 'Context', align: 'right' },
             { key: 'Input $/1M', label: 'Input $/1M', align: 'right', highlight: true },
             { key: 'Output $/1M', label: 'Output $/1M', align: 'right', highlight: true },
-            { key: 'Output/Input Ratio', label: 'Out/In Ratio', align: 'right' },
+            { key: 'Out/In Ratio', label: 'Out/In', align: 'right' },
             { key: 'Blended $/1M', label: 'Blended', align: 'right' },
             { key: 'As of', label: 'As of', align: 'left' },
           ]}
