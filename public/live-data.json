@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-26T03:50:50.799Z",
+  "lastUpdated": "2026-06-26T03:53:01.800Z",
   "sources": {
     "stocks": "Yahoo Finance API",
     "capex": "SEC EDGAR XBRL API — 10-K PaymentsToAcquirePropertyPlantAndEquipment",
@@ -1738,13 +1738,7 @@
       "contextK": 1000
     }
   },
-  "nvdaFinancials": {
-    "latestQuarterRevenue": 81615,
-    "prevQuarterRevenue": 57006,
-    "qoqGrowthPct": 43.2,
-    "periodEnd": "2026-04-26",
-    "period": "10-Q"
-  },
+  "nvdaFinancials": null,
   "corewaveFinancials": null,
   "gpuCloud": {
     "azureH100PerHour": null,
