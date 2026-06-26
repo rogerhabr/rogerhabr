@@ -51,6 +51,8 @@ export interface LiveData {
   corewaveFinancials: NvdaFinancials | null;
 }
 
+export type StalenessSeverity = 'fresh' | 'aging' | 'stale' | 'unknown';
+
 const EMPTY: LiveData = {
   lastUpdated: null,
   sources: {},
@@ -62,6 +64,24 @@ const EMPTY: LiveData = {
   nvdaFinancials: null,
   corewaveFinancials: null,
 };
+
+function hoursAgo(iso: string | null): number | null {
+  if (!iso) return null;
+  try {
+    const ms = Date.now() - new Date(iso).getTime();
+    return ms / (1000 * 60 * 60);
+  } catch {
+    return null;
+  }
+}
+
+function staleness(iso: string | null): StalenessSeverity {
+  const h = hoursAgo(iso);
+  if (h === null) return 'unknown';
+  if (h < 12) return 'fresh';
+  if (h < 26) return 'aging';
+  return 'stale';
+}
 
 export function useLiveData() {
   const [data, setData] = useState<LiveData>(EMPTY);
@@ -75,5 +95,8 @@ export function useLiveData() {
       .catch(() => setLoaded(true));
   }, []);
 
-  return { liveData: data, liveLoaded: loaded };
+  const ageHours = hoursAgo(data.lastUpdated);
+  const severity = staleness(data.lastUpdated);
+
+  return { liveData: data, liveLoaded: loaded, ageHours, severity };
 }

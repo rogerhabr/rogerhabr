@@ -492,11 +492,23 @@ async function fetchNVDAFinancials() {
     return null;
   }
 
-  // Sort by end date descending
-  quarterlyEntries.sort((a, b) => b.end.localeCompare(a.end));
+  // Filter to true single-quarter entries only (78–100 days between start and end).
+  // 10-Q filings often contain both standalone 3-month figures and cumulative YTD figures
+  // (6-month, 9-month) tagged with the same period end date. Without this filter the
+  // sorter above picks the YTD value, inflating the quarterly number by 2–3×.
+  const trueQuarterly = quarterlyEntries.filter(i => {
+    if (!i.start) return true; // no start date — can't filter, keep it
+    const days = (new Date(i.end) - new Date(i.start)) / (1000 * 60 * 60 * 24);
+    return days >= 78 && days <= 105;
+  });
+  const filteredEntries = trueQuarterly.length > 0 ? trueQuarterly : quarterlyEntries;
+  log(`  NVDA: ${quarterlyEntries.length} total 10-Q entries → ${filteredEntries.length} single-quarter entries after duration filter`);
 
-  const latest = quarterlyEntries[0];
-  const prev   = quarterlyEntries[1] ?? null;
+  // Sort by end date descending
+  filteredEntries.sort((a, b) => b.end.localeCompare(a.end));
+
+  const latest = filteredEntries[0];
+  const prev   = filteredEntries[1] ?? null;
 
   const latestRevM = +(latest.val / 1e6).toFixed(1);
   const prevRevM   = prev ? +(prev.val / 1e6).toFixed(1) : null;
@@ -576,10 +588,19 @@ async function fetchCorewaveFinancials() {
     return null;
   }
 
-  quarterlyEntries.sort((a, b) => b.end.localeCompare(a.end));
+  // Same single-quarter duration filter as NVDA to avoid YTD cumulative values.
+  const trueQuarterly = quarterlyEntries.filter(i => {
+    if (!i.start) return true;
+    const days = (new Date(i.end) - new Date(i.start)) / (1000 * 60 * 60 * 24);
+    return days >= 78 && days <= 105;
+  });
+  const filteredEntries = trueQuarterly.length > 0 ? trueQuarterly : quarterlyEntries;
+  log(`  CoreWeave: ${quarterlyEntries.length} total 10-Q entries → ${filteredEntries.length} single-quarter entries after duration filter`);
 
-  const latest = quarterlyEntries[0];
-  const prev   = quarterlyEntries[1] ?? null;
+  filteredEntries.sort((a, b) => b.end.localeCompare(a.end));
+
+  const latest = filteredEntries[0];
+  const prev   = filteredEntries[1] ?? null;
 
   const latestRevM = +(latest.val / 1e6).toFixed(1);
   const prevRevM   = prev ? +(prev.val / 1e6).toFixed(1) : null;
@@ -715,6 +736,32 @@ async function main() {
   log(`\n  Core fetches: ${successCount}/${totalFetches} stock/capex data points`);
   log(`  GPU types: ${gpuCount}, Models: ${modelCount}`);
   log(`  Finished: ${new Date().toISOString()}`);
+
+  // ── Data validation ───────────────────────────────────────────────────────
+  // Sanity-check critical values before writing. Out-of-range values are nulled
+  // so the UI falls back to static model data rather than showing garbage.
+  const VALIDATION = {
+    nvdaRevenueMinM: 20_000,  // $20B/quarter minimum (NVDA's lowest recent Q)
+    nvdaRevenueMaxM: 90_000,  // $90B/quarter maximum
+    stockPriceMin:   0.01,
+  };
+
+  if (result.nvdaFinancials?.latestQuarterRevenue != null) {
+    const rev = result.nvdaFinancials.latestQuarterRevenue;
+    if (rev < VALIDATION.nvdaRevenueMinM || rev > VALIDATION.nvdaRevenueMaxM) {
+      logE(`  VALIDATION FAIL: NVDA quarterly revenue $${rev}M is outside expected range $${VALIDATION.nvdaRevenueMinM}M–$${VALIDATION.nvdaRevenueMaxM}M — likely YTD cumulative. Nulling.`);
+      result.nvdaFinancials = null;
+    } else {
+      log(`  VALIDATION OK: NVDA quarterly revenue $${rev}M is within expected range.`);
+    }
+  }
+
+  for (const [sym, stock] of Object.entries(result.stocks)) {
+    if (stock?.price != null && stock.price < VALIDATION.stockPriceMin) {
+      logE(`  VALIDATION FAIL: ${sym} stock price $${stock.price} too low — nulling.`);
+      result.stocks[sym] = null;
+    }
+  }
 
   writeFileSync('public/live-data.json', JSON.stringify(result, null, 2));
   log('\n  Written to public/live-data.json');
