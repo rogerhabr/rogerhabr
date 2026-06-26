@@ -51,7 +51,7 @@ export default function ScenarioBar() {
   const scenarios: Scenario[] = ['bear', 'base', 'bull'];
 
   return (
-    <div className="fixed top-14 left-64 right-0 h-10 bg-sa-surface border-b border-sa-border px-6 flex items-center gap-4 text-xs z-10">
+    <div className="fixed top-14 left-0 md:left-64 right-0 h-10 bg-sa-surface border-b border-sa-border px-4 md:px-6 flex items-center gap-2 md:gap-4 text-xs z-10">
       <span className="text-sa-muted font-medium">Scenario:</span>
       <div className="flex items-center gap-1">
         {scenarios.map(s => {

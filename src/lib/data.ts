@@ -71,7 +71,7 @@ export const hyperscalerCapex = [
   { year: '2022', Microsoft: 22, Google: 25, Amazon: 32, Meta: 15, Oracle: 4  },
   { year: '2023', Microsoft: 28, Google: 32, Amazon: 48, Meta: 28, Oracle: 8  },
   { year: '2024', Microsoft: 53, Google: 52, Amazon: 75, Meta: 38, Oracle: 14 },
-  { year: '2025',Microsoft: 80, Google: 75, Amazon:105, Meta: 65, Oracle: 30 },
+  { year: '2025', Microsoft: 65, Google: 91, Amazon: 105, Meta: 70, Oracle: 30 },
   { year: '2026E',Microsoft:115, Google:108, Amazon:138, Meta: 92, Oracle: 50 },
   { year: '2027E',Microsoft:150, Google:143, Amazon:175, Meta:120, Oracle: 70 },
   { year: '2028E',Microsoft:190, Google:185, Amazon:215, Meta:155, Oracle: 90 },

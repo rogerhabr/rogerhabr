@@ -13,6 +13,12 @@ import {
   hyperscalerGPUs, hyperscalerColors, foundationLabGPUs, foundationLabColors,
   neocloudGPUs, neocloudColors, hyperscalerCapex,
 } from '@/lib/data';
+import { useLiveData } from '@/hooks/useLiveData';
+
+// Ticker → company name mapping for live capex data
+const TICKER_TO_COMPANY: Record<string, string> = {
+  MSFT: 'Microsoft', GOOGL: 'Google', AMZN: 'Amazon', META: 'Meta', ORCL: 'Oracle',
+};
 
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number; color: string }[]; label?: string }) => {
   if (!active || !payload?.length) return null;
@@ -47,6 +53,7 @@ const TIME_RANGE_YEARS: Record<string, string[]> = {
 export default function HardwareInstalledBase() {
   const [view, setView] = useState<View>('hyperscalers');
   const [timeRange, setTimeRange] = useState('2022-2028');
+  const { liveData, liveLoaded } = useLiveData();
 
   const tabs: { id: View; label: string }[] = [
     { id: 'hyperscalers', label: 'Hyperscalers' },
@@ -97,8 +104,21 @@ export default function HardwareInstalledBase() {
   const lab2024 = sumRow(foundationLabGPUs, '2024', labKeys);
   const neo2025 = sumRow(neocloudGPUs, '2025', neoKeys);
   const neo2024 = sumRow(neocloudGPUs, '2024', neoKeys);
-  const capex2025 = sumRow(hyperscalerCapex, '2025', hyperKeys);
-  const capex2024 = sumRow(hyperscalerCapex, '2024', hyperKeys);
+  // Live CapEx: sum available SEC EDGAR 10-K values; fall back per-company to static where null
+  const staticCapex2025 = sumRow(hyperscalerCapex, '2025', hyperKeys);
+  const staticCapex2024 = sumRow(hyperscalerCapex, '2024', hyperKeys);
+  const liveCapex2025 = liveLoaded
+    ? Object.entries(TICKER_TO_COMPANY).reduce((sum, [ticker, company]) => {
+        const lv = liveData.capex[ticker]?.value;
+        const sv = (hyperscalerCapex.find(r => r.year === '2025') as unknown as Record<string, number>)?.[company] ?? 0;
+        return sum + (lv != null ? lv : sv);
+      }, 0)
+    : staticCapex2025;
+  const capex2025 = Math.round(liveCapex2025);
+  const capex2024 = staticCapex2024;
+  const capexSource = liveLoaded && Object.values(liveData.capex).some(v => v != null)
+    ? 'SEC EDGAR 10-K (live)'
+    : 'Model estimate';
   const neo2025Row = neocloudGPUs.find(r => r.year === '2025');
   const neoLeader = neo2025Row
     ? neoKeys.map(k => ({ name: k, units: (neo2025Row as unknown as Record<string, number>)[k] || 0 })).sort((a, b) => b.units - a.units)[0]
@@ -116,7 +136,7 @@ export default function HardwareInstalledBase() {
         <MetricCard label="Hyperscaler GPUs 2025" value={fmtK(hyper2025)} change={yoyStr(hyper2025, hyper2024)} changePositive subtext={`B200-eq units (${hyperKeys.length} players)`} accent icon="🖥️" onClick={() => setView('hyperscalers')} />
         <MetricCard label="Foundation Lab GPUs 2025" value={fmtK(lab2025)} change={yoyStr(lab2025, lab2024)} changePositive subtext="OpenAI, Anthropic, xAI, DeepSeek" icon="🧠" onClick={() => setView('foundationLabs')} />
         <MetricCard label="Neocloud GPUs 2025" value={fmtK(neo2025)} change={yoyStr(neo2025, neo2024)} changePositive subtext={`${neoLeader.name} leads at ${fmtK(neoLeader.units)}`} icon="☁️" onClick={() => setView('neoclouds')} />
-        <MetricCard label="Total AI CapEx 2025" value={`$${capex2025}B`} change={yoyStr(capex2025, capex2024)} changePositive subtext={`Big ${hyperKeys.length} hyperscalers combined`} icon="💵" onClick={() => setView('capex')} />
+        <MetricCard label="Total AI CapEx 2025" value={`$${capex2025}B`} change={yoyStr(capex2025, capex2024)} changePositive subtext={capexSource} icon="💵" onClick={() => setView('capex')} />
       </div>
 
       <div className="flex gap-2 mb-4 flex-wrap">
