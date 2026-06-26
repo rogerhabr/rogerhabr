@@ -176,20 +176,27 @@ async function fetchSECCapex(company, cik) {
 
 // ── GPU catalog — canonical names and regex matchers ─────────────────────────
 
+// GPU_CATALOG: ordered most-specific first so a more precise match wins over a broad one.
 const GPU_CATALOG = [
-  { name: 'H100',        patterns: [/h100[._-]?sxm/i] },
-  { name: 'H200',        patterns: [/h200/i] },
+  { name: 'GB300',       patterns: [/gb300/i] },
+  { name: 'GB200',       patterns: [/gb200/i, /nvl72/i] },
+  { name: 'VR200',       patterns: [/vera.?rubin/i, /vr200/i] },
+  { name: 'B300',        patterns: [/\bb300\b/i] },
   { name: 'B200',        patterns: [/\bb200\b/i] },
-  { name: 'GB200', patterns: [/gb200/i, /nvl72/i] },
-  { name: 'VR200', patterns: [/vera.?rubin/i, /vr200/i, /r100\b/i] },
-  { name: 'A100 SXM4',   patterns: [/a100[._-]?(sxm|80gb)/i] },
-  { name: 'A100 PCIe',   patterns: [/a100[._-]?pcie/i] },
-  { name: 'A10',         patterns: [/\ba10g?\b/i] },
+  { name: 'H200',        patterns: [/\bh200\b/i] },
+  // H100 — match any variant (SXM4, PCIe, 80gb) since cloud providers offer all
+  { name: 'H100',        patterns: [/\bh100\b/i] },
+  { name: 'A100 SXM4',   patterns: [/a100[._\s-]?(sxm4?|sxm|80gb)/i] },
+  { name: 'A100 PCIe',   patterns: [/a100[._\s-]?(pcie|40gb)/i] },
+  { name: 'A100',        patterns: [/\ba100\b/i] },
   { name: 'L40S',        patterns: [/\bl40s\b/i] },
+  { name: 'L40',         patterns: [/\bl40\b(?!s)/i] },
   { name: 'L4',          patterns: [/\bl4\b/i] },
+  { name: 'A10',         patterns: [/\ba10g?\b/i] },
   { name: 'RTX 4090',    patterns: [/4090/i] },
-  { name: 'MI300X',      patterns: [/mi300x/i] },
   { name: 'MI350X',      patterns: [/mi350x/i] },
+  { name: 'MI300X',      patterns: [/mi300x/i] },
+  { name: 'MI300',       patterns: [/\bmi300\b/i] },
 ];
 
 function matchGPUCatalog(text) {

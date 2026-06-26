@@ -66,16 +66,27 @@ function SectionContent({ id }: { id: string }) {
 
 export default function Home() {
   const [active, setActive] = useState('overview');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <ParamsProvider activeSection={active} onNavigate={setActive}>
       <div className="flex min-h-screen bg-sa-bg">
-        <Sidebar sections={SECTIONS} active={active} onSelect={setActive} />
-        <div className="flex-1 ml-64">
-          <Header activeSection={active} sections={SECTIONS} />
+        <Sidebar
+          sections={SECTIONS}
+          active={active}
+          onSelect={setActive}
+          open={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
+        <div className="flex-1 md:ml-64">
+          <Header
+            activeSection={active}
+            sections={SECTIONS}
+            onMenuClick={() => setSidebarOpen(true)}
+          />
           <ScenarioBar />
           <main className="pt-24 min-h-screen">
-            <div className="p-6 max-w-7xl">
+            <div className="p-4 md:p-6 max-w-7xl">
               <SectionErrorBoundary key={active}>
                 <SectionContent id={active} />
               </SectionErrorBoundary>
