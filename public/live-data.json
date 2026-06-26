@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-25T08:58:43.056Z",
+  "lastUpdated": "2026-06-26T03:50:50.799Z",
   "sources": {
     "stocks": "Yahoo Finance API",
     "capex": "SEC EDGAR XBRL API — 10-K PaymentsToAcquirePropertyPlantAndEquipment",
@@ -10,45 +10,45 @@
   },
   "stocks": {
     "NVDA": {
-      "price": 199,
-      "prevClose": 207.41,
-      "changePct": -4.05,
+      "price": 195.74,
+      "prevClose": 204.65,
+      "changePct": -4.35,
       "marketCap": null
     },
     "MSFT": {
-      "price": 365.46,
-      "prevClose": 393.83,
-      "changePct": -7.2,
+      "price": 352.83,
+      "prevClose": 378.91,
+      "changePct": -6.88,
       "marketCap": null
     },
     "GOOGL": {
-      "price": 345.29,
-      "prevClose": 373.25,
-      "changePct": -7.49,
+      "price": 343.71,
+      "prevClose": 363.79,
+      "changePct": -5.52,
       "marketCap": null
     },
     "AMZN": {
-      "price": 234.27,
-      "prevClose": 246,
-      "changePct": -4.77,
+      "price": 227.01,
+      "prevClose": 237.5,
+      "changePct": -4.42,
       "marketCap": null
     },
     "META": {
-      "price": 557.67,
-      "prevClose": 600.21,
-      "changePct": -7.09,
+      "price": 542.87,
+      "prevClose": 567.58,
+      "changePct": -4.35,
       "marketCap": null
     },
     "AMD": {
-      "price": 519.74,
-      "prevClose": 507.29,
-      "changePct": 2.45,
+      "price": 532.57,
+      "prevClose": 512.48,
+      "changePct": 3.92,
       "marketCap": null
     },
     "ORCL": {
-      "price": 157.53,
-      "prevClose": 188.33,
-      "changePct": -16.35,
+      "price": 152.46,
+      "prevClose": 183.53,
+      "changePct": -16.93,
       "marketCap": null
     }
   },
@@ -76,14 +76,6 @@
     }
   },
   "gpuRentalPrices": {
-    "H200": {
-      "lambdaPerHour": null,
-      "azurePerHour": 10.6,
-      "lowestPerHour": 10.6,
-      "sources": [
-        "Azure"
-      ]
-    },
     "MI300X": {
       "lambdaPerHour": null,
       "azurePerHour": 6.552,
@@ -102,6 +94,7 @@
     },
     "_discovered": [
       "Standard_NC48ads_A100_v4",
+      "ND96isrH200v5",
       "NC40adsH100v5",
       "NC24r",
       "NC36ldsxlRTX6kv6",
@@ -1747,8 +1740,8 @@
   },
   "nvdaFinancials": {
     "latestQuarterRevenue": 81615,
-    "prevQuarterRevenue": 147811,
-    "qoqGrowthPct": -44.8,
+    "prevQuarterRevenue": 57006,
+    "qoqGrowthPct": 43.2,
     "periodEnd": "2026-04-26",
     "period": "10-Q"
   },
