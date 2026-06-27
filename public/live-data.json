@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-23T09:35:58.603Z",
+  "lastUpdated": "2026-06-27T08:34:04.633Z",
   "sources": {
     "stocks": "Yahoo Finance API",
     "capex": "SEC EDGAR XBRL API — 10-K PaymentsToAcquirePropertyPlantAndEquipment",
@@ -10,45 +10,45 @@
   },
   "stocks": {
     "NVDA": {
-      "price": 208.65,
-      "prevClose": 205.19,
-      "changePct": 1.69,
+      "price": 192.53,
+      "prevClose": 210.69,
+      "changePct": -8.62,
       "marketCap": null
     },
     "MSFT": {
-      "price": 367.34,
-      "prevClose": 390.74,
-      "changePct": -5.99,
+      "price": 372.97,
+      "prevClose": 379.4,
+      "changePct": -1.69,
       "marketCap": null
     },
     "GOOGL": {
-      "price": 349.68,
-      "prevClose": 359.68,
-      "changePct": -2.78,
+      "price": 337.39,
+      "prevClose": 368.03,
+      "changePct": -8.33,
       "marketCap": null
     },
     "AMZN": {
-      "price": 232.79,
-      "prevClose": 238.55,
-      "changePct": -2.41,
+      "price": 232.69,
+      "prevClose": 244.39,
+      "changePct": -4.79,
       "marketCap": null
     },
     "META": {
-      "price": 563.85,
-      "prevClose": 566.98,
-      "changePct": -0.55,
+      "price": 550.25,
+      "prevClose": 577.22,
+      "changePct": -4.67,
       "marketCap": null
     },
     "AMD": {
-      "price": 551.63,
-      "prevClose": 511.57,
-      "changePct": 7.83,
+      "price": 521.58,
+      "prevClose": 537.37,
+      "changePct": -2.94,
       "marketCap": null
     },
     "ORCL": {
-      "price": 175.07,
-      "prevClose": 184.13,
-      "changePct": -4.92,
+      "price": 148.53,
+      "prevClose": 184.29,
+      "changePct": -19.4,
       "marketCap": null
     }
   },
@@ -76,14 +76,6 @@
     }
   },
   "gpuRentalPrices": {
-    "H200": {
-      "lambdaPerHour": null,
-      "azurePerHour": 10.6,
-      "lowestPerHour": 10.6,
-      "sources": [
-        "Azure"
-      ]
-    },
     "MI300X": {
       "lambdaPerHour": null,
       "azurePerHour": 6.552,
@@ -102,6 +94,7 @@
     },
     "_discovered": [
       "Standard_NC48ads_A100_v4",
+      "ND96isrH200v5",
       "NC40adsH100v5",
       "NC24r",
       "NC36ldsxlRTX6kv6",
@@ -734,28 +727,28 @@
       "outputPerM": 4.5,
       "provider": "OpenAI",
       "displayName": "Gpt 5.4 Mini",
-      "contextK": 272
+      "contextK": 1050
     },
     "gpt-5.4-mini-2026-03-17": {
       "inputPerM": 0.75,
       "outputPerM": 4.5,
       "provider": "OpenAI",
       "displayName": "Gpt 5.4 Mini 2026 03 17",
-      "contextK": 272
+      "contextK": 1050
     },
     "gpt-5.4-nano": {
       "inputPerM": 0.19999999999999998,
       "outputPerM": 1.25,
       "provider": "OpenAI",
       "displayName": "Gpt 5.4 Nano",
-      "contextK": 272
+      "contextK": 1050
     },
     "gpt-5.4-nano-2026-03-17": {
       "inputPerM": 0.19999999999999998,
       "outputPerM": 1.25,
       "provider": "OpenAI",
       "displayName": "Gpt 5.4 Nano 2026 03 17",
-      "contextK": 272
+      "contextK": 1050
     },
     "gpt-5-2025-08-07": {
       "inputPerM": 1.25,
@@ -1037,12 +1030,26 @@
       "displayName": "Mistral/Mistral Medium 2505",
       "contextK": 131
     },
-    "mistral/mistral-medium-latest": {
+    "mistral/mistral-medium-2508": {
       "inputPerM": 0.39999999999999997,
       "outputPerM": 2,
       "provider": "Mistral AI",
-      "displayName": "Mistral/Mistral Medium Latest",
+      "displayName": "Mistral/Mistral Medium 2508",
       "contextK": 131
+    },
+    "mistral/mistral-medium-2604": {
+      "inputPerM": 1.5,
+      "outputPerM": 7.5,
+      "provider": "Mistral AI",
+      "displayName": "Mistral/Mistral Medium 2604",
+      "contextK": 262
+    },
+    "mistral/mistral-medium-latest": {
+      "inputPerM": 1.5,
+      "outputPerM": 7.5,
+      "provider": "Mistral AI",
+      "displayName": "Mistral/Mistral Medium Latest",
+      "contextK": 262
     },
     "mistral/mistral-medium-3-1-2508": {
       "inputPerM": 0.39999999999999997,
@@ -1745,13 +1752,7 @@
       "contextK": 1000
     }
   },
-  "nvdaFinancials": {
-    "latestQuarterRevenue": 81615,
-    "prevQuarterRevenue": 147811,
-    "qoqGrowthPct": -44.8,
-    "periodEnd": "2026-04-26",
-    "period": "10-Q"
-  },
+  "nvdaFinancials": null,
   "corewaveFinancials": null,
   "gpuCloud": {
     "azureH100PerHour": null,

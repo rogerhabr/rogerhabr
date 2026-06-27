@@ -748,8 +748,10 @@ async function main() {
   // Sanity-check critical values before writing. Out-of-range values are nulled
   // so the UI falls back to static model data rather than showing garbage.
   const VALIDATION = {
-    nvdaRevenueMinM: 20_000,  // $20B/quarter minimum (NVDA's lowest recent Q)
-    nvdaRevenueMaxM: 90_000,  // $90B/quarter maximum
+    // NVDA quarterly standalone revenue range: ~$12B (Q1 FY2023 low) to ~$50B (FY2027 peak)
+    // Values outside this range indicate a YTD cumulative entry slipped through the duration filter
+    nvdaRevenueMinM:  8_000,   // $8B/quarter floor
+    nvdaRevenueMaxM: 60_000,  // $60B/quarter ceiling
     stockPriceMin:   0.01,
   };
 
