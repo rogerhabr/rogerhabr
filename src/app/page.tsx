@@ -26,6 +26,8 @@ const ROICCalculator              = dynamic(() => import('@/components/sections/
 const HardwareDemandForecast      = dynamic(() => import('@/components/sections/HardwareDemandForecast'),        { ssr: false, loading: LOADING });
 const HardwareRefreshSensitivity  = dynamic(() => import('@/components/sections/HardwareRefreshSensitivity'),    { ssr: false, loading: LOADING });
 const RevenueProfit               = dynamic(() => import('@/components/sections/RevenueProfit'),                 { ssr: false, loading: LOADING });
+const TokenCostAnatomy            = dynamic(() => import('@/components/sections/TokenCostAnatomy'),              { ssr: false, loading: LOADING });
+const WorkflowAllocation          = dynamic(() => import('@/components/sections/WorkflowAllocation'),            { ssr: false, loading: LOADING });
 const ScenarioBar            = dynamic(() => import('@/components/ScenarioBar'),                       { ssr: false });
 const DataSources            = dynamic(() => import('@/components/sections/DataSources'),               { ssr: false, loading: LOADING });
 
@@ -42,6 +44,8 @@ const SECTIONS = [
   { id: 'hardware-refresh',    label: 'HW Refresh Sensitivity',  icon: '🔄', group: 'Economics' },
   { id: 'hardware-demand',     label: 'Hardware Demand Forecast',icon: '📦', group: 'Economics' },
   { id: 'revenue-profit',      label: 'Revenue & Profit',        icon: '💰', group: 'Economics' },
+  { id: 'token-cost',          label: 'Token Cost Anatomy',      icon: '🧬', group: 'Tokenomics' },
+  { id: 'workflow-allocation', label: 'Workflow Allocation',     icon: '🕸️', group: 'Tokenomics' },
   { id: 'data-sources',        label: 'Data Sources',            icon: '🔍', group: 'Methodology' },
 ];
 
@@ -59,6 +63,8 @@ function SectionContent({ id }: { id: string }) {
     case 'hardware-refresh':   return <HardwareRefreshSensitivity />;
     case 'hardware-demand':    return <HardwareDemandForecast />;
     case 'revenue-profit':     return <RevenueProfit />;
+    case 'token-cost':         return <TokenCostAnatomy />;
+    case 'workflow-allocation':return <WorkflowAllocation />;
     case 'data-sources':       return <DataSources />;
     default:                   return null;
   }

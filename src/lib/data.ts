@@ -654,6 +654,171 @@ export const priceCompression = [
   { quarter: 'Q2 2026E',medianInput: 0.20, frontierInput: 5.0,  cheapestInput: 0.02,  tokensPerDollar: 18000000 },
 ];
 
+// ─── AI Tokenomics: 5-Class Token Taxonomy & Cost Model ───────────────────────
+// Source: Zhu (2026), "AI Tokenomics" (arXiv:2606.24616). Ttot = TI + TC + TR + TO + TH.
+// Billing reality (verified against OpenAI/Anthropic/Google API docs, June 2026):
+//   • Input (TI) and Retrieval (TR) bill at the INPUT rate (retrieval context is just input)
+//   • Cached context (TC) bills at the discounted CACHED rate
+//   • Output (TO) and Hidden reasoning (TH) bill at the OUTPUT rate
+//     (thinking tokens are billed as output even when not returned to the user)
+
+export interface TokenWorkload {
+  name: string;
+  icon: string;
+  description: string;
+  inputTokens: number;     // TI — prompt + system
+  cachedTokens: number;    // TC — cache-hit context
+  retrievalTokens: number; // TR — RAG / retrieved context (billed as input)
+  outputTokens: number;    // TO — visible response
+  hiddenTokens: number;    // TH — chain-of-thought / extended thinking (billed as output)
+}
+
+export interface TokenPrices {
+  inputPerM: number;
+  outputPerM: number;
+  cachedPerM: number;
+}
+
+// Default reference prices ($/M tokens) when no live model is selected.
+// Mirrors Claude Opus 4.8 list pricing; cached ≈ 10% of input (cache-read tier).
+export const defaultTokenPrices: TokenPrices = {
+  inputPerM: 5.0,
+  outputPerM: 25.0,
+  cachedPerM: 0.5,
+};
+
+// Representative workloads from the paper's Section 6 case studies. Token counts
+// use the midpoint of each cited range so totals are reproducible.
+export const tokenWorkloads: TokenWorkload[] = [
+  {
+    name: 'Legal Contract Analysis', icon: '⚖️',
+    description: '10 contracts × 50 pages × 200 tok/page ingest; clause/risk reasoning; 1k summary',
+    inputTokens: 100_000, cachedTokens: 0, retrievalTokens: 0, outputTokens: 1_000, hiddenTokens: 100_000,
+  },
+  {
+    name: 'Software Engineering', icon: '⌨️',
+    description: 'Spec → code-gen → verify → test → repair; QA stages dominate token use',
+    inputTokens: 500, cachedTokens: 0, retrievalTokens: 0, outputTokens: 5_000, hiddenTokens: 60_000,
+  },
+  {
+    name: 'RAG Research', icon: '🔎',
+    description: '500-tok query; 50 docs × 1k retrieved; reason → synthesize → recommend',
+    inputTokens: 500, cachedTokens: 0, retrievalTokens: 50_000, outputTokens: 2_000, hiddenTokens: 40_000,
+  },
+  {
+    name: 'Multi-Agent Cycle', icon: '🤖',
+    description: 'Planner → retriever → executor → monitor → replanner; one full cycle',
+    inputTokens: 10_000, cachedTokens: 0, retrievalTokens: 50_000, outputTokens: 50_000, hiddenTokens: 100_000,
+  },
+  {
+    name: 'Simple Chat Q&A', icon: '💬',
+    description: 'Short prompt, short answer, negligible hidden reasoning',
+    inputTokens: 500, cachedTokens: 0, retrievalTokens: 0, outputTokens: 500, hiddenTokens: 200,
+  },
+];
+
+export function calcTokenCost(w: TokenWorkload, p: TokenPrices) {
+  // TI + TR bill at input rate; TC at cached rate; TO + TH at output rate.
+  const inputCost     = ((w.inputTokens + w.retrievalTokens) / 1e6) * p.inputPerM;
+  const cachedCost    = (w.cachedTokens / 1e6) * p.cachedPerM;
+  const outputCost    = (w.outputTokens / 1e6) * p.outputPerM;
+  const hiddenCost    = (w.hiddenTokens / 1e6) * p.outputPerM; // thinking billed as output
+  const total         = inputCost + cachedCost + outputCost + hiddenCost;
+  const totalTokens   = w.inputTokens + w.cachedTokens + w.retrievalTokens + w.outputTokens + w.hiddenTokens;
+  const visibleTokens = w.inputTokens + w.cachedTokens + w.retrievalTokens + w.outputTokens;
+  return {
+    inputCost, cachedCost, outputCost, hiddenCost, total,
+    totalTokens, visibleTokens,
+    hiddenTokens: w.hiddenTokens,
+    // The paper's central insight: hidden reasoning's COST share exceeds its TOKEN share,
+    // because thinking tokens bill at the (higher) output rate.
+    hiddenCostShare:  total > 0 ? (hiddenCost / total) * 100 : 0,
+    hiddenTokenShare: totalTokens > 0 ? (w.hiddenTokens / totalTokens) * 100 : 0,
+    priceRatio: p.inputPerM > 0 ? p.outputPerM / p.inputPerM : 0,
+  };
+}
+
+// ─── AI Tokenomics: Workflow Allocation (multiplicative quality propagation) ────
+// Each stage produces a quality q ∈ (0,1]; final quality q_final = Π q_i.
+// Marginal downstream impact of stage i = ∂q_final/∂q_i = Π_{j≠i} q_j = q_final / q_i.
+// This reproduces the paper's result: a stage's value depends on its position in the
+// dependency graph, NOT its token volume.
+
+export interface WorkflowStage {
+  name: string;
+  icon: string;
+  tokens: number;
+  quality: number; // q_i ∈ (0,1]
+  color: string;
+}
+
+export interface WorkflowTemplate {
+  id: string;
+  label: string;
+  description: string;
+  stages: WorkflowStage[];
+}
+
+export const workflowTemplates: WorkflowTemplate[] = [
+  {
+    id: 'multi-agent',
+    label: 'Autonomous Multi-Agent',
+    description: 'Planner → retriever → executor → monitor → replanner. Execution consumes the most tokens, but planning has the highest downstream marginal value.',
+    stages: [
+      { name: 'Planner',    icon: '🧭', tokens: 10_000,  quality: 0.70, color: '#f97316' },
+      { name: 'Retriever',  icon: '🔎', tokens: 50_000,  quality: 0.90, color: '#3b82f6' },
+      { name: 'Executor',   icon: '⚙️', tokens: 100_000, quality: 0.85, color: '#8b5cf6' },
+      { name: 'Monitor',    icon: '👁️', tokens: 20_000,  quality: 0.80, color: '#10b981' },
+    ],
+  },
+  {
+    id: 'software',
+    label: 'Software Engineering',
+    description: 'Spec → code-gen → verify → test → repair. Verification and testing carry more marginal value than the visible code-generation stage.',
+    stages: [
+      { name: 'Code-gen',     icon: '⌨️', tokens: 5_000,  quality: 0.63, color: '#3b82f6' },
+      { name: 'Verification', icon: '✅', tokens: 25_000, quality: 0.87, color: '#10b981' },
+      { name: 'Testing',      icon: '🧪', tokens: 25_000, quality: 0.87, color: '#f59e0b' },
+      { name: 'Repair',       icon: '🔧', tokens: 10_000, quality: 0.63, color: '#8b5cf6' },
+    ],
+  },
+  {
+    id: 'rag',
+    label: 'RAG Research',
+    description: 'Retrieve → reason → synthesize → recommend. Once retrieval quality saturates, marginal value shifts to reasoning.',
+    stages: [
+      { name: 'Retrieval',     icon: '🔎', tokens: 50_000, quality: 0.98, color: '#3b82f6' },
+      { name: 'Reasoning',     icon: '🧠', tokens: 30_000, quality: 0.70, color: '#f97316' },
+      { name: 'Synthesis',     icon: '🔗', tokens: 8_000,  quality: 0.80, color: '#10b981' },
+      { name: 'Recommendation',icon: '📋', tokens: 2_000,  quality: 0.85, color: '#8b5cf6' },
+    ],
+  },
+];
+
+export function calcWorkflowAllocation(stages: WorkflowStage[]) {
+  const totalTokens = stages.reduce((s, x) => s + x.tokens, 0);
+  const qFinal = stages.reduce((p, x) => p * x.quality, 1);
+  const rows = stages.map(s => {
+    const marginalImpact = s.quality > 0 ? qFinal / s.quality : 0; // ∂q_final/∂q_i
+    return {
+      ...s,
+      tokenShare: totalTokens > 0 ? (s.tokens / totalTokens) * 100 : 0,
+      marginalImpact,
+    };
+  });
+  const maxImpact = Math.max(...rows.map(r => r.marginalImpact), 0);
+  // Efficiency = marginal value per token share; high = under-resourced relative to its value.
+  return {
+    rows: rows.map(r => ({
+      ...r,
+      impactShare: maxImpact > 0 ? (r.marginalImpact / maxImpact) * 100 : 0,
+      valuePerTokenShare: r.tokenShare > 0 ? r.marginalImpact / (r.tokenShare / 100) : 0,
+    })),
+    totalTokens,
+    qFinal,
+  };
+}
+
 // ─── Foundation Lab Financials ────────────────────────────────────────────────
 
 export const labRevenue = [
