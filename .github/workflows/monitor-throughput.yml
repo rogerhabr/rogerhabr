@@ -1,0 +1,55 @@
+name: Monitor Token Throughput
+
+# Autonomous agent: monitors industry evolution of tokens/sec per model per xPU
+# and proposes RELIABLE updates via pull request (never writes to the model directly).
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'   # Weekly, Monday 07:00 UTC (throughput moves on releases, not daily)
+  workflow_dispatch:       # Allow manual runs on demand
+  push:
+    branches: [master]
+    paths:
+      - 'scripts/monitor-throughput.mjs'
+      - '.github/workflows/monitor-throughput.yml'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run throughput monitoring agent
+        id: agent
+        env:
+          # Optional reliability sources — agent degrades gracefully if absent.
+          AA_API_KEY: ${{ secrets.AA_API_KEY }}
+          MLPERF_RESULTS_URL: ${{ vars.MLPERF_RESULTS_URL }}
+          # Optional HYBRID LLM extraction layer — activates only if key is present.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          THROUGHPUT_LLM_SOURCES: ${{ vars.THROUGHPUT_LLM_SOURCES }}
+          THROUGHPUT_LLM_MODEL: ${{ vars.THROUGHPUT_LLM_MODEL }}
+        run: node scripts/monitor-throughput.mjs
+
+      - name: Open / update pull request
+        if: steps.agent.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: agent/throughput-update
+          base: master
+          commit-message: "chore(throughput): proposed tokens/sec updates"
+          title: "🤖 Throughput agent: ${{ steps.agent.outputs.change_count }} proposed tokens/sec update(s)"
+          body-path: throughput-update-report.md
+          labels: |
+            automated
+            throughput
+          add-paths: |
+            public/throughput-data.json
+          delete-branch: true

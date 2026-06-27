@@ -10,6 +10,7 @@ import MetricCard from '../MetricCard';
 import { defaultROICInputs, hardwareDefaults, calcROIC, roicByEntity, throughputMatrix } from '@/lib/data';
 import { useGlobalParams } from '@/contexts/ParamsContext';
 import { useLiveData } from '@/hooks/useLiveData';
+import { useThroughputData } from '@/hooks/useThroughputData';
 
 const MODEL_TO_THROUGHPUT_KEY: Record<string, string> = {
   'gpt-4o':                          'GPT-4o',
@@ -62,6 +63,7 @@ function SliderInput({ label, value, min, max, step, onChange, format }: {
 export default function ROICCalculator() {
   const { params } = useGlobalParams();
   const { liveData, liveLoaded } = useLiveData();
+  const { liveThroughput, throughputLoaded } = useThroughputData();
   const [inputs, setInputs] = useState(() => ({
     ...defaultROICInputs,
     utilizationPct: params.gpuUtilizationPct,
@@ -97,8 +99,16 @@ export default function ROICCalculator() {
 
   const getModelThroughput = (modelKey: string, hw: string) => {
     const matrixKey = MODEL_TO_THROUGHPUT_KEY[modelKey];
-    return matrixKey ? (throughputMatrix[hw]?.[matrixKey] ?? null) : null;
+    if (!matrixKey) return null;
+    // Prefer a high-confidence live value from the throughput agent; fall back to the static matrix.
+    const live = liveThroughput(hw, matrixKey);
+    if (live) return live.tokensPerSec;
+    return throughputMatrix[hw]?.[matrixKey] ?? null;
   };
+
+  // Is the currently-applied throughput a live (agent-sourced) value?
+  const activeMatrixKey = MODEL_TO_THROUGHPUT_KEY[selectedPricingModel];
+  const liveCell = activeMatrixKey ? liveThroughput(inputs.hardware, activeMatrixKey) : null;
 
   const handleHardwareChange = (hw: string) => {
     const defaults = hardwareDefaults[hw] || {};
@@ -296,6 +306,11 @@ export default function ROICCalculator() {
               value={inputs.tokensPerGPUPerSec} min={50} max={3000} step={50}
               onChange={update('tokensPerGPUPerSec')} format={v => `${v}`}
             />
+            {throughputLoaded && liveCell && (
+              <p className="text-xs text-green-400 -mt-2">
+                ● Live: {liveCell.tokensPerSec} tok/s from {liveCell.sources.join(', ')} ({liveCell.confidence}-confidence, {liveCell.sampleCount} samples)
+              </p>
+            )}
             <SliderInput
               label="Power per GPU (W)" value={inputs.powerW} min={100} max={2000} step={50}
               onChange={update('powerW')} format={v => `${v}W`}

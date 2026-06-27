@@ -30,10 +30,10 @@ export const DATA_SOURCES: Record<string, DataSource> = {
   },
 
   throughputMatrix: {
-    label: 'Token Throughput Matrix (tokens/sec per chip)',
+    label: 'Token Throughput Matrix (tokens/sec per model per chip)',
     sourceType: 'derived',
-    primarySource: 'Derived from FP8 TFLOPS specs × empirical batch-32 inference scaling factors',
-    notes: 'NOT independently benchmarked. Estimates based on published TFLOPS ratios and MLPerf Inference results where available. Treat as order-of-magnitude only.',
+    primarySource: 'Static baseline derived from FP8 TFLOPS specs × empirical batch-32 scaling; live cells from the throughput monitoring agent (Artificial Analysis, MLPerf, cross-validated)',
+    notes: 'Static matrix is NOT independently benchmarked — order-of-magnitude only. An autonomous agent (scripts/monitor-throughput.mjs, weekly GitHub Action) monitors industry tokens/sec-per-model-per-xPU, cross-validates across ≥2 independent sources, and opens a PR proposing reliable updates. Merged high-confidence cells (public/throughput-data.json) override the static baseline in the UI; every live value is traceable to its source.',
     sourceURL: 'https://mlcommons.org/benchmarks/inference-datacenter/',
   },
 
