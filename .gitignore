@@ -3,8 +3,8 @@
 out/
 node_modules/
 
-# Claude Code
-.claude/
+# Claude Code (settings and hooks are tracked; only local/personal files are ignored)
+.claude/settings.local.json
 
 # TypeScript build cache
 tsconfig.tsbuildinfo
