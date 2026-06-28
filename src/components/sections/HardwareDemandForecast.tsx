@@ -207,7 +207,7 @@ export default function HardwareDemandForecast() {
           </AreaChart>
         </ResponsiveContainer>
         <p className="text-xs text-sa-muted mt-2">
-          NVIDIA's dominance erodes gradually as AMD MI350X ramps, Google's TPU v7 scales across GCP, and Amazon Trainium 3 achieves production readiness. Custom silicon advantages (cost, efficiency) drive share gains in captive workloads.
+          NVIDIA&apos;s dominance erodes gradually as AMD MI350X ramps, Google&apos;s TPU v7 scales across GCP, and Amazon Trainium 3 achieves production readiness. Custom silicon advantages (cost, efficiency) drive share gains in captive workloads.
         </p>
       </div>
 
