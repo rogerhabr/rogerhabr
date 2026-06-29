@@ -5,6 +5,7 @@ node_modules/
 
 # Claude Code (settings and hooks are tracked; only local/personal files are ignored)
 .claude/settings.local.json
+.claude-session/
 
 # TypeScript build cache
 tsconfig.tsbuildinfo
