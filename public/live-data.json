@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-30T09:31:21.479Z",
+  "lastUpdated": "2026-07-01T09:42:10.398Z",
   "sources": {
     "stocks": "Yahoo Finance API",
     "capex": "SEC EDGAR XBRL API — 10-K PaymentsToAcquirePropertyPlantAndEquipment",
@@ -10,45 +10,45 @@
   },
   "stocks": {
     "NVDA": {
-      "price": 194.97,
-      "prevClose": 208.65,
-      "changePct": -6.56,
+      "price": 200.09,
+      "prevClose": 200.04,
+      "changePct": 0.02,
       "marketCap": null
     },
     "MSFT": {
-      "price": 368.57,
-      "prevClose": 367.34,
-      "changePct": 0.33,
+      "price": 373.02,
+      "prevClose": 373.94,
+      "changePct": -0.25,
       "marketCap": null
     },
     "GOOGL": {
-      "price": 353.65,
-      "prevClose": 349.68,
-      "changePct": 1.14,
+      "price": 357.37,
+      "prevClose": 346.13,
+      "changePct": 3.25,
       "marketCap": null
     },
     "AMZN": {
-      "price": 240.14,
-      "prevClose": 232.79,
-      "changePct": 3.16,
+      "price": 238.34,
+      "prevClose": 234.11,
+      "changePct": 1.81,
       "marketCap": null
     },
     "META": {
-      "price": 562.6,
-      "prevClose": 563.85,
-      "changePct": -0.22,
+      "price": 563.29,
+      "prevClose": 562.2,
+      "changePct": 0.19,
       "marketCap": null
     },
     "AMD": {
-      "price": 539.49,
-      "prevClose": 551.63,
-      "changePct": -2.2,
+      "price": 580.91,
+      "prevClose": 519.85,
+      "changePct": 11.75,
       "marketCap": null
     },
     "ORCL": {
-      "price": 147.76,
-      "prevClose": 175.07,
-      "changePct": -15.6,
+      "price": 146.55,
+      "prevClose": 165.16,
+      "changePct": -11.27,
       "marketCap": null
     }
   },
@@ -224,6 +224,13 @@
       "provider": "Anthropic",
       "displayName": "Claude Sonnet 4 5",
       "contextK": 200
+    },
+    "claude-sonnet-5": {
+      "inputPerM": 3,
+      "outputPerM": 15,
+      "provider": "Anthropic",
+      "displayName": "Claude Sonnet 5",
+      "contextK": 1000
     },
     "claude-sonnet-4-6": {
       "inputPerM": 3,
